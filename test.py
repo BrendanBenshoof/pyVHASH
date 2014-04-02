@@ -1,4 +1,4 @@
-from pyVhash import Node, Name2locString, Peer
+from pyVhash import Node, Peer, Name2locString
 import time
 
 class DHTNode(Node):
@@ -19,7 +19,6 @@ class DHTNode(Node):
     #public
     def put(self,key,val):
         self.data[key] = val
-        print self.name, key, val
         return True
     #public
     def get(self,key):
@@ -28,12 +27,22 @@ class DHTNode(Node):
         else:
             return "FAIL"
 
-n1 = DHTNode("127.0.0.1",9005)
-n2 = DHTNode("127.0.0.1",9006)
+n1 = DHTNode("127.0.0.1",9010)
+n2 = DHTNode("127.0.0.1",9011)
 
 n1.join(n2.name)
 n2.join(n1.name)
-time.sleep(1)
+port = 9012
+nodes = [n1,n2]
+for i in range(0,20):
+    time.sleep(1)
+    n = DHTNode("127.0.0.1",port+i)
+    nodes.append(n)
+    n.join(n1.name)
 
-n1.store("test","blah")
-print n2.retrive("test")
+time.sleep(5)
+
+for i in range(0,100):
+    n1.store(str(i),str(i)+"blah")
+for i in range(0,100):
+    print nodes[-1].retrive(str(i))

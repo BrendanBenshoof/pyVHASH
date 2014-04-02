@@ -15,6 +15,7 @@ def loc2String(loc):
 
 def string2loc(loc):
     return map(lambda x: long(x,16),loc)
+
 def getHash(string):
     m = HASHFUNC(string)
     return long(m.hexdigest(),16)
@@ -113,7 +114,8 @@ class Node(object):
     def join(self,othernode):
         patron = Peer(othernode)
         self.peerpool.add(othernode)#add our know node for shits and giggles
-        parentstr = patron.find(loc2String(self.loc))
+        locstr = loc2String(self.loc)
+        parentstr = patron.find(locstr)
         parent = Peer(parentstr)##find my parent
         self.peerpool.add(parentstr)##add my parent
         self.nearPeers, self.farPeers = self.evaluatePeers(list(self.peerpool)) #update my peerlist
@@ -146,19 +148,9 @@ class Node(object):
         #tell me you and your friends exist
         return [self.name]+map(str,self.nearPeers)
 
-    #public
-    def put(key,val):
-        #store a value, at a key
-        pass
-
-    #public
-    def get(key):
-        #retrive a value, at a key
-        pass
     
     def mainloop(self):
         while(self.running):
-            time.sleep(0.5)
             self.nearPeers, self.farPeers = self.evaluatePeers(list(self.peerpool)) #update my peerlist
             for p in self.nearPeers:
                 p.notify([self.name]+map(str,self.nearPeers))
