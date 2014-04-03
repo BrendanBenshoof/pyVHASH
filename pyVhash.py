@@ -25,6 +25,8 @@ def getLoc(hashid):
     y = hashid / HALF
     return (x,y)
 
+def Name2loc(name):
+    return getLoc(getHash(name))
 def Name2locString(name):
     return loc2String(getLoc(getHash(name)))
 
@@ -136,7 +138,6 @@ class Node(object):
         if best is None:
             return self.name
         else:
-            print "best", best
             return best.find(locstr)
         #recursively lookup the node nearest to this loc
         
@@ -153,8 +154,9 @@ class Node(object):
         while(self.running):
             self.nearPeers, self.farPeers = self.evaluatePeers(list(self.peerpool)) #update my peerlist
             for p in self.nearPeers:
+                p = Peer(p.name)
                 p.notify([self.name]+map(str,self.nearPeers))
-                time.sleep(0.5)
+                time.sleep(0.1)
         pass
 
 
