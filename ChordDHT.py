@@ -8,11 +8,11 @@ class DHTnode(Node):
         self.addNewFunc(self.get,"get")
 
     def myInfo(self):
-        me = [self.name.split(":")[2], str(self.hashid)[0:3]]
-        su = [self.succ.name.split(":")[2], str(self.succ.hashid)[0:3]]
-        pr = [self.pred.name.split(":")[2], str(self.pred.hashid)[0:3]]
-        print pr, me, su
-        print self.data
+        me = [self.name.split(":")[2], str(self.hashid)[0:4]]
+        su = [self.succ.name.split(":")[2], str(self.succ.hashid)[0:4]]
+        pr = [self.pred.name.split(":")[2], str(self.pred.hashid)[0:4]]
+        return [pr[1], me[1], su[1]]
+        #print self.data
 
 
     def store(self,key,val):

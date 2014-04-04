@@ -27,7 +27,7 @@ for n in nodes:
 """
 print "prepare to sleep"
 
-
+time.sleep(3)
 for i in range(0,100):
     n = random.choice(nodes)
     n.store(str(i)+"blah",str(i))
@@ -37,6 +37,9 @@ for i in range(0,100):
 for i in range(0,100):
     n = random.choice(nodes)
     print n.retrive(str(i)+"blah")
-    
+
+info = []    
 for n in nodes:
-    n.myInfo()
+    info.append(n.myInfo())
+
+print sorted(info, key= lambda x: x[1])
