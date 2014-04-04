@@ -7,6 +7,14 @@ class DHTnode(Node):
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
 
+    def myInfo(self):
+        me = [self.name.split(":")[2], str(self.hashid)[0:3]]
+        su = [self.succ.name.split(":")[2], str(self.succ.hashid)[0:3]]
+        pr = [self.pred.name.split(":")[2], str(self.pred.hashid)[0:3]]
+        print pr, me, su
+        print self.data
+
+
     def store(self,key,val):
         loc = getHashString(key)
         target = self.findSuccessor(loc)

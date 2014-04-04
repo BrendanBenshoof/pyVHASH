@@ -110,12 +110,14 @@ class Node(object):
     # public
     def findSuccessor(self, hexHashid):
         hashid = long(hexHashid, 16)
-        if hashid == self.hashid:
-            return self.name
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
+            #print self.succ.hashid, "successor for", str(hashid) 
             return self.succ.name
         else:  # we forward the query
             closest = self.closestPreceeding(hashid)
+            if closest is self:
+                return self.name
+            #print self.name, "forwarding", str(hashid), "to", closest.name 
             return closest.findSuccessor(hexHashid)
 
 
@@ -154,12 +156,11 @@ class Node(object):
 
     def mainloop(self):
         while(self.running):
-            time.sleep(0.1)
-            if self is not self.succ:
-                self.stabilize()
-                self.fixFingers()
-                if self.pred is not None:
-                    self.checkPred()
+            time.sleep(0.025)
+            self.stabilize()
+            self.fixFingers()
+            if self.pred is not None:
+                self.checkPred()
 
 
     ## maintanense

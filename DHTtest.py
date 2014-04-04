@@ -12,8 +12,8 @@ n2.join(n1.name)
 time.sleep(1)
 
 nodes = [n1,n2]
-for i in range(3,20):
-    time.sleep(0.5)
+for i in range(3,6):
+    time.sleep(1)
     n = Node("127.0.0.1",port+i)
     print "started", n
     n.join(random.choice(nodes).name)
@@ -26,12 +26,17 @@ for n in nodes:
 
 """
 print "prepare to sleep"
+
+
 for i in range(0,100):
     n = random.choice(nodes)
     n.store(str(i)+"blah",str(i))
 
+
+
 for i in range(0,100):
     n = random.choice(nodes)
     print n.retrive(str(i)+"blah")
-
-
+    
+for n in nodes:
+    n.myInfo()
