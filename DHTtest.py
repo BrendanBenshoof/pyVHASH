@@ -12,7 +12,7 @@ n2.join(n1.name)
 time.sleep(1)
 
 nodes = [n1,n2]
-for i in range(3,50):
+for i in range(3,100):
     time.sleep(1)
     n = Node("127.0.0.1",port+i)
     print "started", n
