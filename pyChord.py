@@ -9,7 +9,7 @@ HASHFUNC = hashlib.sha1
 HASHSIZE = HASHFUNC().digest_size * 8
 MAX = 2**(HASHSIZE)
 print "HASHSIZE", HASHSIZE
-
+MAINT_INT = 0.5
 
 
 def getHash(string):
@@ -156,7 +156,7 @@ class Node(object):
 
     def mainloop(self):
         while(self.running):
-            time.sleep(0.025)
+            time.sleep(MAINT_INT)
             self.stabilize()
             self.fixFingers()
             if self.pred is not None:
