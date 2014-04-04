@@ -28,17 +28,17 @@ def getLoc(hashid):
 def Name2loc(name):
     return getLoc(getHash(name))
 def Name2locString(name):
-    return loc2String(getLoc(getHash(name)))
+    return tuple(loc2String(getLoc(getHash(name))))
 
 def getDist(loc1,loc2):
-    deltax = min( [math.fabs(loc1[0]-loc2[0]), HALF-math.fabs(loc1[0]-loc2[0])**2.0])
-    deltay = min( [math.fabs(loc1[1]-loc2[1]), HALF-math.fabs(loc1[1]-loc2[1])**2.0])
-    return (deltax + deltay)**2.0
+    delta_x = (loc2[0]-loc1[0])
+    delta_y = (loc2[1]-loc1[1])
+    return (delta_x**2.0+delta_y**2.0)**0.5
 
 def getMidpoint(loc1,loc2):#nasty question in a modulus space, there really are 2 midpoints
-    delta_x = (loc1[0]-loc2[0])/2
-    delta_y = (loc1[1]-loc2[1])/2
-    return (loc1[0]+delta_x,loc1[1]+delta_y)
+    delta_x = (loc2[0]-loc1[0])
+    delta_y = (loc2[1]-loc1[1])
+    return ((loc1[0]+delta_x)%HALF,(loc1[1]+delta_y)%HALF)
 
 def cleanup_peers(peers, myname):
     output = []
@@ -84,7 +84,7 @@ class Node(object):
     def getBestForward(self, loc):
         mydist = getDist(self.loc,loc)
         try:
-            bestpeer = min(self.nearPeers+self.farPeers, key= lambda x: getDist(x.loc,loc))
+            bestpeer = min(self.nearPeers+self.farPeers, key= lambda x: getDist(loc,x.loc))
         except ValueError:
             return None
         peerdist = getDist(bestpeer.loc,loc)
@@ -99,7 +99,7 @@ class Node(object):
         if len(peerpool)>0:
             peerpool = map(lambda x: Peer(x),peerpool)
             peerpool = cleanup_peers(peerpool,self.name)
-            peerpool = sorted(peerpool,key= lambda x: getDist(x.loc,self.loc))
+            peerpool = sorted(peerpool,key= lambda x: getDist(self.loc,x.loc))
             finalpeers.append(peerpool.pop())
             for p in peerpool:
                 mid = getMidpoint(self.loc,p.loc)
@@ -115,13 +115,15 @@ class Node(object):
 
     def join(self,othernode):
         patron = Peer(othernode)
-        self.peerpool.add(othernode)#add our know node for shits and giggles
+        self.peerpool.add(othernode) #add our know node for shits and giggles
         locstr = loc2String(self.loc)
         parentstr = patron.find(locstr)
-        parent = Peer(parentstr)##find my parent
-        self.peerpool.add(parentstr)##add my parent
+        parent = Peer(parentstr) #find my parent
+        self.peerpool.add(parentstr) #add my parent
         self.nearPeers, self.farPeers = self.evaluatePeers(list(self.peerpool)) #update my peerlist
-        parent.notify([self.name]+map(str,self.nearPeers))#send a notify to my parent
+        for n in parent.notify([self.name]+map(str,self.nearPeers)):#send a notify to my parent
+            self.peerpool.add(n)
+        self.nearPeers, self.farPeers = self.evaluatePeers(list(self.peerpool)) #update my peerlist
         self.running = True
         self.myThread = Thread(target=self.mainloop)
         self.myThread.daemon = True
@@ -156,7 +158,6 @@ class Node(object):
             for p in self.nearPeers:
                 p = Peer(p.name)
                 p.notify([self.name]+map(str,self.nearPeers))
-                time.sleep(0.1)
         pass
 
 

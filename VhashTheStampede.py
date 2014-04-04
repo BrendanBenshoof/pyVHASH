@@ -52,23 +52,25 @@ class MapReduceNode(Node):
                 freq1[k]=freq2[k]
         return freq1
 
-    def distribute(self,pile_of_data, origin):
-        pile_of_data = load(pile_of_data)
+    def distribute(self, dict_of_data, origin):
         forwards = {}
-        mystuff = []
-        for p in pile_of_data:
-            ploc = Name2loc(assciiafy(p))
-            key = self.getBestForward(ploc)
-            if key is None:
-                mystuff.append(p)
-            elif key in forwards:
-                forwards[key].append(p)
+        mystuff = {}
+        print dict_of_data
+        for l in dict_of_data:
+            mybest = self.getBestForward(string2loc(l))
+            print mybest
+            if mybest is None:
+                mystuff[l] = dict_of_data[l]
+            elif mybest in forwards:
+                forwards[mybest] = {l:dict_of_data[l]}
             else:
-                forwards[key] = [p]
+                forwards[mybest][l] = dict_of_data[l]
+                print forwards, mybest, l
         for k in forwards:
-
-            Peer(k).distribute(dump(forwards[k]),origin)
-        results = map(self.map,mystuff)
+            Peer(k).distribute(forwards[k],origin)
+        results = map(lambda x: self.map(mystuff[x]) , mystuff.keys())
+        print "mystuff",mystuff
+        time.sleep(1)
         single_result = reduce(self.reduce,results)
         Peer(origin).collate(single_result)
 
@@ -77,9 +79,12 @@ class MapReduceNode(Node):
 
     def setup(self,filename):
         lines = []
+        data = {}
         with open(filename,"r") as fp:
-            map(lambda x: lines.append(convert(x)),fp)
-        self.distribute(dump(lines),self.name)
+            for l in fp:
+                l_loc = Name2locString(assciiafy(l))
+                data[l_loc]=l
+        self.distribute(data,self.name)
 
     def report(self):
         final = reduce(self.reduce,self.data)
