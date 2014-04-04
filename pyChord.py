@@ -23,8 +23,31 @@ def getDist(hash1,hash2):
     else:
         return tmp
 
+#
+# written from scratch; check logic
+def hashBetween(target, left, right):
+    if target == left or target == right:
+        return False
+    if target < right and target > left:
+        return True
+    if left > right :
+        if left > target and target < right:
+            return True
+        if left < target and target > right:
+            return True
+    return False
+
+def hashBetweenRightInclusive(target,left,right):
+    if target == right:
+        return True
+    return hashBetween(target, left, right)
+
+
+"""
 def hashBetweenRightInclusive(target,left,right):
     if left == right:
+        ##Why?  all that means is that we're checking the same place.
+        # IF that implies something specific here, it should be on a case by case basis, no?  
         return True
     if target == left:
         return False
@@ -38,7 +61,7 @@ def hashBetweenRightInclusive(target,left,right):
     if left > right and target > left and target < right:
         return True
     return False
-
+"""
 
 
 class Peer(object,xmlrpclib.ServerProxy):
@@ -55,6 +78,11 @@ class Peer(object,xmlrpclib.ServerProxy):
 
 
 class Node(object):
+    """
+    Giant TODO:  add the peer constructors where needed
+    """
+
+    # Construction and networking
     def __init__(self,ip,port):
         self.ip = ip
         self.port = port
@@ -65,7 +93,16 @@ class Node(object):
         self.server.register_function(self.find,"find")
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
+        self.server.register_function(self.findSuccessor,"findSuccessor")
+
+        """
+        General assumption is finger[k] = successor of (n + 2**(k-1)) % mod MAX
+        1 <= k <= HASHSIZE
+        The implication of this is that finger[1] = succ ((n +2**0) % mod MAX) 
+        --> your successor
+        """ 
         self.fingers = [None]*HASHSIZE
+        self.next = 0
         self.pred = self
         self.succ = self
         self.running = False
@@ -73,22 +110,79 @@ class Node(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
-    def addnewFunc(self,func,name):
+
+    def addNewFunc(self,func,name):
         self.server.register_function(func,name)
 
-    def getBestForward(self, hashid):#double check this logic!!!!!
+    def kickstart(self):
+        self.running = True
+        self.myThread = Thread(target=self.mainloop)
+        self.myThread.daemon = True
+        self.myThread.start()    
+
+
+
+    ## Routing
+    def getBestForward(self, hashid):
         #print "pred",self.pred
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
-            if self.name == self.succ.name:
+            # in original implementation we had set it up 
+            # so that if you were your own pred, you owned everything.  
+            # I don't remember if we changed that.
+            if self.name == self.succ.name:   #double check this logic!!!!!
                 return None
             return self.succ
         else:
-            for f in reversed(self.fingers):
-                if f and hashBetweenRightInclusive(f.hashid, self.hashid, hashid):
+            for f in reversed(self.fingers[1:]):  ## 1
+                if f and hashBetween(f.hashid, self.hashid, hashid):  
                     return f
-        return None
+        return self  # we should return self here
 
-        
+    #public
+    """Technically, the way you find where something is is findSuccessor, 
+    or in this case getBestForward, 
+    ie do we really need this?"""
+    def find(self,hashstr):
+        loc = long(hashstr,16)
+        best = self.getBestForward(loc)
+        if best is None:
+            return self.name
+        else:
+            print "best", best, self.name
+            return Peer(best.name).find(hashstr)
+        #recursively lookup the node nearest to this loc
+
+
+    """Alternatively"""
+    def findSuccessor(self, hashid):
+        if hashid == self.hashid:
+            return Peer(self.name)
+        if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
+            return Peer(succ.name)
+        else:  # we forward the query
+            closest = closestPreceeding(hashid)
+            return closest.findSuccessor(hashid)
+
+    def closestPreceeding(self,hashid):
+        for f in reversed(self.fingers[1:]):
+            if f is not None and hashBetween(f.hashid, self.hashid, hashid):
+                return f
+        return self
+
+
+
+
+
+
+    
+    ## Ring creation/join
+
+    def create(self):
+        self.pred = None
+        self.succ = self
+
+    ## We can write it simpler, no?  
+    ## If we need to start maintanense manually, let's put that it a function
     def join(self,othernode):
         patron = Peer(othernode)
         hexid = hex(self.hashid)
@@ -108,29 +202,52 @@ class Node(object):
         
         #notify my parent
         #start life as a node
-        pass
 
-    def kickstart(self):
-        self.running = True
-        self.myThread = Thread(target=self.mainloop)
-        self.myThread.daemon = True
-        self.myThread.start()    
+
+
+
+    ## maintenanse
+    """TODO:  Add in Peer constructors at the appropriate locations""" 
+    # called periodically. n asks the successor
+    # about its predecessor, verifies if n's immediate
+    # successor is consistent, and tells the successor about n
     #public
-    def find(self,hashstr):
-        loc = long(hashstr,16)
-        best = self.getBestForward(loc)
-        if best is None:
-            return self.name
-        else:
-            print "best", best, self.name
-            return Peer(best.name).find(hashstr)
-        #recursively lookup the node nearest to this loc
-        
+    def stabilize(self):
+        x = Peer(self.succ.getPred()) #can I do that?   #probably peer stuff needed
+        if hashBetween(x.hashid, self.hashid, self.succ.hashid):
+            self.succ = x
+        self.succ.notify(self)
+
+    # poker thinks it might be our predecessor
+    def notify(self, poker):
+        if self.pred is None or hashBetween(poker.hashid, self.pred.hashid, self.hashid):
+            self.pred = poker
+
+    def fixFingers(self):
+        self.next = next + 1
+        if self.next > HASHSIZE:
+            self.next =  1
+        ## currently
+        target = (self.hashid + 2**(next-1))%MAX
+        ##self.fingers[next] = Peer(self.find(hex(target)))
+        ## or alternatively
+        self.fingers[next] =self.findSuccessor(target)
+
+
     #public
     def getPred(self):
         return self.pred.name
 
-    #public
+    
+
+
+
+
+
+
+
+
+    """
     def notify(self,possible_pred):#inputs a list of 
         #return best guess for callers predecessor
         newguy = Peer(possible_pred)
@@ -145,6 +262,9 @@ class Node(object):
             return True
         else:
             return False
+    """
+
+
 
     
     def mainloop(self):
@@ -172,4 +292,7 @@ class Node(object):
 
 
 
-
+print hashBetween(1,80,80)
+print hashBetween(3,7,4)
+print hashBetween(6,2,4)
+print range(0,10)[1:]
