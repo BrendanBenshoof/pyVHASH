@@ -16,6 +16,10 @@ def getHash(string):
     m = HASHFUNC(string)
     return long(m.hexdigest(),16)
 
+def getHashString(string):
+    m = HASHFUNC(string)
+    return m.hexdigest()
+
 def getDist(hash1,hash2):
     tmp = hash2-hash1
     if tmp <= 0:
