@@ -90,7 +90,6 @@ class Node(object):
         self.hashid = getHash(self.name)
         self.server = SimpleXMLRPCServer((ip,port),logRequests=False)
         #register functions here
-        self.server.register_function(self.find,"find")
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
         self.server.register_function(self.findSuccessor,"findSuccessor")
@@ -121,7 +120,7 @@ class Node(object):
         self.myThread.start()    
 
 
-
+    """
     ## Routing
     def getBestForward(self, hashid):
         #print "pred",self.pred
@@ -139,9 +138,9 @@ class Node(object):
         return self  # we should return self here
 
     #public
-    """Technically, the way you find where something is is findSuccessor, 
+Technically, the way you find where something is is findSuccessor, 
     or in this case getBestForward, 
-    ie do we really need this?"""
+    ie do we really need this?
     def find(self,hashstr):
         loc = long(hashstr,16)
         best = self.getBestForward(loc)
@@ -151,22 +150,24 @@ class Node(object):
             print "best", best, self.name
             return Peer(best.name).find(hashstr)
         #recursively lookup the node nearest to this loc
-
+    """
 
     """Alternatively"""
+    # public
     def findSuccessor(self, hashid):
         if hashid == self.hashid:
-            return Peer(self.name)
+            return self.name
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
-            return Peer(succ.name)
+            return succ.name
         else:  # we forward the query
-            closest = closestPreceeding(hashid)
+            closest = self.closestPreceeding(hashid)
             return closest.findSuccessor(hashid)
+
 
     def closestPreceeding(self,hashid):
         for f in reversed(self.fingers[1:]):
             if f is not None and hashBetween(f.hashid, self.hashid, hashid):
-                return f
+                return Peer(f.name)
         return self
 
 
@@ -211,27 +212,30 @@ class Node(object):
     # called periodically. n asks the successor
     # about its predecessor, verifies if n's immediate
     # successor is consistent, and tells the successor about n
-    #public
+    
     def stabilize(self):
         x = Peer(self.succ.getPred()) #can I do that?   #probably peer stuff needed
         if hashBetween(x.hashid, self.hashid, self.succ.hashid):
             self.succ = x
-        self.succ.notify(self)
+        self.succ.notify(self.name)
 
     # poker thinks it might be our predecessor
+    #public 
     def notify(self, poker):
+        poker =  Peer(poker)
         if self.pred is None or hashBetween(poker.hashid, self.pred.hashid, self.hashid):
             self.pred = poker
 
+
     def fixFingers(self):
-        self.next = next + 1
-        if self.next > HASHSIZE:
+        self.next = self.next + 1
+        if self.next >= HASHSIZE:
             self.next =  1
         ## currently
         target = (self.hashid + 2**(next-1))%MAX
         ##self.fingers[next] = Peer(self.find(hex(target)))
         ## or alternatively
-        self.fingers[next] =self.findSuccessor(target)
+        self.fingers[next] = Peer(self.findSuccessor(target))
 
 
     #public
