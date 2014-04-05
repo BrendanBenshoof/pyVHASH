@@ -78,7 +78,7 @@ class Node(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
-    def addnewFunc(self,func,name):
+    def addNewFunc(self,func,name):
         self.server.register_function(func,name)
 
     def getBestForward(self, loc):

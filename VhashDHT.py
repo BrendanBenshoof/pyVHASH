@@ -4,8 +4,8 @@ class DHTnode(Node):
     def __init__(self,host,ip):
         Node.__init__(self,host,ip)
         self.data = {}
-        self.addnewFunc(self.put,"put")
-        self.addnewFunc(self.get,"get")
+        self.addNewFunc(self.put,"put")
+        self.addNewFunc(self.get,"get")
 
     def store(self,key,val):
         loc = Name2locString(key)

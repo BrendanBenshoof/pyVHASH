@@ -75,7 +75,7 @@ class Node(object):
         self.port = port
         self.name = "http://"+str(ip)+":"+str(port)
         self.hashid = getHash(self.name)
-        self.server = SimpleXMLRPCServer((ip,port),logRequests=False)
+        self.server = SimpleXMLRPCServer(("0.0.0.0",port),logRequests=False)
         #register functions here
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
