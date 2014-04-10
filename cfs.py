@@ -28,6 +28,12 @@ class KeyFile(object):
 
     def __str__(self):
         return str(self.keys)
+
+    def __iter__(self):
+        return keys
+
+    def foo(x,y):
+        return x+y
                 
     """
     @classmethod
@@ -109,7 +115,3 @@ def makeBlocks(filename, chunkgen=locgicalBinaryChunk):
         blocks.append(block)
     return (kf, blocks)
 
-
-kf, blocks = makeBlocks("constitution.txt")
-print kf
-print blocks[3]
