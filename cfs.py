@@ -39,15 +39,6 @@ class KeyFile(object):
         return k
     """
 
-# For the purposes of laziness and sanity
-# Each block should be treated as an individual file
-def makeBlocks(filename, chunkgen=locgicalBinaryChunk):
-    kf = KeyFile(filename)
-    blocks = []
-    for block in chunkgen(filename):
-        kf.keys.append(block.hashid)
-        blocks.append(block)
-    return (kf, blocks)
 
 
 
@@ -107,18 +98,18 @@ def locgicalBinaryChunk(filename):
     return logicalChunk(binaryChunk(filename))
 
 ###END UTILITY FUNCTIONS###
-def iHaveChunk(chunkid):
-    p = path.join(".","chunkStorage",str(chunkid)+".chunk")
-    return path.isfile(p)
+
+# For the purposes of laziness and sanity
+# Each block should be treated as an individual file
+def makeBlocks(filename, chunkgen=locgicalBinaryChunk):
+    kf = KeyFile(filename)
+    blocks = []
+    for block in chunkgen(filename):
+        kf.keys.append(block.hashid)
+        blocks.append(block)
+    return (kf, blocks)
 
 
-
-
-def makeKeyFile(name, chunkgen=locgicalBinaryChunk):
-    k = KeyFile()
-    k.name = name
-    for a in chunkgen(name):
-        ident = a.hashkeyID
-        k.chunklist.append(ident)
-        k.chunks[ident] = a
-    return k
+kf, blocks = makeBlocks("constitution.txt")
+print kf
+print blocks[3]
