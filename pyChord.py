@@ -57,6 +57,9 @@ class Peer(object,xmlrpclib.ServerProxy):
         self.name = name
         self.hashid = getHash(self.name)
 
+    def clone(self):
+        return Peer(self.name)
+    
     def __str__(self):
         return self.name
 
@@ -99,6 +102,9 @@ class Node(object):
 
     def addNewFunc(self,func,name):
         self.server.register_function(func,name)
+    
+    def clone(self):
+        return Peer(self.name)
 
 
 
@@ -124,7 +130,7 @@ class Node(object):
     def closestPreceeding(self,hashid):
         for f in reversed(self.fingers[1:]):
             if f is not None and hashBetween(f.hashid, self.hashid, hashid):
-                return Peer(f.name)
+                return f.clone()
         return self
 
 
