@@ -115,9 +115,20 @@ class Node(object):
 
 ## Routing
     def findSuccessor(self,hexHashid):
+        trace = [self.name]
         closest, done = self.find(hexHashid)
+        trace.append(closest)
         while(not done):
-            closest, done = Peer(closest).find(hexHashid)
+            try:
+                closest, done = Peer(closest).find(hexHashid)
+                trace.append(closest)
+            except Exception:
+                self.removeNodeFromFingers(closest)
+                if len(trace) > 0:
+                    closest = trace.pop()
+                else:
+                    closest, done = self.find(hexHashid)
+                    trace = [self.name]
         return closest
 
 
@@ -155,9 +166,22 @@ class Node(object):
         patron = Peer(othernode)
         hexid = hex(self.hashid)
         self.pred = None
-        self.succ = Peer(patron.findSuccessor(hexid))
-        print "done with join"
-        self.succ.notify(self.name)
+        try:
+            self.succ = Peer(patron.findSuccessor(hexid))
+        except Exception as e:
+            print e
+            print "I could not find the server you indicated.\n Go Away."
+            return False
+            #raise Exception("Failed to connect")
+        try:
+            self.succ.notify(self.name)
+        except Exception:
+            self.succ = patron
+            try:
+                self.succ.notify(self.name)
+            except Exception:
+                print "I could not find the patron you indicated.\n Go Away."
+                return False
         self.kickstart()
 
 
@@ -170,11 +194,22 @@ class Node(object):
 
     def mainloop(self):
         while(self.running):
-            time.sleep(MAINT_INT)
-            self.stabilize()
-            self.fixFingers()
-            if self.pred is not None:
-                self.checkPred()
+            try: #mainloop must never die!
+                time.sleep(MAINT_INT)
+                self.stabilize()
+                self.fixFingers()
+                if self.pred is not None:
+                    self.checkPred()
+            except Exception:
+                pass
+
+
+    def removeNodeFromFingers(self,nodeName):
+        for i in range(1,len(self.fingers)):
+            f = self.fingers[i]
+            if f is not None:
+                if f.name == nodeName:
+                    self.fingers[i] = None
 
 
     ## maintanense
@@ -184,12 +219,24 @@ class Node(object):
     # about its predecessor, verifies if n's immediate
     # successor is consistent, and tells the successor about n    
     def stabilize(self):
-        sucessorPredName = self.succ.getPred()
+        done = False
+        while(not done):
+            try:
+                sucessorPredName = Peer(self.succ.name).getPred()
+                done = True
+            except Exception: #my sucessor died on me
+                done = False
+                self.removeNodeFromFingers(self.succ.name)
+                self.succ = self.findSuccessor(hex(self.hashid + 1))
+
         if sucessorPredName != "":
             x = Peer(sucessorPredName)
             if hashBetween(x.hashid, self.hashid, self.succ.hashid):
                 self.succ = x
-        self.succ.notify(self.name)
+        try:
+            self.succ.notify(self.name)
+        except Exception:
+            pass
 
     # poker thinks it might be our predecessor
     #public 
@@ -219,7 +266,7 @@ class Node(object):
             return ""
 
     
-    def checkPred(self):
+    def checkPred(self): #we should implement this someday
         pass
 
 
