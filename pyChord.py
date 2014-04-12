@@ -82,7 +82,7 @@ class Node(object):
         #register functions here
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
-        self.server.register_function(self.findNextSuccessor,"findNextSuccessor")
+        self.server.register_function(self.find,"find")
         self.server.register_function(self.findSuccessor,"findSuccessor")
         
 
@@ -113,41 +113,26 @@ class Node(object):
 
 
 
-    ## Routing
-    def findSuccessor(self, hexHashid):
+## Routing
+    def findSuccessor(self,hexHashid):
+        closest, done = self.find(hexHashid)
+        while(not done):
+            closest, done = Peer(closest).find(hexHashid)
+        return closest
+
+
+  # public
+    def find(self, hexHashid):
         hashid = long(hexHashid, 16)
-        #returns real answer
-        #searches iteraively
-        #first, get best local answer
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
             #print self.succ.hashid, "successor for", str(hashid) 
-            return self.succ.name
-        else:  # we need to search
-            currentBest = self.closestPreceeding(hashid).clone()
-            if currentBest == self:
-                return self.name
-            nextbest = Peer(currentBest.findNextSuccessor(hexHashid))
-            while(currentBest.name != nextbest.name):
-                print currentBest.name, nextbest.name 
-                currentBest = nextbest
-                nextbest =Peer(currentBest.findNextSuccessor(hexHashid))
-            return currentBest.name
-
-
-
-    # public
-    def findNextSuccessor(self, hexHashid):
-        hashid = long(hexHashid, 16)
-        if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
-            print self.succ.hashid, "successor for", str(hashid) 
-            return self.succ.name
-        else:  # we forward the query
+            return self.succ.name, True
+        else: # we forward the query
             closest = self.closestPreceeding(hashid)
             if closest is self:
-                return self.name
-            #print self.name, "forwarding", str(hashid), "to", closest.name 
-            return closest.name
-
+                return self.name, True
+        #print self.name, "forwarding", str(hashid), "to", closest.name  
+        return closest.name, False
 
     def closestPreceeding(self,hashid):
         for f in reversed(self.fingers[1:]):

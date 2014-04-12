@@ -12,13 +12,13 @@ print "yay1"
 
 time.sleep(3)
 
-n2.join("http://127.0.0.1:9101")
+n2.join(n1.name)
 print "yay2"
-"""
+
 time.sleep(1)
 
 nodes = [n1,n2]
-for i in range(3,4):
+for i in range(3,10):
     time.sleep(1.0)
     n = Node("127.0.0.1",port+i)
     print "yay"+str(i)
@@ -40,7 +40,7 @@ for block in blocks:
 
 
 
-
+"""
 
 for i in range(0,100):
     print "progress"

@@ -31,7 +31,6 @@ class DHTnode(Node):
         #print "storing", keyfile, "at", keyfile.hashid
         Peer(target).put(keyfile.hashid, keyfile)  # ???
         for block in blocks:
-            print "block!"
             target = self.findSuccessor(block.hashid)
             Peer(target).put(block.hashid, block)
             #print "stored", block, "at", block.hashid
