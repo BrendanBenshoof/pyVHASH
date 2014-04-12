@@ -3,9 +3,12 @@ from cfs import DataAtom, KeyFile, makeBlocks
 class DHTnode(Node):
     def __init__(self,host,ip):
         Node.__init__(self,host,ip)
-        self.data = {}
+        self.data = {} # data I'm responsible for 
+        self.backups = {} # data I'm holding onto for someone else
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
+        self.addNewFunc(self.backupThis,"backupThis")
+        
 
     def myInfo(self):
         me = [self.name.split(":")[2], str(self.hashid)[0:4]]
@@ -17,12 +20,12 @@ class DHTnode(Node):
 
     def store(self,key,val):
         loc = getHashString(key)
-        target = self.findSuccessor(loc)
+        target = self.findSuccessor(loc)  # if fails do wut?
         Peer(target).put(key,val)
 
     def retrive(self,key):
         loc = getHashString(key)
-        target = self.findSuccessor(loc)
+        target = self.findSuccessor(loc) # if fails do wut?
         return Peer(target).get(key), target
 
     def storeFile(self, filename):
@@ -49,14 +52,43 @@ class DHTnode(Node):
             blocks.append(block)
         return blocks
 
-    def backup(self):
-        pass
+
+    def backupToNewSuccessor(self, newSuccessor):
+        newSucc = Peer(newSuccessor)
+        for k, v in self.data.iteritems():
+            try:
+                newSucc.backupThis(k,v)
+            except Exception: # and.... it's gone
+                try:
+                    mySucc = Peer(self.succ.name)
+                    mySucc.alert(newSuccessor)
+                    #self.fixSuccessor()  # getting complicated here cause I gotta back up again.
+
+
+
+
+    # public
+    def backupThis(self,key,val):
+        self.backups[key]=val
+        return True
+
+    def relinquishData(self,key,val):
+        try:
+            self.pred.put(key,val)
+        except Exception:
+            self.pred = None  #or fix by searching for his hash -1
+        else:
+            del data[key]
+
 
 
     #public
     def put(self,key,val):
         #print "stored", val, "at", key
         self.data[key]=val
+        # can I create new threads to do this?
+        for s in self.successorList:
+            #pass
         return True
 
     def get(self,key):
