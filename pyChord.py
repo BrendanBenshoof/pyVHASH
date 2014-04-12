@@ -261,7 +261,7 @@ class Node(object):
         ## or alternatively
         self.fingers[self.next] = Peer(self.findSuccessor(target))
 
-    def fixSuccessor(self):  #called when successor fails
+    def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
         removeNodeFromFingers(self.succ.name)
         self.succ = Peer(self.successorList[1])
         try:
@@ -273,6 +273,9 @@ class Node(object):
             else:
                 self.successorList = self.successorList [1:]
                 fixSuccessor()
+
+    def fixSuccessorList(self,failedSucc):
+        pass
 
 
     def removeNodeFromFingers(self,nodeName):
