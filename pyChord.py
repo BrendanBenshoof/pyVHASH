@@ -94,7 +94,7 @@ class Node(object):
         self.next = 0
         self.pred = self
         self.succ = self
-        self.successorList = ['0']*NUM_SUCCESSORS
+        self.successorList = [self.name]*NUM_SUCCESSORS
         self.running = False
         self.myThread = None
         t = Thread(target=self.server.serve_forever)
@@ -127,7 +127,9 @@ class Node(object):
             except Exception:
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
-                    closest = trace.pop()
+                    last = trace.pop()
+                    last.alert(closest)
+                    closest = last
                 else:
                     closest, done = self.find(hexHashid)
                     trace = [self.name]
@@ -209,12 +211,6 @@ class Node(object):
                 pass
 
 
-    def removeNodeFromFingers(self,nodeName):
-        for i in range(1,len(self.fingers)):
-            f = self.fingers[i]
-            if f is not None:
-                if f.name == nodeName:
-                    self.fingers[i] = None
 
 
     ## maintanense
@@ -231,10 +227,7 @@ class Node(object):
                 done = True
             except Exception: #my sucessor died on me
                 done = False
-                self.removeNodeFromFingers(self.succ.name)
-                self.succ = self.findSuccessor(hex(self.hashid + 1))
-                print "!"
-
+                self.fixSuccessor()
         if sucessorPredName != "":
             x = Peer(sucessorPredName)
             if hashBetween(x.hashid, self.hashid, self.succ.hashid):
@@ -242,13 +235,12 @@ class Node(object):
                 self.successorList[0] = self.succ
         try:
             self.succ.notify(self.name)
-        except Exception as e:
-            traceback.print_exc(file=sys.stdout)
-        try:
             # no idea why this is a nonetype error initially when the first node is talking to himself
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]  
-        except Exception as e:  
-            print self.successorList 
+        except Exception as e:
+            print e, self.successorList 
+
+
 
     # poker thinks it might be our predecessor
     #public 
@@ -269,8 +261,35 @@ class Node(object):
         ## or alternatively
         self.fingers[self.next] = Peer(self.findSuccessor(target))
 
+    def fixSuccessor(self):  #called when successor fails
+        removeNodeFromFingers(self.succ.name)
+        self.succ = Peer(self.successorList[1])
+        try:
+            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+        except Exception, e:
+            if(len(self.successorList) == 2):
+                self.succ = self
+                self.successorList  = [self.name]*NUM_SUCCESSORS
+            else:
+                self.successorList = self.successorList [1:]
+                fixSuccessor()
+
+
+    def removeNodeFromFingers(self,nodeName):
+        for i in range(1,len(self.fingers)):
+            f = self.fingers[i]
+            if f is not None:
+                if f.name == nodeName:
+                    self.fingers[i] = None
+
+
+
     # I was alerted of a failed lookup
-    def alert(self):
+    def alert(self,failedName):
+        if(failedName == self.succ.name):
+            self.fixSuccessor()
+        else:
+            self.removeNodeFromFingers(removeNodeFromFingers)
         return True
 
     def checkPred(self): #we should implement this someday
