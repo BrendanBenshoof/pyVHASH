@@ -49,6 +49,9 @@ class DHTnode(Node):
             blocks.append(block)
         return blocks
 
+    def backup(self):
+        pass
+
 
     #public
     def put(self,key,val):

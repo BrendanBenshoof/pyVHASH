@@ -85,6 +85,7 @@ class Node(object):
         self.server.register_function(self.getPred,"getPred")
         self.server.register_function(self.find,"find")
         self.server.register_function(self.findSuccessor,"findSuccessor")
+        self.server.register_function(self.isAlive,"isAlive")
         
 
         """
@@ -153,7 +154,9 @@ class Node(object):
         return self
 
 
-
+    # I was alerted of a failed lookup
+    def alert():
+        pass
     
     ## Ring creation/join
     def create(self):
@@ -267,6 +270,9 @@ class Node(object):
             return self.pred.name
         else:
             return ""
+
+    def isAlive(self):
+        return True
 
     
     def checkPred(self): #we should implement this someday
