@@ -8,14 +8,20 @@ n1 = Node("127.0.0.1",port+1)
 n2 = Node("127.0.0.1",port+2)
 
 n1.create()
-n2.join("http://127.0.0.1:9101")
+print "yay1"
 
+time.sleep(3)
+
+n2.join("http://127.0.0.1:9101")
+print "yay2"
+"""
 time.sleep(1)
 
 nodes = [n1,n2]
 for i in range(3,4):
     time.sleep(1.0)
     n = Node("127.0.0.1",port+i)
+    print "yay"+str(i)
     print "started", n
     n.join(random.choice(nodes).name)
     nodes.append(n)
@@ -34,7 +40,7 @@ for block in blocks:
 
 
 
-"""
+
 
 for i in range(0,100):
     print "progress"
@@ -47,7 +53,6 @@ for i in range(0,100):
     n = random.choice(nodes)
     print n.retrive(str(i)+"blah")
 
-"""
 
 info = []    
 for n in nodes:

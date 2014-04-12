@@ -82,7 +82,9 @@ class Node(object):
         #register functions here
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
+        self.server.register_function(self.findNextSuccessor,"findNextSuccessor")
         self.server.register_function(self.findSuccessor,"findSuccessor")
+        
 
         """
         General assumption is finger[k] = successor of (n + 2**(k-1)) % mod MAX
@@ -112,19 +114,39 @@ class Node(object):
 
 
     ## Routing
-   
-    # public
     def findSuccessor(self, hexHashid):
         hashid = long(hexHashid, 16)
+        #returns real answer
+        #searches iteraively
+        #first, get best local answer
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
             #print self.succ.hashid, "successor for", str(hashid) 
+            return self.succ.name
+        else:  # we need to search
+            currentBest = self.closestPreceeding(hashid).clone()
+            if currentBest == self:
+                return self.name
+            nextbest = Peer(currentBest.findNextSuccessor(hexHashid))
+            while(currentBest.name != nextbest.name):
+                print currentBest.name, nextbest.name 
+                currentBest = nextbest
+                nextbest =Peer(currentBest.findNextSuccessor(hexHashid))
+            return currentBest.name
+
+
+
+    # public
+    def findNextSuccessor(self, hexHashid):
+        hashid = long(hexHashid, 16)
+        if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
+            print self.succ.hashid, "successor for", str(hashid) 
             return self.succ.name
         else:  # we forward the query
             closest = self.closestPreceeding(hashid)
             if closest is self:
                 return self.name
             #print self.name, "forwarding", str(hashid), "to", closest.name 
-            return closest.findSuccessor(hexHashid)
+            return closest.name
 
 
     def closestPreceeding(self,hashid):
@@ -149,6 +171,7 @@ class Node(object):
         hexid = hex(self.hashid)
         self.pred = None
         self.succ = Peer(patron.findSuccessor(hexid))
+        print "done with join"
         self.succ.notify(self.name)
         self.kickstart()
 
@@ -176,9 +199,11 @@ class Node(object):
     # about its predecessor, verifies if n's immediate
     # successor is consistent, and tells the successor about n    
     def stabilize(self):
-        x = Peer(self.succ.getPred())
-        if hashBetween(x.hashid, self.hashid, self.succ.hashid):
-            self.succ = x
+        sucessorPredName = self.succ.getPred()
+        if sucessorPredName != "":
+            x = Peer(sucessorPredName)
+            if hashBetween(x.hashid, self.hashid, self.succ.hashid):
+                self.succ = x
         self.succ.notify(self.name)
 
     # poker thinks it might be our predecessor
@@ -203,7 +228,10 @@ class Node(object):
 
     #public
     def getPred(self):
-        return self.pred.name
+        if self.pred is not None:
+            return self.pred.name
+        else:
+            return ""
 
     
     def checkPred(self):
