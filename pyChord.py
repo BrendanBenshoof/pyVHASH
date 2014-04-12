@@ -4,6 +4,7 @@ import hashlib
 import math
 import time
 from threading import Thread
+import sys, traceback
 
 HASHFUNC = hashlib.sha1
 HASHSIZE = HASHFUNC().digest_size * 8
@@ -200,7 +201,9 @@ class Node(object):
                 self.fixFingers()
                 if self.pred is not None:
                     self.checkPred()
-            except Exception:
+            except Exception as e:
+                print "MAINLOOP EXCEPTION",e
+                traceback.print_exc(file=sys.stdout)
                 pass
 
 
