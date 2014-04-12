@@ -38,7 +38,8 @@ blocks = n.retrieveFile("constitution.txt")
 for block in blocks:
     print block
 
-
+for n in nodes:
+    print n.successorList
 
 """
 

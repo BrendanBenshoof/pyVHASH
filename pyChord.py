@@ -11,6 +11,7 @@ HASHSIZE = HASHFUNC().digest_size * 8
 MAX = 2**(HASHSIZE)
 print "HASHSIZE", HASHSIZE
 MAINT_INT = 0.5
+NUM_SUCCESSORS = 3
 
 
 def getHash(string):
@@ -86,18 +87,14 @@ class Node(object):
         self.server.register_function(self.find,"find")
         self.server.register_function(self.findSuccessor,"findSuccessor")
         self.server.register_function(self.isAlive,"isAlive")
-        
-
-        """
-        General assumption is finger[k] = successor of (n + 2**(k-1)) % mod MAX
-        1 <= k <= HASHSIZE
-        The implication of this is that finger[1] = succ ((n +2**0) % mod MAX) 
-        --> your successor
-        """ 
-        self.fingers = [None]*HASHSIZE
+        self.server.register_function(self.alert,"alert")
+        self.server.register_function(self.getSuccessorList,"getSuccessorList")
+        #finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE 
+        self.fingers = [None]*HASHSIZE # finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE
         self.next = 0
         self.pred = self
         self.succ = self
+        self.successorList = ['0']*NUM_SUCCESSORS
         self.running = False
         self.myThread = None
         t = Thread(target=self.server.serve_forever)
@@ -109,6 +106,9 @@ class Node(object):
     
     def clone(self):
         return Peer(self.name)
+
+    def getSuccessorList(self):
+        return self.successorList[:]
 
 
 
@@ -154,9 +154,7 @@ class Node(object):
         return self
 
 
-    # I was alerted of a failed lookup
-    def alert():
-        pass
+
     
     ## Ring creation/join
     def create(self):
@@ -172,6 +170,7 @@ class Node(object):
         self.pred = None
         try:
             self.succ = Peer(patron.findSuccessor(hexid))
+            self.successorList[0] = self.succ.name
         except Exception as e:
             print e
             print "I could not find the server you indicated.\n Go Away."
@@ -234,15 +233,22 @@ class Node(object):
                 done = False
                 self.removeNodeFromFingers(self.succ.name)
                 self.succ = self.findSuccessor(hex(self.hashid + 1))
+                print "!"
 
         if sucessorPredName != "":
             x = Peer(sucessorPredName)
             if hashBetween(x.hashid, self.hashid, self.succ.hashid):
                 self.succ = x
+                self.successorList[0] = self.succ
         try:
             self.succ.notify(self.name)
-        except Exception:
-            pass
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+        try:
+            # no idea why this is a nonetype error initially when the first node is talking to himself
+            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]  
+        except Exception as e:  
+            print self.successorList 
 
     # poker thinks it might be our predecessor
     #public 
@@ -263,6 +269,16 @@ class Node(object):
         ## or alternatively
         self.fingers[self.next] = Peer(self.findSuccessor(target))
 
+    # I was alerted of a failed lookup
+    def alert(self):
+        return True
+
+    def checkPred(self): #we should implement this someday
+        try:
+            return Peer(self.pred.name).isAlive()
+        except Exception: # he's dead, Jim
+            self.pred = None
+
 
     #public
     def getPred(self):
@@ -275,7 +291,7 @@ class Node(object):
         return True
 
     
-    def checkPred(self): #we should implement this someday
-        pass
+
+
 
 
