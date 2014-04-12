@@ -262,20 +262,27 @@ class Node(object):
         self.fingers[self.next] = Peer(self.findSuccessor(target))
 
     def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
-        removeNodeFromFingers(self.succ.name)
+        self.removeNodeFromFingers(self.succ.name)
         self.succ = Peer(self.successorList[1])
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
-        except Exception, e:
+        except Exception:
             if(len(self.successorList) == 2):
                 self.succ = self
                 self.successorList  = [self.name]*NUM_SUCCESSORS
             else:
                 self.successorList = self.successorList [1:]
-                fixSuccessor()
+                self.fixSuccessor()
 
-    def fixSuccessorList(self,failedSucc):
-        pass
+
+    def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
+        mySucc = Peer(self.succ.name)
+        try:
+            mySucc.alert(failedSucc)
+            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+        except Exception:
+            self.fixSuccessor()
+            
 
 
     def removeNodeFromFingers(self,nodeName):
@@ -292,7 +299,7 @@ class Node(object):
         if(failedName == self.succ.name):
             self.fixSuccessor()
         else:
-            self.removeNodeFromFingers(removeNodeFromFingers)
+            self.removeNodeFromFingers(failedName)
         return True
 
     def checkPred(self): #we should implement this someday
