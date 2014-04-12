@@ -100,6 +100,8 @@ class Node(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
+    def __del__(self):
+        print "Alas, poor", self.name
 
     def addNewFunc(self,func,name):
         self.server.register_function(func,name)
