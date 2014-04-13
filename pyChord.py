@@ -317,6 +317,7 @@ class Node(object):
         else:
             return ""
 
+    #public
     def isAlive(self):
         return True
 
