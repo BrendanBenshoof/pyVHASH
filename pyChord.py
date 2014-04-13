@@ -233,7 +233,7 @@ class Node(object):
             x = Peer(sucessorPredName)
             if hashBetween(x.hashid, self.hashid, self.succ.hashid):
                 self.succ = x
-                self.successorList[0] = self.succ
+                self.successorList[0] = self.succ.name
         try:
             self.succ.notify(self.name)
             # no idea why this is a nonetype error initially when the first node is talking to himself

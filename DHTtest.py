@@ -39,9 +39,9 @@ for i in range(3,5):
 
 
 p = multiprocessing.Process(target = createVictim)
-p.daemon = True
-p.run()
+p.start()
 p.terminate()
+p.join()
 print "prepare to sleep"
 time.sleep(3)
 n = random.choice(nodes)
