@@ -1,7 +1,17 @@
 from ChordDHT import DHTnode as Node
 import time, random
+from threading import Thread
+import multiprocessing
 
 port = 9100
+
+def createVictim():
+    for i in range(50,51):
+        time.sleep(1.0)
+        n = Node("127.0.0.1",port+i)
+        print "yay"+str(i)
+        print "started", n
+        n.join("http://127.0.0.1:9101")
 
 
 n1 = Node("127.0.0.1",port+1)
@@ -18,16 +28,20 @@ print "yay2"
 time.sleep(1)
 
 nodes = [n1,n2]
-for i in range(3,10):
+for i in range(3,5):
     time.sleep(1.0)
     n = Node("127.0.0.1",port+i)
     print "yay"+str(i)
     print "started", n
     n.join(random.choice(nodes).name)
     nodes.append(n)
+    time.sleep(1.0)
 
 
-
+p = multiprocessing.Process(target = createVictim)
+p.daemon = True
+p.run()
+p.terminate()
 print "prepare to sleep"
 time.sleep(3)
 n = random.choice(nodes)
