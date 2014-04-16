@@ -28,10 +28,13 @@ if __name__ == '__main__':
         nodes.append(n)
         time.sleep(1.0)
 
-    keys = map(lambda x: hex(x.hashid), nodes)
-    print sorted(keys)
+    keys = map(lambda x: hex(x.hashid)[:6], nodes)
+    print keys
 
     print "prepare to sleep"
     time.sleep(3)
     n1.storeFile("constitution.txt")
+    blocks = n.retrieveFile("constitution.txt")
+    #for block in blocks:
+    #    print block
     print n1.startMapReduce("constitution.txt")

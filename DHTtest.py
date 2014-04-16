@@ -42,7 +42,6 @@ if __name__ == '__main__':
     for n in nodes:
         print n.successorList
 
-    """
 
     for i in range(0,100):
         print "progress"
@@ -60,4 +59,4 @@ if __name__ == '__main__':
     for n in nodes:
         info.append(n.myInfo())
 
-    print sorted(info, key= lambda x: x[1])"""
+    print sorted(info, key= lambda x: x[1])

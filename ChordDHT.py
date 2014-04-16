@@ -48,6 +48,7 @@ class DHTnode(Node):
         blocks = []
         for key in keys:
             target = self.findSuccessor(key)
+            #print key[:4], hex(Peer(target).hashid)[:6]
             block = Peer(target).get(key)
             blocks.append(block)
         return blocks
