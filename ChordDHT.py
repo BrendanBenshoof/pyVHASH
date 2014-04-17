@@ -76,11 +76,6 @@ class DHTnode(Node):
                 self.fixSuccessorList(f)
 
 
-    # public
-    def backup(self,key,val):
-        self.backups[key]=val
-        return True
-
     def relinquishData(self,key,val):
         try:
             self.pred.put(key,val)
@@ -104,3 +99,9 @@ class DHTnode(Node):
             return self.data[key]
         else:
             return "FAIL"
+            
+
+    # public
+    def backup(self,key,val):
+        self.backups[key]=val
+        return True
