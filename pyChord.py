@@ -328,6 +328,8 @@ class Node(object):
         
     # public
     def kill(self, polite = False):
+        self.server.shutdown()
+        print self.name, " has shutdown." 
         return True
 
 

@@ -1,4 +1,8 @@
 from pyChord import Node, Peer, getHashString, RPCThreading
+import time
+import random
+
+
 
 CHURN_RATE = 0.025
 
