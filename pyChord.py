@@ -327,8 +327,8 @@ class Node(object):
         return True
         
     # public
-    def kill(self):
-        return Trues
+    def kill(self, polite = False):
+        return True
 
 
 
