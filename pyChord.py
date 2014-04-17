@@ -126,10 +126,11 @@ class Node(object):
                 closest, done = Peer(closest).find(hexHashid)
                 trace.append(closest)
             except Exception:
+                print "Could not connect to", closest
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
                     last = trace.pop()
-                    last.alert(closest)
+                    Peer(last).alert(closest)
                     closest = last
                 else:
                     closest, done = self.find(hexHashid)
