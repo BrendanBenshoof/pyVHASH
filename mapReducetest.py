@@ -33,8 +33,8 @@ if __name__ == '__main__':
 
     print "prepare to sleep"
     time.sleep(3)
-    n1.storeFile("constitution.txt")
+    n1.storeFile("ti.txt")
     #blocks = n.retrieveFile("shakespeare.txt")
     #for block in blocks:
     #    print block
-    print n1.startMapReduce("constitution.txt")
+    print n1.startMapReduce("ti.txt")
