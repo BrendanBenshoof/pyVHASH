@@ -140,22 +140,23 @@ class Node(object):
 
   # public
     def find(self, hexHashid):
+        #print self.name, "finding", hexHashid
         hashid = long(hexHashid, 16)
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
             #print self.succ.hashid, "successor for", str(hashid) 
             return self.succ.name, True
         else: # we forward the query
             closest = self.closestPreceeding(hashid)
-            if closest is self:
+            if closest is self.name:
                 return self.name, True
         #print self.name, "forwarding", str(hashid), "to", closest.name  
-        return closest.name, False
+            return closest, False
 
     def closestPreceeding(self,hashid):
         for f in reversed(self.fingers[1:]):
             if f is not None and hashBetween(f.hashid, self.hashid, hashid):
-                return f.clone()
-        return self
+                return f.name
+        return self.name
 
 
 
