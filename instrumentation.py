@@ -2,8 +2,6 @@ from pyChord import Node, Peer, getHashString, RPCThreading
 import time
 import random
 
-
-
 CHURN_RATE = 0.025
 
 class InstrumentationNode(object):
@@ -19,6 +17,9 @@ class InstrumentationNode(object):
         self.server.register_function(self.report,"report")
         self.aliveNodes = []
         self.deadNodes = []
+        t = Thread(target=self.server.serve_forever)
+        t.start()
+
         
         
     # kill a random node in the network

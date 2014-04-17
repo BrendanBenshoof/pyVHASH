@@ -51,9 +51,10 @@ def hashBetweenRightInclusive(target,left,right):
         return True
     return hashBetween(target, left, right)
 
+
+
 class RPCThreading(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     pass
-
 
 class Peer(object,xmlrpclib.ServerProxy):
     def __init__(self,name):
@@ -72,9 +73,6 @@ class Peer(object,xmlrpclib.ServerProxy):
 
 
 class Node(object):
-    """
-    Giant TODO:  add the peer constructors where needed
-    """
 
     # Construction and networking
     def __init__(self,ip,port):
@@ -103,8 +101,6 @@ class Node(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
-
-
     def addNewFunc(self,func,name):
         self.server.register_function(func,name)
     
@@ -113,9 +109,6 @@ class Node(object):
 
     def getSuccessorList(self):
         return self.successorList[:]
-
-
-
 
 
 
@@ -214,14 +207,10 @@ class Node(object):
             except Exception as e:
                 print "MAINLOOP EXCEPTION",e
                 traceback.print_exc(file=sys.stdout)
-                pass
-
 
 
 
     ## maintanense
-
-
     # called periodically. n asks the successor
     # about its predecessor, verifies if n's immediate
     # successor is consistent, and tells the successor about n    
@@ -289,16 +278,12 @@ class Node(object):
         except Exception:
             self.fixSuccessor()
             
-
-
     def removeNodeFromFingers(self,nodeName):
         for i in range(1,len(self.fingers)):
             f = self.fingers[i]
             if f is not None:
                 if f.name == nodeName:
                     self.fingers[i] = None
-
-
 
     # I was alerted of a failed lookup
     def alert(self,failedName):
@@ -328,10 +313,7 @@ class Node(object):
         
     # public
     def kill(self, polite = False):
+        self.running = False
         self.server.shutdown()
         print self.name, " has shutdown." 
         return True
-
-
-
-
