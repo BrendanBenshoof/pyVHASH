@@ -20,7 +20,7 @@ if __name__ == '__main__':
     time.sleep(1)
 
     nodes = [n1,n2]
-    for i in range(3,5):
+    for i in range(3,20):
         n = Node("127.0.0.1",port+i)
         print "yay"+str(i)
         print "started", n
@@ -33,8 +33,8 @@ if __name__ == '__main__':
 
     print "prepare to sleep"
     time.sleep(3)
-    n1.storeFile("constitution.txt")
-    blocks = n.retrieveFile("constitution.txt")
+    n1.storeFile("ti.txt")
+    #blocks = n.retrieveFile("shakespeare.txt")
     #for block in blocks:
     #    print block
-    print n1.startMapReduce("constitution.txt")
+    print n1.startMapReduce("ti.txt")

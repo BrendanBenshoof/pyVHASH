@@ -3,6 +3,7 @@ import xmlrpclib
 import hashlib
 import math
 import time
+import SocketServer
 from threading import Thread
 import sys, traceback
 
@@ -50,7 +51,8 @@ def hashBetweenRightInclusive(target,left,right):
         return True
     return hashBetween(target, left, right)
 
-
+class RPCThreading(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
+    pass
 
 
 class Peer(object,xmlrpclib.ServerProxy):
@@ -80,7 +82,7 @@ class Node(object):
         self.port = port
         self.name = "http://"+str(ip)+":"+str(port)
         self.hashid = getHash(self.name)
-        self.server = SimpleXMLRPCServer(("",port),logRequests=False)
+        self.server = RPCThreading(("",port),logRequests=False)
         #register functions here
         self.server.register_function(self.notify,"notify")
         self.server.register_function(self.getPred,"getPred")
