@@ -91,6 +91,7 @@ class Node(object):
         self.server.register_function(self.isAlive,"isAlive")
         self.server.register_function(self.alert,"alert")
         self.server.register_function(self.getSuccessorList,"getSuccessorList")
+        self.server.register_function(self.kill,"kill")
         #finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE 
         self.fingers = [None]*HASHSIZE # finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE
         self.next = 0
@@ -321,11 +322,13 @@ class Node(object):
         else:
             return ""
 
-    #public
+    # public
     def isAlive(self):
         return True
-
-    
+        
+    # public
+    def kill(self):
+        return Trues
 
 
 
