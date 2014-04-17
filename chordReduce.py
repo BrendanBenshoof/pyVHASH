@@ -88,7 +88,11 @@ class ChordReduceNode(DHTnode):
     def buckitizeKeys(self,keylist):
         output = {}
         for k in keylist:
-            owner = self.findSuccessor(k)
+            owner = None
+            if k in self.data.keys():  # the real question is why doesn't it work without this.
+                owner = self.name
+            else:
+                owner, t = self.find(k)
             print owner
             if owner in output.keys():
                 output[owner].append(k)
