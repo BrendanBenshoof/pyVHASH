@@ -6,7 +6,7 @@ import random
 from threading import Thread
 
 
-CHURN_RATE = 0.025
+CHURN_RATE = 0.025  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
@@ -64,7 +64,9 @@ class InstrumentationNode(object):
         self.aliveNodes = []
         self.deadNodes = []
         t = Thread(target=self.server.serve_forever)
-        t.start()
+        t.start()    
+        self.churn = False 
+
 
     # kill a random node in the network
     def killRandom(self): 
@@ -141,7 +143,18 @@ class InstrumentationNode(object):
         return True
         
     def simulateChurn(self):
-        pass
+        while churn:
+            try:
+                time.sleep(1)
+                if len(self.aliveNodes > 1) and random.random() < CHURN_RATE:
+                    self.killRandom()
+                if len(self.deadNodes > 1)  and random.random() < CHURN_RATE:
+                    self.rezRandom()
+            except Exception, e:
+                print "Error in Churn", e
+                
+
+
 
     # public 
     def report(self,nodeName, data):

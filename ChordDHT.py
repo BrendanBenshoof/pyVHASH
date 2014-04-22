@@ -21,6 +21,8 @@ class DHTnode(Node):
         return [pr[1], me[1], su[1]]
         #print self.data
 
+    def findSuccessor(self,key):
+        return super(DHTnode,self).findSuccessor(key)
 
     def store(self,key,val):
         loc = getHashString(key)
