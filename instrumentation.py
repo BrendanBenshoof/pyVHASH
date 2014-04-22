@@ -1,12 +1,31 @@
-from pyChord import Node, Peer, getHashString, RPCThreading
+from pyChord import Node, Peer, getHash, getHashString, RPCThreading
+
 import time
 import random
+from threading import Thread
+
 
 CHURN_RATE = 0.025
 
+class ExperimentNode(Node):
+    def __init__(self,ip,port,instrumentation):
+        Node.__init__(self,ip,port)
+        #super().__init__(ip,port)
+        self.inst = instrumentation
+        
+    def create(self):
+        super(ExperimentNode,self).create()
+        print "derping"
+        Peer(self.inst).checkIn(self.name)
+        
+    def join(self,nodeName):
+        super(ExperimentNode,self).join(nodeName)
+        Peer(self.inst).checkIn(self.name)
+        
+        
+
 class InstrumentationNode(object):
-    
-    def __init__(self):
+    def __init__(self,ip,port):
         self.ip = ip
         self.port = port
         self.name = "http://"+str(ip)+":"+str(port)
@@ -45,9 +64,21 @@ class InstrumentationNode(object):
         
     # public
     def checkIn(self,nodeName):
-        aliveNode.append(nodeName)
+        self.aliveNodes.append(nodeName)
+        print nodeName, "checked in."
         return True
         
     # public 
     def report(self,nodeName, data):
         return True
+
+
+
+port = 9100
+iNode =  InstrumentationNode("127.0.0.1",port)
+n1 = ExperimentNode("127.0.0.1",port+1,iNode.name)
+n2 = ExperimentNode("127.0.0.1",port+2,iNode.name)
+
+n1.create()
+n2.join(n1.name)
+
