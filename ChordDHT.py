@@ -7,6 +7,10 @@ class DHTnode(Node):
         self.backups = {} # data I'm holding onto for someone else
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
+        self.addNewFunc(self.store,"store")
+        self.addNewFunc(self.store,"storeFile")
+        self.addNewFunc(self.retrieve,"retrieve")
+        self.addNewFunc(self.retrieveFile,"retrieveFile")
         self.addNewFunc(self.backup,"backup")
         
 
@@ -23,7 +27,7 @@ class DHTnode(Node):
         target = self.findSuccessor(loc)  # if fails do wut?
         Peer(target).put(key,val)
 
-    def retrive(self,key):
+    def retrieve(self,key):
         loc = getHashString(key)
         target = self.findSuccessor(loc) # if fails do wut?
         return Peer(target).get(key), target

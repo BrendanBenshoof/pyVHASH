@@ -1,4 +1,5 @@
-from pyChord import Node, Peer, getHash, getHashString, RPCThreading
+from pyChord import Peer, getHash, getHashString, RPCThreading
+from ChordDHT import DHTnode as Node  
 
 import time
 import random
@@ -123,7 +124,7 @@ class InstrumentationNode(object):
         
         for i in range(0,100):
             try:
-                Peer(random.choice(self.aliveNodes)).ping(random.choice(self.aliveNodes))
+                Peer(random.choice(self.aliveNodes)).store()
             except Exception as e:
                 print e
         
