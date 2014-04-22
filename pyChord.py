@@ -95,6 +95,8 @@ class Node(object):
         self.server.register_function(self.findSuccessor,"findSuccessor")
         self.server.register_function(self.isAlive,"isAlive")
         self.server.register_function(self.alert,"alert")
+        self.server.register_function(self.join,"join")
+        self.server.register_function(self.create,"create")
         self.server.register_function(self.getSuccessorList,"getSuccessorList")
         #finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE 
         self.fingers = [None]*HASHSIZE # finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE
@@ -167,9 +169,11 @@ class Node(object):
         self.pred = None
         self.succ = self
         self.kickstart()
+        return True
 
     ## We can write it simpler, no?  
     ## If we need to start maintanense manually, let's put that it a function
+    ## public
     def join(self,othernode):
         patron = Peer(othernode)
         hexid = hex(self.hashid)
@@ -192,6 +196,7 @@ class Node(object):
                 print "I could not find the patron you indicated.\n Go Away."
                 return False
         self.kickstart()
+        return True
 
 
     def kickstart(self):

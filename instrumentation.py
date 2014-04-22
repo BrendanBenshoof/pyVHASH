@@ -6,6 +6,8 @@ from threading import Thread
 
 
 CHURN_RATE = 0.025
+PORTS =  range(9101,9999)
+
 
 class ExperimentNode(Node):
     def __init__(self,ip,port,instrumentation):
@@ -13,24 +15,26 @@ class ExperimentNode(Node):
         #super().__init__(ip,port)
         self.inst = instrumentation
         self.addNewFunc(self.kill,"kill")
+        self.addNewFunc(self.ping,"ping")
         
     def create(self):
         super(ExperimentNode,self).create()
         print "derping"
         Peer(self.inst).checkIn(self.name)
+        return True
         
     def join(self,nodeName):
         super(ExperimentNode,self).join(nodeName)
         Peer(self.inst).checkIn(self.name)
+        return True
         
     def ping(self,nodeName):
         try:
-            print "pinging",nodeName
+            print self.name, "pinging",nodeName
             Peer(nodeName).isAlive()
-            print "Why, it's a miracle!"
-        except:
-            print "He's dead, Jim."
-            
+        except Exception as e:
+            print self.name, e
+        return True
     
     # public
     # paradigms
@@ -61,32 +65,67 @@ class InstrumentationNode(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
-        
-        
     # kill a random node in the network
-    def killRandom(self):
-        pass 
-    
+    def killRandom(self): 
+        self.kill(random.choice(self.aliveNodes))
+        
+            
     # rez a random node
     def rezRandom(self):
-        pass
+        self.rez(random.choice(self.deadNodes),random.choice(self.aliveNodes))
     
     # tell a node to pretend to diaf
-    def kill(self, nodeName,newPort):
-        print "Killing", nodeName
+    def kill(self,victim):
+        newPort =random.choice(PORTS)
+        print "Killing", victim
         try:
-            Peer(nodeName).kill(newPort)
-        except:
-            print "He's already dead"
-            
+            oldPort =  int(victim[victim.rfind(":")+1:])
+            Peer(victim).kill(newPort)
+            self.aliveNodes.remove(victim)
+            self.deadNodes.append(victim)
+            PORTS.remove(newPort)
+            PORTS.append(oldPort) #do at end
+        except Exception as e:
+            print "He's already dead", e
     
-    # give a node a new identity and place it among the living 
-    def rez(self, nodeName):
-        pass
+    # add node back in
+    def rez(self, nodeName, ringMember):
+        print "Rezzing", nodeName
+        try:
+            Peer(nodeName).join(ringMember)
+            self.deadNodes.remove(nodeName)
+            self.aliveNodes.append(nodeName)
+        except Exception as e:
+            print "Error rezzing", e
     
     # splits up nodes among the dead and living according to ratio
-    def setupExperiment(self, ratio = 0.5 ):
-        pass
+    def setupExperiment(self):
+        print "Killing all nodes and giving them new ports"
+        for node in self.aliveNodes[:]:
+            self.kill(node)
+        print "Wanton destruction complete.", self.aliveNodes
+        time.sleep(2)
+        print "Creating new network",self.deadNodes
+        time.sleep(2)
+        n = random.choice(self.deadNodes)
+        Peer(n).create()
+        self.aliveNodes.append(n)
+        self.deadNodes.remove(n)
+        ## adding the rest
+        while len(self.aliveNodes) < len(self.deadNodes):
+            self.rezRandom()
+            time.sleep(1)
+        print "Done."
+        print self.aliveNodes
+        print self.deadNodes
+        print "Testing."
+        
+        
+        for i in range(0,100):
+            try:
+                Peer(random.choice(self.aliveNodes)).ping(random.choice(self.aliveNodes))
+            except Exception as e:
+                print e
         
     # public
     def checkIn(self,nodeName):
@@ -111,21 +150,11 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,10):
+for i in range(3,6):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
-    time.sleep(0.5)
-    
-time.sleep(0.5)
-target = n2.name
-iNode.kill(target,9180)
+    time.sleep(0.75)
 
-time.sleep(1)
-n1.ping(target)
-time.sleep(0.5)
-target = nodes[6].name
-iNode.kill(target,9181)
-time.sleep(0.5)
-n1.ping(target)
 
+iNode.setupExperiment()
