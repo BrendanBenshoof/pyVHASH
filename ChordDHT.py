@@ -21,9 +21,6 @@ class DHTnode(Node):
         return [pr[1], me[1], su[1]]
         #print self.data
 
-    def findSuccessor(self,key):
-        return super(DHTnode,self).findSuccessor(key)
-
 
 
     def updateSuccessorList(self):
@@ -79,7 +76,7 @@ class DHTnode(Node):
             try:
                 newSucc.backup(k,v)
             except Exception: # and.... it's gone
-                self.fixSuccessorList()
+                self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
         fails = []
