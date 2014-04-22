@@ -242,7 +242,7 @@ class Node(object):
         try:
             self.succ.notify(self.name)
             # no idea why this is a nonetype error initially when the first node is talking to himself
-            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]  
+            self.updateSuccessorList(self)  
         except Exception as e:
             print self.name, e, self.successorList 
             self.fixSuccessor()
@@ -255,8 +255,16 @@ class Node(object):
         poker = Peer(poker)
         if self.pred is None or hashBetween(poker.hashid, self.pred.hashid, self.hashid):
             self.pred = poker
-        return True
+            return True
+        return False
 
+
+    def updateSuccessorList(self):
+        try:
+            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+        except Exception as e:
+            print self.name, e, "My successor failed during list request" 
+            self.fixSuccessor()
 
     def fixFingers(self):
         self.next = self.next + 1
@@ -283,7 +291,6 @@ class Node(object):
                 self.successorList = self.successorList [1:]
                 self.fixSuccessor()
 
-
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
         mySucc = Peer(self.succ.name)
         try:
@@ -308,6 +315,10 @@ class Node(object):
         else:
             self.removeNodeFromFingers(failedName)
         return True
+
+
+
+
 
     def checkPred(self): #we should implement this someday
         try:

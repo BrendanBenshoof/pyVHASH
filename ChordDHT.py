@@ -24,6 +24,16 @@ class DHTnode(Node):
     def findSuccessor(self,key):
         return super(DHTnode,self).findSuccessor(key)
 
+
+
+    def updateSuccessorList(self):
+        oldList  = self.successorList
+        super.(DHTnode,self).updateSuccessorList()
+        newSuccessors = [node for node in self.successorList if node not in oldList]
+        for node in newSuccessors:
+            self.backupToNewSuccessor(node)
+
+
     def store(self,key,val):
         loc = getHashString(key)
         target = self.findSuccessor(loc)  # if fails do wut?  I don't think it will
@@ -49,8 +59,6 @@ class DHTnode(Node):
             #print "stored", block, "at", block.hashid
         return True
 
-
-
     def retrieveFile(self, filename):
         key = getHashString(filename)
         target = self.findSuccessor(key)
@@ -69,10 +77,9 @@ class DHTnode(Node):
         newSucc = Peer(newSuccessor)
         for k, v in self.data.iteritems():
             try:
-                newSucc.backupThis(k,v)
+                newSucc.backup(k,v)
             except Exception: # and.... it's gone
                 self.fixSuccessorList()
-
 
     def backupNewData(self, key, val):
         fails = []
