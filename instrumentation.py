@@ -80,9 +80,10 @@ class InstrumentationNode(object):
         print "Killing", victim
         try:
             oldPort =  int(victim[victim.rfind(":")+1:])
+            newName =  victim[:victim.rfind(":")+1]+str(newPort)
             Peer(victim).kill(newPort)
             self.aliveNodes.remove(victim)
-            self.deadNodes.append(victim)
+            self.deadNodes.append(newName)
             PORTS.remove(newPort)
             PORTS.append(oldPort) #do at end
         except Exception as e:
@@ -94,7 +95,6 @@ class InstrumentationNode(object):
         try:
             Peer(nodeName).join(ringMember)
             self.deadNodes.remove(nodeName)
-            self.aliveNodes.append(nodeName)
         except Exception as e:
             print "Error rezzing", e
     
@@ -109,7 +109,6 @@ class InstrumentationNode(object):
         time.sleep(2)
         n = random.choice(self.deadNodes)
         Peer(n).create()
-        self.aliveNodes.append(n)
         self.deadNodes.remove(n)
         ## adding the rest
         while len(self.aliveNodes) < len(self.deadNodes):
@@ -118,6 +117,7 @@ class InstrumentationNode(object):
         print "Done."
         print self.aliveNodes
         print self.deadNodes
+        time.sleep(3)
         print "Testing."
         
         
@@ -150,7 +150,7 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,6):
+for i in range(3,9):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
