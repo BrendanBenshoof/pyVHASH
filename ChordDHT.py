@@ -24,8 +24,11 @@ class DHTnode(Node):
 
     def store(self,key,val):
         loc = getHashString(key)
-        target = self.findSuccessor(loc)  # if fails do wut?
-        Peer(target).put(key,val)
+        target = self.findSuccessor(loc)  # if fails do wut?  I don't think it will
+        try:
+            Peer(target).put(key,val)
+        except Exception as e:
+            print self.name, e, "the node I tried to store in literally just died"
         return True
 
     def retrieve(self,key):

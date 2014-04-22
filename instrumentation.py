@@ -124,13 +124,14 @@ class InstrumentationNode(object):
         
         for i in range(0,100):
             try:
+                print i
                 Peer(random.choice(self.aliveNodes)).store(str(i)+"blah",str(i))
             except Exception as e:
                 print e
         
         for i in range(0,100):
             try:
-                Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
+                print Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
             except Exception as e:
                 print e
     # public
@@ -139,6 +140,9 @@ class InstrumentationNode(object):
         print nodeName, "checked in."
         return True
         
+    def simulateChurn(self):
+        pass
+
     # public 
     def report(self,nodeName, data):
         return True
