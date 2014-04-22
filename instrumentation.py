@@ -124,10 +124,15 @@ class InstrumentationNode(object):
         
         for i in range(0,100):
             try:
-                Peer(random.choice(self.aliveNodes)).store()
+                Peer(random.choice(self.aliveNodes)).store(str(i)+"blah",str"i")
             except Exception as e:
                 print e
         
+        for in range(0,100):
+            try:
+                Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
+            except Exception as e:
+                print e
     # public
     def checkIn(self,nodeName):
         self.aliveNodes.append(nodeName)

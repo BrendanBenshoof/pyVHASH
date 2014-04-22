@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     for i in range(0,100):
         n = random.choice(nodes)
-        print n.retrive(str(i)+"blah")
+        print n.retrieve(str(i)+"blah")
 
 
     info = []    
