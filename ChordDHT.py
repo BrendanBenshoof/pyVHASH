@@ -26,6 +26,7 @@ class DHTnode(Node):
         loc = getHashString(key)
         target = self.findSuccessor(loc)  # if fails do wut?
         Peer(target).put(key,val)
+        return True
 
     def retrieve(self,key):
         loc = getHashString(key)
@@ -41,6 +42,7 @@ class DHTnode(Node):
             target = self.findSuccessor(block.hashid)
             Peer(target).put(block.hashid, block)
             #print "stored", block, "at", block.hashid
+        return True
 
 
 
