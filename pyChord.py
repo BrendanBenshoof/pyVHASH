@@ -258,13 +258,13 @@ class Node(object):
             return True
         return False
 
-
+        #we don't want try catch here because we want to handle stuff differently each time
     def updateSuccessorList(self):
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
         except Exception as e:
-            print self.name, e, "My successor failed during list request" 
             self.fixSuccessor()
+
 
     def fixFingers(self):
         self.next = self.next + 1
@@ -280,8 +280,7 @@ class Node(object):
         self.removeNodeFromFingers(self.succ.name)
         self.succ = Peer(self.successorList[1])
         try:
-            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
-            print self.name, "fixed successor", self.succ.name, " and list", self.successorList
+            Peer(self.succ.name).isAlive()
         except Exception:
             if(len(self.successorList) == 2):
                 print self.name, "I'm all alone"
@@ -290,17 +289,21 @@ class Node(object):
             else:
                 self.successorList = self.successorList [1:]
                 self.fixSuccessor()
+        else:
+            self.updateSuccessorList()
+            print self.name, "fixed successor", self.succ.name, " and list", self.successorList
 
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
         mySucc = Peer(self.succ.name)
         try:
             mySucc.alert(failedSucc)
-            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+            self.updateSuccessorList()
             print self.name, "Fixed successor list"
         except Exception:
             print self.name, "My successor is gone!"
             self.fixSuccessor()
-            
+
+
     def removeNodeFromFingers(self,nodeName):
         for i in range(1,len(self.fingers)):
             f = self.fingers[i]
