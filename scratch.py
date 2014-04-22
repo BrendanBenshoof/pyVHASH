@@ -1,5 +1,7 @@
-a = ["a", "b", "c", "z"]
-b = ["d","b","a"]
+def echo(a,param =True):
+    print a, param
 
-for i in [for x in a if x not in b]:
-    print i
+
+echo("a")
+echo("b", False)
+echo("c")

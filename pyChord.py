@@ -242,7 +242,7 @@ class Node(object):
         try:
             self.succ.notify(self.name)
             # no idea why this is a nonetype error initially when the first node is talking to himself
-            self.updateSuccessorList(self)  
+            self.updateSuccessorList()  
         except Exception as e:
             print self.name, e, self.successorList 
             self.fixSuccessor()

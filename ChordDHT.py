@@ -21,11 +21,16 @@ class DHTnode(Node):
         return [pr[1], me[1], su[1]]
         #print self.data
 
+    def findSuccessor(self, key, data = False):
+        if data:
+            print "!"
+        else:
+            return super(DHTnode,self).findSuccessor(key)
 
 
     def updateSuccessorList(self):
         oldList  = self.successorList
-        super.(DHTnode,self).updateSuccessorList()
+        super(DHTnode,self).updateSuccessorList()
         newSuccessors = [node for node in self.successorList if node not in oldList]
         for node in newSuccessors:
             self.backupToNewSuccessor(node)
