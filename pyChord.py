@@ -226,7 +226,7 @@ class Node(object):
                 sucessorPredName = Peer(self.succ.name).getPred()
                 done = True
             except Exception: #my sucessor died on me
-                print self.name, "my sucessor died on me."
+                print self.name, "my successor died on me", self.successorList
                 done = False
                 self.fixSuccessor()
         if sucessorPredName != "":
@@ -239,7 +239,8 @@ class Node(object):
             # no idea why this is a nonetype error initially when the first node is talking to himself
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]  
         except Exception as e:
-            print self.name, ":", e, self.successorList 
+            print self.name, e, self.successorList 
+            self.fixSuccessor()
 
 
 
@@ -267,7 +268,7 @@ class Node(object):
         self.succ = Peer(self.successorList[1])
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
-            print self.name, "fixed successor and list"
+            print self.name, "fixed successor", self.succ.name, " and list", self.successorList
         except Exception:
             if(len(self.successorList) == 2):
                 print self.name, "I'm all alone"

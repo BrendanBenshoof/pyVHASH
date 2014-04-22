@@ -111,14 +111,21 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,5):
+for i in range(3,10):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
     time.sleep(0.5)
-
+    
 time.sleep(0.5)
 target = n2.name
 iNode.kill(target,9180)
+
+time.sleep(1)
 n1.ping(target)
 time.sleep(0.5)
+target = nodes[6].name
+iNode.kill(target,9181)
+time.sleep(0.5)
+n1.ping(target)
+
