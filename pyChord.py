@@ -54,7 +54,15 @@ def hashBetweenRightInclusive(target,left,right):
 
 
 class RPCThreading(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
-    pass
+    finished = False;
+    
+    def serve_forever(self):
+        while not self.finished:
+            self.handle_request()
+    
+    def __del__(self):
+        print "Server gone"
+
 
 class Peer(object,xmlrpclib.ServerProxy):
     def __init__(self,name):
@@ -70,7 +78,6 @@ class Peer(object,xmlrpclib.ServerProxy):
 
     def __repr__(self):
         return self.name
-
 
 class Node(object):
 
@@ -89,7 +96,6 @@ class Node(object):
         self.server.register_function(self.isAlive,"isAlive")
         self.server.register_function(self.alert,"alert")
         self.server.register_function(self.getSuccessorList,"getSuccessorList")
-        self.server.register_function(self.kill,"kill")
         #finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE 
         self.fingers = [None]*HASHSIZE # finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE
         self.next = 0
@@ -109,7 +115,6 @@ class Node(object):
 
     def getSuccessorList(self):
         return self.successorList[:]
-
 
 
 ## Routing
@@ -221,6 +226,7 @@ class Node(object):
                 sucessorPredName = Peer(self.succ.name).getPred()
                 done = True
             except Exception: #my sucessor died on me
+                print self.name, "my sucessor died on me."
                 done = False
                 self.fixSuccessor()
         if sucessorPredName != "":
@@ -233,7 +239,7 @@ class Node(object):
             # no idea why this is a nonetype error initially when the first node is talking to himself
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]  
         except Exception as e:
-            print e, self.successorList 
+            print self.name, ":", e, self.successorList 
 
 
 
@@ -261,8 +267,10 @@ class Node(object):
         self.succ = Peer(self.successorList[1])
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+            print self.name, "fixed successor and list"
         except Exception:
             if(len(self.successorList) == 2):
+                print self.name, "I'm all alone"
                 self.succ = self
                 self.successorList  = [self.name]*NUM_SUCCESSORS
             else:
@@ -275,7 +283,9 @@ class Node(object):
         try:
             mySucc.alert(failedSucc)
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+            print self.name, "Fixed successor list"
         except Exception:
+            print self.name, "My successor is gone!"
             self.fixSuccessor()
             
     def removeNodeFromFingers(self,nodeName):
@@ -311,9 +321,3 @@ class Node(object):
     def isAlive(self):
         return True
         
-    # public
-    def kill(self, polite = False):
-        self.running = False
-        self.server.shutdown()
-        print self.name, " has shutdown." 
-        return True
