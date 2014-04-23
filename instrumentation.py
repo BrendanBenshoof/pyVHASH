@@ -20,7 +20,6 @@ class ExperimentNode(Node):
         
     def create(self):
         super(ExperimentNode,self).create()
-        print "derping"
         Peer(self.inst).checkIn(self.name)
         return True
         
@@ -120,7 +119,7 @@ class InstrumentationNode(object):
         print "Done."
         print self.aliveNodes
         print self.deadNodes
-        time.sleep(3)
+        time.sleep(2)
         print "Testing."
         
         
@@ -136,6 +135,15 @@ class InstrumentationNode(object):
                 print Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
             except Exception as e:
                 print e
+
+        for node in self.aliveNodes:
+            try:
+                print Peer(node).myInfo()
+            except Exception as e:
+                print e 
+    
+
+
     # public
     def checkIn(self,nodeName):
         self.aliveNodes.append(nodeName)

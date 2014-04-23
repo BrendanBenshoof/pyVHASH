@@ -14,7 +14,6 @@ print "HASHSIZE", HASHSIZE
 MAINT_INT = 0.5
 NUM_SUCCESSORS = 3
 
-
 def getHash(string):
     m = HASHFUNC(string)
     return long(m.hexdigest(),16)
@@ -109,6 +108,7 @@ class Node(object):
         t = Thread(target=self.server.serve_forever)
         t.start()
 
+
     def addNewFunc(self,func,name):
         self.server.register_function(func,name)
     
@@ -120,29 +120,30 @@ class Node(object):
 
 
 ## Routing
-    def findSuccessor(self,hexHashid):
+    def findSuccessor(self,hexHashid,dataRequest = False):
         trace = [self.name]
-        closest, done = self.find(hexHashid)
+        closest, done = self.find(hexHashid,dataRequest)
         trace.append(closest)
         while(not done):
             try:
-                closest, done = Peer(closest).find(hexHashid)
+                closest, done = Peer(closest).find(hexHashid,dataRequest)
                 trace.append(closest)
-            except Exception:
-                print "Could not connect to", closest
+            except Exception as e:
+                print "Could not connect to", closest,e
+                traceback.print_exc()
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
                     last = trace.pop()
                     Peer(last).alert(closest)
                     closest = last
                 else:
-                    closest, done = self.find(hexHashid)
+                    closest, done = self.find(hexHashid,dataRequest)
                     trace = [self.name]
         return closest
 
 
   # public
-    def find(self, hexHashid):
+    def find(self, hexHashid,dataRequest):
         #print self.name, "finding", hexHashid
         hashid = long(hexHashid, 16)
         if hashBetweenRightInclusive(hashid, self.hashid, self.succ.hashid):
@@ -340,4 +341,3 @@ class Node(object):
     # public
     def isAlive(self):
         return True
-        

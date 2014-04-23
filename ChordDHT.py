@@ -12,21 +12,26 @@ class DHTnode(Node):
         self.addNewFunc(self.retrieve,"retrieve")
         self.addNewFunc(self.retrieveFile,"retrieveFile")
         self.addNewFunc(self.backup,"backup")
+        self.addNewFunc(self.myInfo,"myInfo")
         
 
     def myInfo(self):
-        me = [self.name.split(":")[2], str(self.hashid)[0:4]]
-        su = [self.succ.name.split(":")[2], str(self.succ.hashid)[0:4]]
-        pr = [self.pred.name.split(":")[2], str(self.pred.hashid)[0:4]]
-        return [pr[1], me[1], su[1]]
+        return self.name + "\n"+ str(self.data) +  "\n" + str(self.backups) + "\n\n"
         #print self.data
 
-    def findSuccessor(self, key, data = False):
-        if data:
-            print "!"
+    def findSuccessor(self, key, dataRequest = False):
+        if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
+            print self.name, "short circuited the request"
+            return self.name
         else:
-            return super(DHTnode,self).findSuccessor(key)
+            return super(DHTnode,self).findSuccessor(key,dataRequest)
 
+    def find(self, key, dataRequest):
+        if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
+                print self.name, "short circuited the request"
+                return self.name, True
+        else:
+            return super(DHTnode,self).find(key,dataRequest)
 
     def updateSuccessorList(self):
         oldList  = self.successorList
@@ -36,18 +41,18 @@ class DHTnode(Node):
             self.backupToNewSuccessor(node)
 
 
-    def store(self,key,val):
-        loc = getHashString(key)
-        target = self.findSuccessor(loc)  # if fails do wut?  I don't think it will
+    def store(self,name,val):
+        key = getHashString(name)
+        target = self.findSuccessor(key)  # if fails do wut?  I don't think it will
         try:
             Peer(target).put(key,val)
         except Exception as e:
             print self.name, e, "the node I tried to store in literally just died"
         return True
 
-    def retrieve(self,key):
-        loc = getHashString(key)
-        target = self.findSuccessor(loc) # if fails do wut?
+    def retrieve(self,name):
+        key = getHashString(name)
+        target = self.findSuccessor(key,True) # if fails do wut?
         return Peer(target).get(key), target
 
     def storeFile(self, filename):
@@ -117,7 +122,9 @@ class DHTnode(Node):
     def get(self,key):
         if key in self.data.keys():
             return self.data[key]
-        else:
+        elif key in self.backups.keys():
+            return self.backups[key]
+        else: 
             return "FAIL"
             
 
