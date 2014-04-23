@@ -1,10 +1,16 @@
-from pyChord import Node, getHashString, Peer
+from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS
 from cfs import DataAtom, KeyFile, makeBlocks
+
+deletions = []
+
+NUM_PREDECESSORS = NUM_SUCCESSORS+1
 class DHTnode(Node):
     def __init__(self,host,ip):
         Node.__init__(self,host,ip)
         self.data = {} # data I'm responsible for 
         self.backups = {} # data I'm holding onto for someone else
+        self.predecessorList = [self.name]*NUM_PREDECESSORS
+        self.addNewFunc(self.getPredecessorList, "getPredecessorList")
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
         self.addNewFunc(self.store,"store")
@@ -16,8 +22,18 @@ class DHTnode(Node):
         
 
     def myInfo(self):
-        return self.name + "\n"+ str(self.data) +  "\n" + str(self.backups) + "\n\n"
+        return str(self.predecessorList) + self.name + str(self.successorList)+ "\n" +self.ringInfo() + "\nData: "+ str(self.data.values()) +  "\nBackups: " + str(self.backups.values()) + "\n\n"
         #print self.data
+
+    def ringInfo(self):
+        info = ""
+        for x in self.predecessorList:
+            info = info + str(Peer(x).hashid)[:6] + " "
+        info = info + str(self.hashid)[:6] + " "
+        for x in self.successorList:
+            info = info + str(Peer(x).hashid)[:6] + " "
+        return info
+        
 
     def findSuccessor(self, key, dataRequest = False):
         if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
@@ -40,10 +56,54 @@ class DHTnode(Node):
         for node in newSuccessors:
             self.backupToNewSuccessor(node)
 
+    def notify(self,poker):
+        hasNewPred = super(DHTnode,self).notify(poker)
+        self.updatePredecessorList()
+        if hasNewPred:
+            try:
+                for key in self.data.keys():
+                    if hashBetweenRightInclusive(key, Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
+                        self.relinquishData(key)
+            except Exception:
+                print self.name, "fix this"
+                self.pred = None
+                self.predecessorList =  [self.name]*NUM_PREDECESSORS
+        return True
+    
+    def checkPred(self):
+        if super(DHTnode,self).checkPred():
+            self.purgeBackups()
+        else:
+            self.predecessorList =  [self.name]*NUM_PREDECESSORS
+
+    def updatePredecessorList(self):
+        try:
+            self.predecessorList = Peer(self.pred.name).getPredecessorList()[1:] + [self.pred.name]
+        except Exception as e:
+            self.pred = None
+            self.predecessorList =  [self.name]*NUM_PREDECESSORS
+
+    # public
+    def getPredecessorList(self):
+        return self.predecessorList[:]
+
+    def purgeBackups(self):
+        for key in self.backups.keys():
+            if self.pred is not None:  #possible logic error location
+                if not hashBetweenRightInclusive(key, Peer(self.predecessorList[0]).hashid, self.hashid):
+                    deletions.append((self.backups[key], str(Peer(self.predecessorList[0]).hashid)[:6], str(key)[:6], str(self.hashid)[:6]))
+                    del self.backups[key]
+                elif self.keyIsMine(key):
+                    self.makeBackupMine(key)
+
+
+
+
+
 
     def store(self,name,val):
         key = getHashString(name)
-        target = self.findSuccessor(key)  # if fails do wut?  I don't think it will
+        target = self.findSuccessor(key,False)  # if fails do wut?  I don't think it will
         try:
             Peer(target).put(key,val)
         except Exception as e:
@@ -80,12 +140,14 @@ class DHTnode(Node):
         return blocks
 
 
+    #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
         newSucc = Peer(newSuccessor)
-        for k, v in self.data.iteritems():
+        for k, v in self.data.items():
             try:
                 newSucc.backup(k,v)
             except Exception: # and.... it's gone
+                print self.name, "backing up stuff failed"
                 self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
@@ -94,21 +156,59 @@ class DHTnode(Node):
             try:
                 Peer(s).backup(key,val)
             except Exception, e:
+                print self.name, "backing up new stuff failed"
                 fails.append(s)
-                continue
         if (len(fails) >= 1):
             for f in fails:
                 self.fixSuccessorList(f)
 
 
-    def relinquishData(self,key,val):
-        try:
-            self.pred.put(key,val)
-        except Exception:
-            self.pred = None  #or fix by searching for his hash -1
-        else:
-            del data[key]
+    def keyIsMine(self, key):
+        if self.pred is None:
+            return True
+        return hashBetweenRightInclusive(key, self.pred.hashid, self.hashid)
 
+
+
+    # returns the list of keys in this list
+    def myKeysInList(self,keyList):
+        return [x for x in keyList if x in self.data.keys()]
+
+    def myKeysNotInList(self,keyList):
+        return [x for x in keyList if x not in self.data.keys()]
+
+    def backupsInList(self,keyList):
+        return [x for x in keyList if x in self.backups.keys()]
+
+    def backupsNotInList(self,keyList):
+        return [x for x in keyList if x in self.backups.keys()]
+
+
+    def relinquishData(self,key):
+        val = None
+        try:
+            val = self.data[key]
+        except:
+            print "Well that was weird", key, self.data
+        else:
+            try:
+                Peer(self.pred.name).put(key,val)
+            except Exception:
+                self.pred = None  #or fix by searching for his hash -1
+                raise Exception("he died on me")
+            else:
+                self.backups[key] = val
+                del self.data[key]
+
+    def makeBackupMine(self, key):
+        val = None
+        try:
+            val = self.backups[key]
+        except:
+            print self.name, "Well that was weirder", key
+        else:
+            self.data[key] = val
+            del self.backups[key]
 
 
     #public

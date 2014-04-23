@@ -1,5 +1,6 @@
 from pyChord import Peer, getHash, getHashString, RPCThreading
 from ChordDHT import DHTnode as Node  
+from ChordDHT import deletions
 
 import time
 import random
@@ -119,7 +120,7 @@ class InstrumentationNode(object):
         print "Done."
         print self.aliveNodes
         print self.deadNodes
-        time.sleep(2)
+        time.sleep(5)
         print "Testing."
         
         
@@ -141,7 +142,8 @@ class InstrumentationNode(object):
                 print Peer(node).myInfo()
             except Exception as e:
                 print e 
-    
+
+        print deletions
 
 
     # public
@@ -181,7 +183,7 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,9):
+for i in range(3,14):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)

@@ -97,6 +97,7 @@ class Node(object):
         self.server.register_function(self.join,"join")
         self.server.register_function(self.create,"create")
         self.server.register_function(self.getSuccessorList,"getSuccessorList")
+        self.server.register_function(self.getPredID,"getPredID")
         #finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE 
         self.fingers = [None]*HASHSIZE # finger[k] = successor of (n + 2**(k-1)) % mod MAX, 1 <= k <= HASHSIZE
         self.next = 0
@@ -117,6 +118,11 @@ class Node(object):
 
     def getSuccessorList(self):
         return self.successorList[:]
+
+    def getPredID(self):
+        if self.pred is None:
+            return self.hashid
+        return self.pred.hashid
 
 
 ## Routing
@@ -251,6 +257,8 @@ class Node(object):
 
 
     # poker thinks it might be our predecessor
+    # return true if he's a new guy
+    # return false if he's the same.
     #public 
     def notify(self, poker):
         poker = Peer(poker)
@@ -329,6 +337,7 @@ class Node(object):
             return Peer(self.pred.name).isAlive()
         except Exception: # he's dead, Jim
             self.pred = None
+            return False
 
 
     #public
