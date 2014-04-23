@@ -62,7 +62,7 @@ class DHTnode(Node):
         if hasNewPred:
             try:
                 for key in self.data.keys():
-                    if hashBetweenRightInclusive(key, Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
+                    if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
                         self.relinquishData(key)
             except Exception:
                 print self.name, "fix this"
@@ -90,7 +90,7 @@ class DHTnode(Node):
     def purgeBackups(self):
         for key in self.backups.keys():
             if self.pred is not None:  #possible logic error location
-                if not hashBetweenRightInclusive(key, Peer(self.predecessorList[0]).hashid, self.hashid):
+                if not hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid):
                     deletions.append((self.backups[key], str(Peer(self.predecessorList[0]).hashid)[:6], str(key)[:6], str(self.hashid)[:6]))
                     del self.backups[key]
                 elif self.keyIsMine(key):
@@ -166,7 +166,7 @@ class DHTnode(Node):
     def keyIsMine(self, key):
         if self.pred is None:
             return True
-        return hashBetweenRightInclusive(key, self.pred.hashid, self.hashid)
+        return hashBetweenRightInclusive(long(key,16), self.pred.hashid, self.hashid)
 
 
 

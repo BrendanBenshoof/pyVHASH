@@ -31,16 +31,21 @@ def getDist(hash1,hash2):
 
 #
 # written from scratch; check logic
+# '318663', '5eb51e', '110623'
 def hashBetween(target, left, right):
     if left ==  right:
         return True
     if target == left or target == right:
         return False
+    #print target, "<", right, "and", target, ">", left, target < right and target > left
     if target < right and target > left:
         return True
+    #print left, ">", right, left > right 
     if left > right :
+        #print left, ">", target, "and", target, "<", right, left > target and target < right
         if left > target and target < right:
             return True
+        #print left, "<", target, "and", target, ">", right, left < target and target > right
         if left < target and target > right:
             return True
     return False
@@ -350,3 +355,6 @@ class Node(object):
     # public
     def isAlive(self):
         return True
+
+
+print hashBetween(0x5eb51e,0x354921 , 0x110623)
