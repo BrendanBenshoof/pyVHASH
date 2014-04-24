@@ -64,9 +64,11 @@ class InstrumentationNode(object):
         self.server.register_function(self.report,"report")
         self.aliveNodes = []
         self.deadNodes = []
+        self.safe = []
         t = Thread(target=self.server.serve_forever)
         t.start()    
-        self.churn = False 
+        self.churn = False
+        self.choosing = False
 
 
     # kill a random node in the network
@@ -122,9 +124,10 @@ class InstrumentationNode(object):
             self.rezRandom()
             time.sleep(0.5)
         print "Done."
+        
+        
+        """
         time.sleep(3)
-        
-        
         print "Testing."
         print "Starting Churn."
         churnThread = Thread(target=self.simulateChurn)
@@ -132,39 +135,46 @@ class InstrumentationNode(object):
         self.churn = True
         churnThread.start()
         time.sleep(5)
-
+        """
         
-
+        print "Storing."
+        self.choosing = True
+        tester = random.choice(self.aliveNodes)
+        self.safe.append(tester)
+        self.choosing = False
         
-
+        try:
+            Peer(tester).storeFile("constitution.txt")
+        except:
+            print "failed."
+            traceback.print_exc(file=sys.stdout)
+            print "terminating."
+            return
         
-        for i in range(0,100):
-            try:
-                print i
-                Peer(random.choice(self.aliveNodes)).store(str(i)+"blah",str(i))
-            except Exception as e:
-                print "Toplevel error in storing"
-                traceback.print_exc(file=sys.stdout)
-       
+        print "Store done."
+        self.safe.pop()
+        
         print "Churning."
-        time.sleep(10)
-        for i in range(0,100):
-            data = "FAIL"
-            attempts = 0
-            while data == "FAIL" and attempts < 10:
-                liveNode = Peer(random.choice(self.aliveNodes))
-                try:
-                    data, target, hashid = liveNode.retrieve(str(i)+"blah")
-                except Exception as e:
-                    print "Toplevel error in retrieving", i, "from",  liveNode, self.aliveNodes
-                    traceback.print_exc(file=sys.stdout)
-                print data ,target, hashid
-                attempts = attempts + 1
-                if data == "FAIL":
-                    time.sleep(0.25)
-            if data == "FAIL":
-                print i, "NOT FOUND"
-      
+        #time.sleep(10)
+        self.choosing = True
+        tester = random.choice(self.aliveNodes)
+        self.safe.append(tester)
+        self.choosing = False
+
+        print "Retrieving"
+        contents = {}
+        try:
+            contents = Peer(tester).retrieveFile("constitution.txt")
+        except:
+            print "failed."
+            traceback.print_exc(file=sys.stdout)
+            print "terminating."
+            return
+        
+        print contents
+        
+        
+
         
         for node in self.aliveNodes:
             try:
@@ -184,17 +194,18 @@ class InstrumentationNode(object):
         
     def simulateChurn(self):
         while self.churn:
-            try:
-                time.sleep(1)
-                for node in self.aliveNodes[:]:
-                    if len(self.aliveNodes) > 1 and random.random() < CHURN_RATE:
-                        self.kill(node)
-                joinTargets = self.aliveNodes[:]
-                for node in self.deadNodes[:]:
-                    if len(self.deadNodes) > 1  and random.random() < CHURN_RATE:
-                        self.rez(node, random.choice(joinTargets))
-            except Exception, e:
-                print "Error in Churn", e
+            if not self.choosing:    
+                try:
+                    time.sleep(1)
+                    for node in self.aliveNodes[:]:
+                        if node not in self.safe and len(self.aliveNodes) > 1 and random.random() < CHURN_RATE:
+                            self.kill(node)
+                    joinTargets = self.aliveNodes[:]
+                    for node in self.deadNodes[:]:
+                        if len(self.deadNodes) > 1  and random.random() < CHURN_RATE:
+                            self.rez(node, random.choice(joinTargets))
+                except Exception, e:
+                    print "Error in Churn", e
         print "Churning done!"
                 
 

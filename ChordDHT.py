@@ -14,7 +14,7 @@ class DHTnode(Node):
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
         self.addNewFunc(self.store,"store")
-        self.addNewFunc(self.store,"storeFile")
+        self.addNewFunc(self.storeFile,"storeFile")
         self.addNewFunc(self.retrieve,"retrieve")
         self.addNewFunc(self.retrieveFile,"retrieveFile")
         self.addNewFunc(self.backup,"backup")
@@ -132,28 +132,57 @@ class DHTnode(Node):
 
     def storeFile(self, filename):
         keyfile, blocks =  makeBlocks(filename)
-        target = self.findSuccessor(keyfile.hashid)
-        #print "storing", keyfile, "at", keyfile.hashid
-        Peer(target).put(keyfile.hashid, keyfile)  # ???
-        for block in blocks:
-            target = self.findSuccessor(block.hashid)
-            Peer(target).put(block.hashid, block)
-            #print "stored", block, "at", block.hashid
+        chunks =  [keyfile] + blocks
+        #target = self.findSuccessor(keyfile.hashid)
+        #Peer(target).put(keyfile.hashid, keyfile)  # ???
+        for block in chunks:
+            done  = False
+            while not done:
+                try:
+                    target = self.findSuccessor(block.hashid)
+                    Peer(target).put(block.hashid, block)
+                except Exception as e:
+                    print self.name, "failed put at", target, "retrying"  
+                    time.sleep(MAINT_INT)
+                else:
+                    done = True
         return True
 
+
+
+
     def retrieveFile(self, filename):
-        key = getHashString(filename)
-        target = self.findSuccessor(key)
-        keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
+        keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
         blocks = []
         for key in keys:
-            target = self.findSuccessor(key)
-            #print key[:4], hex(Peer(target).hashid)[:6]
-            block = Peer(target).get(key)
-            blocks.append(block)
+            done = False
+            tries = 0
+            while not done and tries < 10:
+                try:
+                    target = self.findSuccessor(key,True)
+                    block = Peer(target).get(key)
+                    blocks.append(block)
+                    done = True
+                except:
+                    tries = tries + 1
+                    print self.name, "failed to get a piece from", target, "retrying" 
+                    time.sleep(MAINT_INT)
+            if not done:
+                print "retrieve failed"
+                return False
         return blocks
 
+    def getKeyfile(self, filename):
+        key = getHashString(filename)
+        while True:
+            try:
+                target = self.findSuccessor(key)
+                keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
+                return keyfile
+            except Exception as e:
+                print self.name, "failed to retrieve keyfile from", target 
+                time.sleep(MAINT_INT)
 
     #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
