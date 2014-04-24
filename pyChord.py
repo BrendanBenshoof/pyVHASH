@@ -63,9 +63,6 @@ class RPCThreading(SocketServer.ThreadingMixIn, SimpleXMLRPCServer):
     def serve_forever(self):
         while not self.finished:
             self.handle_request()
-    
-    def __del__(self):
-        print "Server gone"
 
 
 class Peer(object,xmlrpclib.ServerProxy):
@@ -245,7 +242,7 @@ class Node(object):
                 sucessorPredName = Peer(self.succ.name).getPred()
                 done = True
             except Exception: #my sucessor died on me
-                print self.name, "my successor died on me", self.successorList
+                print self.name, "my successor died", self.succ.name
                 done = False
                 self.fixSuccessor()
         if sucessorPredName != "":
@@ -256,31 +253,20 @@ class Node(object):
         try:
             Peer(self.succ.name).notify(self.name)
         except Exception as e:
-            print self.name,"!!!!!!!", e, self.successorList 
-            traceback.print_exc(file=sys.stdout)
+            print self.name, "Failed to notify", self.succ.name
+            #traceback.print_exc(file=sys.stdout)
             self.fixSuccessor()
         else:
             self.updateSuccessorList()  
 
-
-
-    # poker thinks it might be our predecessor
-    # return true if he's a new guy
-    # return false if he's the same.
-    #public 
+    # return true if poker is better pred, false if he's the same.
+    # public 
     def notify(self, poker):
         poker = Peer(poker)
         if self.pred is None or hashBetween(poker.hashid, self.pred.hashid, self.hashid):
             self.pred = poker
             return True
         return False
-
-        #we don't want try catch here because we want to handle stuff differently each time
-    def updateSuccessorList(self):
-        try:
-            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
-        except Exception as e:
-            self.fixSuccessor()
 
 
     def fixFingers(self):
@@ -289,9 +275,18 @@ class Node(object):
             self.next =  1
         ## currently
         target = hex((self.hashid + 2**(self.next-1))%MAX)
-        ##self.fingers[next] = Peer(self.find(hex(target)))
-        ## or alternatively
         self.fingers[self.next] = Peer(self.findSuccessor(target))
+        
+        
+
+
+    #we don't want try catch here because we want to handle stuff differently each time
+    def updateSuccessorList(self):
+        try:
+            self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
+        except Exception as e:
+            self.fixSuccessor()
+
 
     def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
         self.removeNodeFromFingers(self.succ.name)
@@ -308,14 +303,17 @@ class Node(object):
                 self.fixSuccessor()
         else:
             self.updateSuccessorList()
-            #print self.name, "fixed successor", self.succ.name, " and list", self.successorList
+            print self.name, "fixed successor", self.succ.name
+            
+            
+    
 
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
         mySucc = Peer(self.succ.name)
         try:
             mySucc.alert(failedSucc)
             self.updateSuccessorList()
-            #print self.name, "Fixed successor list"
+            print self.name, "Fixed successor list"
         except Exception:
             print self.name, "My successor is gone!"
             self.fixSuccessor()
@@ -329,6 +327,7 @@ class Node(object):
                     self.fingers[i] = None
 
     # I was alerted of a failed lookup
+    # public
     def alert(self,failedName):
         if(failedName == self.succ.name):
             self.fixSuccessor()

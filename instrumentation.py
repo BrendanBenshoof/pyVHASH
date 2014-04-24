@@ -4,10 +4,11 @@ from ChordDHT import deletions
 
 import time
 import random
+import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.00025  #chance out of 1 
+CHURN_RATE = 0.25  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
@@ -79,7 +80,7 @@ class InstrumentationNode(object):
     
     # tell a node to pretend to diaf
     def kill(self,victim):
-        newPort =random.choice(PORTS)
+        newPort = random.choice(PORTS)
         print "Killing", victim
         try:
             oldPort =  int(victim[victim.rfind(":")+1:])
@@ -103,11 +104,12 @@ class InstrumentationNode(object):
     
     # splits up nodes among the dead and living according to ratio
     def setupExperiment(self):
-        print "\n\n\n\nKilling all nodes and giving them new ports"
         for node in self.aliveNodes[:]:
             self.kill(node)
         print "\n\nWanton destruction complete."
-        print "Creating new network"
+        time.sleep(5)
+        
+        print "Creating new network."
         n = random.choice(self.deadNodes)
         Peer(n).create()
         self.deadNodes.remove(n)
@@ -120,7 +122,7 @@ class InstrumentationNode(object):
         
         
         print "Testing."
-        print "starting Churn"
+        print "Starting Churn."
         churnThread = Thread(target=self.simulateChurn)
         self.churn = True
         churnThread.start()
@@ -136,24 +138,34 @@ class InstrumentationNode(object):
                 print i
                 Peer(random.choice(self.aliveNodes)).store(str(i)+"blah",str(i))
             except Exception as e:
-                print e
+                print "Toplevel error in storing"
+                traceback.print_exc(file=sys.stdout)
        
-
-        time.sleep(5)
+        print "Churning."
+        time.sleep(10)
         for i in range(0,100):
             try:
-                print Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
+                data = "FAIL"
+                attempts = 0
+                while data == "FAIL" and attempts < 10:
+                    data, target, hashid = Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
+                    print data ,target, hashid
+                    attempts = attempts + 1
+                if data == "FAIL":
+                    print i, "NOT FOUND"
             except Exception as e:
-                print e
+                print "Toplevel error in retrieving"
+                traceback.print_exc(file=sys.stdout)
 
-        self.churn = False
+        
         for node in self.aliveNodes:
             try:
                 print Peer(node).myInfo()
             except Exception as e:
                 print e 
-
-        print deletions
+        self.churn = False 
+        #print deletions
+        print "Done."
 
 
     # public

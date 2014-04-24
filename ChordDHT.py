@@ -34,6 +34,9 @@ class DHTnode(Node):
             info = info + str(Peer(x).hashid)[:6] + " "
         return info
 
+
+
+
     def findSuccessor(self, key, dataRequest = False):
         if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
             #print self.name, "short circuited the request"
@@ -80,7 +83,8 @@ class DHTnode(Node):
         try:
             self.predecessorList = Peer(self.pred.name).getPredecessorList()[1:] + [self.pred.name]
         except Exception as e:
-            print self.name, "failed to updatePredecessorList"
+            # infinite recursion occured here
+            print self.name, "failed to updatePredecessorList", self.pred.name, self.predecessorList
             self.pred = Peer(self.predecessorList[-2])
             self.updatePredecessorList()
 
