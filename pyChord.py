@@ -11,7 +11,7 @@ HASHFUNC = hashlib.sha1
 HASHSIZE = HASHFUNC().digest_size * 8
 MAX = 2**(HASHSIZE)
 print "HASHSIZE", HASHSIZE
-MAINT_INT = 0.5
+MAINT_INT = 0.2
 NUM_SUCCESSORS = 3
 
 def getHash(string):
@@ -140,14 +140,17 @@ class Node(object):
                 closest, done = Peer(closest).find(hexHashid,dataRequest)
                 trace.append(closest)
             except Exception as e:
-                print "Could not connect to", closest,e
-                traceback.print_exc()
+                print self.name, "Could not connect to", closest, e
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
                     last = trace.pop()
-                    Peer(last).alert(closest)
+                    try:
+                        Peer(last).alert(closest)
+                    except:
+                        pass
                     closest = last
                 else:
+                    print self.name, "I'm out of options"
                     closest, done = self.find(hexHashid,dataRequest)
                     trace = [self.name]
         return closest
@@ -194,8 +197,7 @@ class Node(object):
             self.succ = Peer(patron.findSuccessor(hexid))
             self.successorList[0] = self.succ.name
         except Exception as e:
-            print e
-            print "I could not find the server you indicated.\n Go Away."
+            print "I could not find the server you indicated.\n Go Away.",e
             return False
             #raise Exception("Failed to connect")
         try:
@@ -252,12 +254,13 @@ class Node(object):
                 self.succ = x
                 self.successorList[0] = self.succ.name
         try:
-            self.succ.notify(self.name)
-            # no idea why this is a nonetype error initially when the first node is talking to himself
-            self.updateSuccessorList()  
+            Peer(self.succ.name).notify(self.name)
         except Exception as e:
-            print self.name, e, self.successorList 
+            print self.name,"!!!!!!!", e, self.successorList 
+            traceback.print_exc(file=sys.stdout)
             self.fixSuccessor()
+        else:
+            self.updateSuccessorList()  
 
 
 
@@ -305,14 +308,14 @@ class Node(object):
                 self.fixSuccessor()
         else:
             self.updateSuccessorList()
-            print self.name, "fixed successor", self.succ.name, " and list", self.successorList
+            #print self.name, "fixed successor", self.succ.name, " and list", self.successorList
 
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
         mySucc = Peer(self.succ.name)
         try:
             mySucc.alert(failedSucc)
             self.updateSuccessorList()
-            print self.name, "Fixed successor list"
+            #print self.name, "Fixed successor list"
         except Exception:
             print self.name, "My successor is gone!"
             self.fixSuccessor()
@@ -355,6 +358,3 @@ class Node(object):
     # public
     def isAlive(self):
         return True
-
-
-print hashBetween(0x5eb51e,0x354921 , 0x110623)

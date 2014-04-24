@@ -7,7 +7,7 @@ import random
 from threading import Thread
 
 
-CHURN_RATE = 0.025  #chance out of 1 
+CHURN_RATE = 0.05  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
@@ -106,23 +106,25 @@ class InstrumentationNode(object):
         print "Killing all nodes and giving them new ports"
         for node in self.aliveNodes[:]:
             self.kill(node)
-        print "Wanton destruction complete.", self.aliveNodes
-        time.sleep(2)
-        print "Creating new network",self.deadNodes
-        time.sleep(2)
+        print "Wanton destruction complete."
+        print "Creating new network"
         n = random.choice(self.deadNodes)
         Peer(n).create()
         self.deadNodes.remove(n)
         ## adding the rest
         while len(self.aliveNodes) < len(self.deadNodes):
             self.rezRandom()
-            time.sleep(1)
+            time.sleep(0.5)
         print "Done."
-        print self.aliveNodes
-        print self.deadNodes
-        time.sleep(5)
-        print "Testing."
+        time.sleep(3)
+        print "starting Churn"
         
+        churnThread = Thread(target=self.simulateChurn)
+        self.churn = True
+        churnThread.start()
+
+        time.sleep(3)
+        print "Testing."
         
         for i in range(0,100):
             try:
@@ -131,12 +133,16 @@ class InstrumentationNode(object):
             except Exception as e:
                 print e
         
+        time.sleep(5)
+
+
         for i in range(0,100):
             try:
                 print Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
             except Exception as e:
                 print e
 
+        self.churn = False
         for node in self.aliveNodes:
             try:
                 print Peer(node).myInfo()
@@ -153,15 +159,16 @@ class InstrumentationNode(object):
         return True
         
     def simulateChurn(self):
-        while churn:
+        while self.churn:
             try:
                 time.sleep(1)
-                if len(self.aliveNodes > 1) and random.random() < CHURN_RATE:
+                if len(self.aliveNodes) > 1 and random.random() < CHURN_RATE:
                     self.killRandom()
-                if len(self.deadNodes > 1)  and random.random() < CHURN_RATE:
+                if len(self.deadNodes) > 1  and random.random() < CHURN_RATE:
                     self.rezRandom()
             except Exception, e:
                 print "Error in Churn", e
+        print "Churning done!"
                 
 
 
@@ -183,11 +190,11 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,14):
+for i in range(3,20):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
-    time.sleep(0.75)
+    time.sleep(0.3)
 
 
 iNode.setupExperiment()
