@@ -315,7 +315,7 @@ class Node(object):
             self.updateSuccessorList()
             print self.name, "Fixed successor list"
         except Exception:
-            print self.name, "My successor is gone!"
+            print self.name, "Tried to fix successor list but successor is gone!", self.succ.name
             self.fixSuccessor()
 
 

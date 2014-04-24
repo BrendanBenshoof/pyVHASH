@@ -8,7 +8,7 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.5  #chance out of 1 
+CHURN_RATE = 0.025  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
@@ -104,9 +104,13 @@ class InstrumentationNode(object):
     
     # splits up nodes among the dead and living according to ratio
     def setupExperiment(self):
-        for node in self.aliveNodes[:]:
+        targets = self.aliveNodes[:]
+        for node in targets:
             self.kill(node)
-        print "\n\nWanton destruction complete."
+        print "Wanton destruction complete."
+        print "targets:", targets
+        print "alive:", self.aliveNodes
+        print "dead:",  self.deadNodes
         time.sleep(5)
         
         print "Creating new network."
@@ -124,6 +128,7 @@ class InstrumentationNode(object):
         print "Testing."
         print "Starting Churn."
         churnThread = Thread(target=self.simulateChurn)
+        churnThread.daemon =  True
         self.churn = True
         churnThread.start()
         time.sleep(5)
@@ -144,21 +149,22 @@ class InstrumentationNode(object):
         print "Churning."
         time.sleep(10)
         for i in range(0,100):
-            try:
-                data = "FAIL"
-                attempts = 0
-                while data == "FAIL" and attempts < 10:
-                    data, target, hashid = Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
-                    print data ,target, hashid
-                    attempts = attempts + 1
-                    if data == "FAIL":
-                        time.sleep(0.5)
+            data = "FAIL"
+            attempts = 0
+            while data == "FAIL" and attempts < 10:
+                liveNode = Peer(random.choice(self.aliveNodes))
+                try:
+                    data, target, hashid = liveNode.retrieve(str(i)+"blah")
+                except Exception as e:
+                    print "Toplevel error in retrieving", i, "from",  liveNode, self.aliveNodes
+                    traceback.print_exc(file=sys.stdout)
+                print data ,target, hashid
+                attempts = attempts + 1
                 if data == "FAIL":
-                    print i, "NOT FOUND"
-            except Exception as e:
-                print "Toplevel error in retrieving"
-                traceback.print_exc(file=sys.stdout)
-
+                    time.sleep(0.25)
+            if data == "FAIL":
+                print i, "NOT FOUND"
+      
         
         for node in self.aliveNodes:
             try:
@@ -180,10 +186,13 @@ class InstrumentationNode(object):
         while self.churn:
             try:
                 time.sleep(1)
-                if len(self.aliveNodes) > 1 and random.random() < CHURN_RATE:
-                    self.killRandom()
-                if len(self.deadNodes) > 1  and random.random() < CHURN_RATE:
-                    self.rezRandom()
+                for node in self.aliveNodes[:]:
+                    if len(self.aliveNodes) > 1 and random.random() < CHURN_RATE:
+                        self.kill(node)
+                joinTargets = self.aliveNodes[:]
+                for node in self.deadNodes[:]:
+                    if len(self.deadNodes) > 1  and random.random() < CHURN_RATE:
+                        self.rez(node, random.choice(joinTargets))
             except Exception, e:
                 print "Error in Churn", e
         print "Churning done!"

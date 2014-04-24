@@ -75,7 +75,7 @@ class DHTnode(Node):
     
     def checkPred(self):
         if super(DHTnode,self).checkPred():
-            pass#self.purgeBackups()
+            self.purgeBackups()
         else:
             self.predecessorList.pop()
             self.pred = Peer(self.predecessorList[-1])
@@ -101,7 +101,7 @@ class DHTnode(Node):
 
     def purgeBackups(self):
         for key in self.backups.keys()[:]:
-            if self.pred is not None:  #possible logic error location
+            if self.pred is not None and not self.pred.name == self.name:  #possible logic error location
                 if not hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid):
                     try:
                         deletions.append((self.backups[key], str(Peer(self.predecessorList[0]).hashid)[:6], str(key)[:6], str(self.hashid)[:6]))
@@ -161,7 +161,7 @@ class DHTnode(Node):
                 for k, v in self.data.items():
                     Peer(newSuccessor).backup(k,v)
             except Exception as e: # and.... it's gone
-                print self.name, "backing up stuff failed", e
+                print self.name, "failed backing up stuff to", newSuccessor 
                 self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
@@ -170,34 +170,14 @@ class DHTnode(Node):
             try:
                 Peer(s).backup(key,val)
             except Exception, e:
-                print self.name, "backing up new stuff failed", e
+                print self.name, "failed backing up new stuff to", s  
                 fails.append(s)
         if (len(fails) >= 1):
             for f in fails:
                 self.fixSuccessorList(f)
-
-
-    def keyIsMine(self, key):
-        if self.pred is None:
-            return True
-        return hashBetweenRightInclusive(long(key,16), self.pred.hashid, self.hashid)
-
-
-
-    # returns the list of keys in this list
-    def myKeysInList(self,keyList):
-        return [x for x in keyList if x in self.data.keys()]
-
-    def myKeysNotInList(self,keyList):
-        return [x for x in keyList if x not in self.data.keys()]
-
-    def backupsInList(self,keyList):
-        return [x for x in keyList if x in self.backups.keys()]
-
-    def backupsNotInList(self,keyList):
-        return [x for x in keyList if x in self.backups.keys()]
-
-
+                
+                
+    
     def relinquishData(self,key):
         val = None
         try:
@@ -224,6 +204,29 @@ class DHTnode(Node):
             self.data[key] = val
             del self.backups[key]
             self.backupNewData(key,val)
+
+
+
+    def keyIsMine(self, key):
+        if self.pred is None:
+            return True
+        return hashBetweenRightInclusive(long(key,16), self.pred.hashid, self.hashid)
+
+
+
+    # returns the list of keys in this list
+    def myKeysInList(self,keyList):
+        return [x for x in keyList if x in self.data.keys()]
+
+    def myKeysNotInList(self,keyList):
+        return [x for x in keyList if x not in self.data.keys()]
+
+    def backupsInList(self,keyList):
+        return [x for x in keyList if x in self.backups.keys()]
+
+    def backupsNotInList(self,keyList):
+        return [x for x in keyList if x in self.backups.keys()]
+
 
 
     #public
