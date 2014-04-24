@@ -60,39 +60,43 @@ class DHTnode(Node):
         self.updatePredecessorList()
         if hasNewPred:
             try:
-                for key in self.data.keys():
+                for key in self.data.keys()[:]:
                     if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
                         self.relinquishData(key)
             except Exception:
                 print self.name, "fix this"
-                self.pred = None
-                self.predecessorList =  [self.name]*NUM_PREDECESSORS
+                self.pred = Peer(self.predecessorList[-2])
+                self.updatePredecessorList()
         return True
     
     def checkPred(self):
         if super(DHTnode,self).checkPred():
             self.purgeBackups()
         else:
-            self.predecessorList =  [self.name]*NUM_PREDECESSORS
+            self.pred = Peer(self.predecessorList[-2])
+            self.updatePredecessorList()
 
     def updatePredecessorList(self):
         try:
             self.predecessorList = Peer(self.pred.name).getPredecessorList()[1:] + [self.pred.name]
         except Exception as e:
             print self.name, "failed to updatePredecessorList"
-            self.pred = None
-            self.predecessorList =  [self.name]*NUM_PREDECESSORS
+            self.pred = Peer(self.predecessorList[-2])
+            self.updatePredecessorList()
 
     # public
     def getPredecessorList(self):
         return self.predecessorList[:]
 
     def purgeBackups(self):
-        for key in self.backups.keys():
+        for key in self.backups.keys()[:]:
             if self.pred is not None:  #possible logic error location
                 if not hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid):
-                    deletions.append((self.backups[key], str(Peer(self.predecessorList[0]).hashid)[:6], str(key)[:6], str(self.hashid)[:6]))
-                    del self.backups[key]
+                    try:
+                        deletions.append((self.backups[key], str(Peer(self.predecessorList[0]).hashid)[:6], str(key)[:6], str(self.hashid)[:6]))
+                        del self.backups[key]
+                    except Exception, e:
+                        print self.backups, e
                 elif self.keyIsMine(key):
                     self.makeBackupMine(key)
 
@@ -113,7 +117,7 @@ class DHTnode(Node):
     def retrieve(self,name):
         key = getHashString(name)
         target = self.findSuccessor(key,True) # if fails do wut?
-        return Peer(target).get(key), target
+        return Peer(target).get(key), target, str(Peer(target).hashid)[:6]
 
     def storeFile(self, filename):
         keyfile, blocks =  makeBlocks(filename)
@@ -142,12 +146,11 @@ class DHTnode(Node):
 
     #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
-        newSucc = Peer(newSuccessor)
-        for k, v in self.data.items():
             try:
-                newSucc.backup(k,v)
-            except Exception: # and.... it's gone
-                print self.name, "backing up stuff failed"
+                for k, v in self.data.items():
+                    Peer(newSuccessor).backup(k,v)
+            except Exception as e: # and.... it's gone
+                print self.name, "backing up stuff failed", e
                 self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
@@ -156,7 +159,7 @@ class DHTnode(Node):
             try:
                 Peer(s).backup(key,val)
             except Exception, e:
-                print self.name, "backing up new stuff failed"
+                print self.name, "backing up new stuff failed", e
                 fails.append(s)
         if (len(fails) >= 1):
             for f in fails:

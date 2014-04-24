@@ -201,11 +201,11 @@ class Node(object):
             return False
             #raise Exception("Failed to connect")
         try:
-            self.succ.notify(self.name)
+            Peer(self.succ.name).notify(self.name)
         except Exception:
             self.succ = patron
             try:
-                self.succ.notify(self.name)
+                Peer(self.succ.name).notify(self.name)
             except Exception:
                 print "I could not find the patron you indicated.\n Go Away."
                 return False

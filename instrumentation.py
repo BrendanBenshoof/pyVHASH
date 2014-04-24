@@ -7,7 +7,7 @@ import random
 from threading import Thread
 
 
-CHURN_RATE = 0.05  #chance out of 1 
+CHURN_RATE = 0.25  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
@@ -103,10 +103,10 @@ class InstrumentationNode(object):
     
     # splits up nodes among the dead and living according to ratio
     def setupExperiment(self):
-        print "Killing all nodes and giving them new ports"
+        print "\n\n\n\nKilling all nodes and giving them new ports"
         for node in self.aliveNodes[:]:
             self.kill(node)
-        print "Wanton destruction complete."
+        print "\n\nWanton destruction complete."
         print "Creating new network"
         n = random.choice(self.deadNodes)
         Peer(n).create()
@@ -117,14 +117,19 @@ class InstrumentationNode(object):
             time.sleep(0.5)
         print "Done."
         time.sleep(3)
-        print "starting Churn"
         
+        
+        print "Testing."
+        print "starting Churn"
         churnThread = Thread(target=self.simulateChurn)
         self.churn = True
         churnThread.start()
+        time.sleep(5)
 
-        time.sleep(3)
-        print "Testing."
+        
+
+        
+
         
         for i in range(0,100):
             try:
@@ -132,10 +137,9 @@ class InstrumentationNode(object):
                 Peer(random.choice(self.aliveNodes)).store(str(i)+"blah",str(i))
             except Exception as e:
                 print e
-        
+       
+
         time.sleep(5)
-
-
         for i in range(0,100):
             try:
                 print Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
@@ -190,11 +194,11 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,20):
+for i in range(3,14):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
-    time.sleep(0.3)
+    time.sleep(0.33)
 
 
 iNode.setupExperiment()
