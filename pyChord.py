@@ -162,10 +162,7 @@ class Node(object):
             return self.succ.name, True
         else: # we forward the query
             closest = self.closestPreceeding(hashid)
-            if closest is self.name:  #fix this!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                # !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if closest == self.name:  #changed
                 return self.name, True
         #print self.name, "forwarding", str(hashid), "to", closest.name  
             return closest, False

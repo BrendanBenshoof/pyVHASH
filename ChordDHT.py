@@ -223,6 +223,7 @@ class DHTnode(Node):
         else:
             self.data[key] = val
             del self.backups[key]
+            self.backupNewData(key,val)
 
 
     #public

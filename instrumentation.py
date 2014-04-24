@@ -151,6 +151,8 @@ class InstrumentationNode(object):
                     data, target, hashid = Peer(random.choice(self.aliveNodes)).retrieve(str(i)+"blah")
                     print data ,target, hashid
                     attempts = attempts + 1
+                    if data == "FAIL":
+                        time.sleep(0.5)
                 if data == "FAIL":
                     print i, "NOT FOUND"
             except Exception as e:
