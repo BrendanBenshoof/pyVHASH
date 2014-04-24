@@ -124,25 +124,21 @@ class InstrumentationNode(object):
             self.rezRandom()
             time.sleep(0.5)
         print "Done."
-        
-        
-        """
+        print "Allowing network to establish before Churn."
         time.sleep(3)
-        print "Testing."
-        print "Starting Churn."
+        
         churnThread = Thread(target=self.simulateChurn)
         churnThread.daemon =  True
         self.churn = True
         churnThread.start()
+        print "Started Churn."
         time.sleep(5)
-        """
         
         print "Storing."
         self.choosing = True
         tester = random.choice(self.aliveNodes)
         self.safe.append(tester)
         self.choosing = False
-        
         try:
             Peer(tester).storeFile("constitution.txt")
         except:
@@ -150,12 +146,13 @@ class InstrumentationNode(object):
             traceback.print_exc(file=sys.stdout)
             print "terminating."
             return
-        
         print "Store done."
         self.safe.pop()
         
-        print "Churning."
-        #time.sleep(10)
+        
+        
+        print "Churning the network before we retrieve."
+        time.sleep(10)
         self.choosing = True
         tester = random.choice(self.aliveNodes)
         self.safe.append(tester)
@@ -170,10 +167,9 @@ class InstrumentationNode(object):
             traceback.print_exc(file=sys.stdout)
             print "terminating."
             return
-        
         print contents
         
-        
+        self.safe.pop()
 
         
         for node in self.aliveNodes:
