@@ -57,7 +57,7 @@ class ChordReduceNode(DHTnode):
         return data1 #overload this to describe reduce function
         
     # first attempt
-    def doMap():
+    def execute():
         pass
 
     def reduceLoop():
