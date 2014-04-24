@@ -164,7 +164,7 @@ class InstrumentationNode(object):
             except Exception as e:
                 print e 
         self.churn = False 
-        #print deletions
+        print deletions
         print "Done."
 
 
