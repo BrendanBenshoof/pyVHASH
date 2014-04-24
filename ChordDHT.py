@@ -68,7 +68,8 @@ class DHTnode(Node):
                         self.relinquishData(key)
             except Exception:
                 print self.name, "fix this"
-                self.pred = Peer(self.predecessorList[-2])
+                self.predecessorList.pop()
+                self.pred = Peer(self.predecessorList[-1])
                 self.updatePredecessorList()
         return True
     
@@ -76,17 +77,23 @@ class DHTnode(Node):
         if super(DHTnode,self).checkPred():
             pass#self.purgeBackups()
         else:
-            self.pred = Peer(self.predecessorList[-2])
+            self.predecessorList.pop()
+            self.pred = Peer(self.predecessorList[-1])
             self.updatePredecessorList()
 
-    def updatePredecessorList(self):
+    def updatePredecessorList(self):  # what if pred  = self?
         try:
             self.predecessorList = Peer(self.pred.name).getPredecessorList()[1:] + [self.pred.name]
         except Exception as e:
             # infinite recursion occured here
             print self.name, "failed to updatePredecessorList", self.pred.name, self.predecessorList
-            self.pred = Peer(self.predecessorList[-2])
-            self.updatePredecessorList()
+            self.predecessorList.pop()
+            if len(self.predecessorList) == 0:
+                self.pred =  None
+                [self.name]*NUM_PREDECESSORS
+            else:
+                self.pred = Peer(self.predecessorList[-1])
+                self.updatePredecessorList()
 
     # public
     def getPredecessorList(self):
