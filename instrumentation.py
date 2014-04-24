@@ -7,7 +7,7 @@ import random
 from threading import Thread
 
 
-CHURN_RATE = 0.25  #chance out of 1 
+CHURN_RATE = 0.00025  #chance out of 1 
 PORTS =  range(9101,9999)
 
 
