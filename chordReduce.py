@@ -23,6 +23,8 @@ class ChordReduceNode(DHTnode):
     def __init__(self,host,ip):
         DHTnode.__init__(self,host,ip)
         self.addNewFunc(self.stage,"stage")
+        self.addNewFunc(self.distributeMapTasks,"distributeMapTasks")
+        self.addNewFunc(self.handleReduceAtom, "handleReduceAtom")
         self.mapQueue = []
         self.reduceQueue = []
         self.outQueue = []
@@ -121,7 +123,11 @@ class ChordReduceNode(DHTnode):
                     self.fixSuccessorList(target)
                 else:
                     self.removeNodeFromFingers(target)
-    
+
+    #public 
+    def handleReduceAtom(self, atomDict):
+        self.reduceQueue.append(ReduceAtom(atomDict['results'],atomDict['keysInResults'], atomDict['outputAddress']))
+        return True
     
     # group each key into a bucket 
     def bucketizeKeys(self,keys):
@@ -168,7 +174,6 @@ class ChordReduceNode(DHTnode):
             if len(self.reduceQueue) >= 1:
                 atom = self.reduceQueue.pop() 
                 self.sendReduceJob(atom)
-                
 
     def mergeKeyResults(self, a, b):
         for k in a.keys():
