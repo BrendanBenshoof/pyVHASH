@@ -27,6 +27,7 @@ class ChordReduceNode(DHTnode):
         self.mapQueue = []
         self.reduceQueue = []
         self.outQueue = []
+        self.mapsDone = {}
         self.backupMaps = {}  #
         self.backupReduces = []
         
@@ -68,7 +69,8 @@ class ChordReduceNode(DHTnode):
         # retrieve the key file
         keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
-        self.distributeMapTasks(keys)
+        
+        #self.distributeMapTasks(keys)
         # distribute map tasks
         # master reduce node
         return True
@@ -81,13 +83,32 @@ class ChordReduceNode(DHTnode):
     # that work is distributed
     def distributeMapTasks(self, keys):
         pass
-        buckets =  self.bucketizeKeys(keys)
-        #using short circuiting only is a nifty idea iff we don't have any churn 
+        buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn 
+        #keep my keys
+        
+        
+        #send other keys off
+        #FT: inform toplevel I did so  
+        
+    
+    
         
     
     # group each key into a bucket 
     def bucketizeKeys(self,keys):
-        pass
+        output = {}
+        for k in keylist:
+            owner = None
+            if k in self.data.keys():  # the real question is why doesn't it work without this.  It should now
+                owner = self.name
+            else:
+                owner, t = self.find(k)
+            print owner
+            if owner in output.keys():
+                output[owner].append(k)
+            else:
+                output[owner] = [k]
+        return output
     
     
     # public
