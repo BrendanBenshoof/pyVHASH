@@ -83,16 +83,18 @@ class ChordReduceNode(DHTnode):
     # that work is distributed
     def distributeMapTasks(self, keys):
         pass
-        buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn 
+        buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn
+        
         #keep my keys
+        myWork = []
+        if self.name in buckets.keys():
+            myWork = buckets[self.name]
+            del buckets[self.name]
+            print  self.name, "got my work"
         
-        
+        #add my keys to queue
         #send other keys off
-        #FT: inform toplevel I did so  
-        
-    
-    
-        
+        #FT: inform toplevel I did so this might be added to the previous step
     
     # group each key into a bucket 
     def bucketizeKeys(self,keys):
@@ -111,13 +113,6 @@ class ChordReduceNode(DHTnode):
         return output
     
     
-    # public
-    def handleMapTask(self,key):
-        pass
-        # put it in the map Queue
-        # back it up
-        # return True
-    
     
     # keep on doing maps
     def doMapLoop(self):
@@ -125,9 +120,9 @@ class ChordReduceNode(DHTnode):
             pass
             # pop off the queue
             # exceute the job
-            # send reduce out
-            # inform backups I am done with map
-            # backup the reduce atom 
+            # send reduce out 
+            # FT: inform backups I am done with map 
+            # FT: backup the reduce atom 
 
 
     # reduce my jobs to one
