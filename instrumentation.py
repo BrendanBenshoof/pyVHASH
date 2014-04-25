@@ -1,4 +1,4 @@
-from pyChord import Peer, getHash, getHashString, RPCThreading
+from pyChord import Peer, getHash, getHashString, RPCThreading, MAINT_INT
 from ChordDHT import DHTnode as Node  
 from ChordDHT import deletions
 
@@ -8,8 +8,9 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.025  #chance out of 1 
+CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
+TEST_SIZE= 100
 
 
 class ExperimentNode(Node):
@@ -111,9 +112,8 @@ class InstrumentationNode(object):
         for node in targets:
             self.kill(node)
         print "Wanton destruction complete."
-        print "targets:", targets
         print "alive:", self.aliveNodes
-        print "dead:",  self.deadNodes
+        print len(targets), len(self.deadNodes)
         time.sleep(5)
         
         print "Creating new network."
@@ -123,7 +123,7 @@ class InstrumentationNode(object):
         ## adding the rest
         while len(self.aliveNodes) < len(self.deadNodes):
             self.rezRandom()
-            time.sleep(0.5)
+            time.sleep(MAINT_INT)
         print "Done."
         print "Allowing network to establish before Churn."
         time.sleep(3)
@@ -216,7 +216,7 @@ class InstrumentationNode(object):
 
 
 
-port = 9100
+port = PORTS[0]-1
 iNode =  InstrumentationNode("127.0.0.1",port)
 n1 = ExperimentNode("127.0.0.1",port+1,iNode.name)
 n2 = ExperimentNode("127.0.0.1",port+2,iNode.name)
@@ -225,11 +225,12 @@ n1.create()
 n2.join(n1.name)
 
 nodes = [n1,n2]
-for i in range(3,25):
+for i in range(3,TEST_SIZE+1):
     n = ExperimentNode("127.0.0.1",port+i, iNode.name)
     n.join(random.choice(nodes).name)
     nodes.append(n)
-    time.sleep(0.33)
+    time.sleep(MAINT_INT)
 
+PORTS = PORTS[TEST_SIZE+1:]
 
 iNode.setupExperiment()

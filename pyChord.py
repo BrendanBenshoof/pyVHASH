@@ -109,6 +109,7 @@ class Node(object):
         self.running = False
         self.myThread = None
         t = Thread(target=self.server.serve_forever)
+        t.daemon = True
         t.start()
 
 
