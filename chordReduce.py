@@ -29,8 +29,6 @@ class ChordReduceNode(DHTnode):
         self.mapsDone = {}
         self.backupMaps = {}  #
         self.backupReduces = []
-        
-        
 
     def mapFunc(self,key):
         print "mapfunc", key, self.name
@@ -55,9 +53,6 @@ class ChordReduceNode(DHTnode):
                 b[k]=a[k]
         return b #overload this to describe reduce function
         
-    
-    
-    
     # public
     def stage(self,filename, outputAddress):
         # retrieve the key file
@@ -74,6 +69,7 @@ class ChordReduceNode(DHTnode):
     # this is a big advantage here that should be mentioned in the paper
     # one node doesn't have to the lookup for each piece
     # that work is distributed
+    """ need to handle wrong person getting the maps (IE the person thinks he has the data but he actually doesn't) """ 
     def distributeMapTasks(self, keys, outputAddress):
         buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn
         myWork = []
@@ -107,7 +103,25 @@ class ChordReduceNode(DHTnode):
                 self.removeNodeFromFingers(node)
             #retry
             newTarget, done = self.find(Peer(node).hashid)
-            
+            self.sendMapJobs(self,newTarget, keys, outputAddress)
+
+
+    def sendReduceJob(self, atom):
+        sent  = False
+        while not sent:
+            target, done = self.find(outputAddress)
+            try:
+                Peer(target).handleReduceAtom(atom)
+                sent =  True
+            except:
+                print self.name, "can't send reduce to ", target
+                if target ==  self.succ.name:
+                    self.fixSuccessor()
+                elif target in self.successorList:
+                    self.fixSuccessorList(target)
+                else:
+                    self.removeNodeFromFingers(target)
+    
     
     # group each key into a bucket 
     def bucketizeKeys(self,keys):
@@ -153,12 +167,8 @@ class ChordReduceNode(DHTnode):
                 self.reduceQueue.append(ReduceAtom(results,keysInResults,outputAddress))
             if len(self.reduceQueue) >= 1:
                 atom = self.reduceQueue.pop() 
-                sent =  False
-                while not sent:
-                    target, done = self.find(outputAddress)
-                # send the message there
-                # handle if he fails to send
-
+                self.sendReduceJob(atom)
+                
 
     def mergeKeyResults(self, a, b):
         for k in a.keys():
