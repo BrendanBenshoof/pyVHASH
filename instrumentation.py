@@ -48,6 +48,7 @@ class ExperimentNode(Node):
     """
     def kill(self,newPort, polite = False):
         self.server.finished = True
+        self.running = False
         x = self
         self = self.__init__(self.ip,newPort,self.inst)
         return True

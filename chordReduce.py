@@ -27,6 +27,10 @@ class ChordReduceNode(DHTnode):
         self.mapQueue = []
         self.reduceQueue = []
         self.outQueue = []
+        self.backupMaps = {}  #
+        self.backupReduces = []
+        
+        
 
     def mapFunc(self,key):
         print "mapfunc", key, self.name
@@ -56,15 +60,66 @@ class ChordReduceNode(DHTnode):
                     data1[k]=data0[k]
         return data1 #overload this to describe reduce function
         
-    # first attempt
-    def execute():
+    
+    
+    
+    # public
+    def stage(self,filename):
+        # retrieve the key file
+        keyfile =  self.getKeyfile(filename)
+        keys = keyfile['keys']
+        self.distributeMapTasks(keys)
+        # distribute map tasks
+        # master reduce node
+        return True
+        
+    
+    #public
+    # need to work out threading details for this
+    # this is a big advantage here that should be mentioned in the paper
+    # one node doesn't have to the lookup for each piece
+    # that work is distributed
+    def distributeMapTasks(self, keys):
         pass
+        buckets =  self.bucketizeKeys(keys)
+        #using short circuiting only is a nifty idea iff we don't have any churn 
+        
+    
+    # group each key into a bucket 
+    def bucketizeKeys(self,keys):
+        pass
+    
+    
+    # public
+    def handleMapTask(self,key):
+        pass
+        # put it in the map Queue
+        # back it up
+        # return True
+    
+    
+    # keep on doing maps
+    def doMapLoop(self):
+        while True:
+            pass
+            # pop off the queue
+            # exceute the job
+            # send reduce out
+            # inform backups I am done with map
+            # backup the reduce atom 
 
-    def reduceLoop():
+
+    # reduce my jobs to one
+    def reduceLoop(self):
         while True:
             sleep(MAINT_INT*2)
             while len(self.reduceQueue) >= 2:
                 atom1 = self.reduceQueue.pop()
                 atom2 = self.reduceQueue.pop()
                 self.reduceQueue.append(self.reduceFunc(atom1,atom2))
-            if len(self.reduceQueue)
+            if len(self.reduceQueue):
+                pass
+                #dataAtom= self.reduceQueue.pop() 
+                #while not sent
+                #   find best the one hop neighbor back to the successor
+                #   send the message there
