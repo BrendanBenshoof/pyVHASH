@@ -8,17 +8,16 @@ import time
 
 
 class MapAtom(object):
-    jobid = None
-    hashid = None
-    stuffToMap = []
-    resultsAddress = 0
+    def __init__(self,hashid,outputAddress):
+        self.hashid = hashid
+        self.outputAddress = outputAddress
 
 
 class ReduceAtom(object):
-    jobid = None
-    results = []
-    keysInResults = []
-    resultsAddress = 0
+    def __init__(self,results,keysInResults,outputAddress):
+        results = {}
+        keysInResults = {}
+        outputAddress = 0
 
 class ChordReduceNode(DHTnode):
     def __init__(self,host,ip):
@@ -47,31 +46,25 @@ class ChordReduceNode(DHTnode):
                 output[w]=1
         return output
 
-    def reduceFunc(self,data0,data1):
-        if data0 == False:
-            return data1
-        elif data1 == False:
-            return data0
-        else:
-            #merge the dicts!
-            for k in data0.keys():
-                if k in data1.keys():
-                    data1[k]+=data0[k]
-                else:
-                    data1[k]=data0[k]
-        return data1 #overload this to describe reduce function
+    def reduceFunc(self,a,b):
+        #merge the dicts!
+        for k in a.keys():
+            if k in b.keys():
+                b[k]+=a[k]
+            else:
+                b[k]=a[k]
+        return b #overload this to describe reduce function
         
     
     
     
     # public
-    def stage(self,filename):
+    def stage(self,filename, outputAddress):
         # retrieve the key file
         keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
-        
-        #self.distributeMapTasks(keys)
         # distribute map tasks
+        self.distributeMapTasks(keys,outputAddress)
         # master reduce node
         return True
         
@@ -81,20 +74,43 @@ class ChordReduceNode(DHTnode):
     # this is a big advantage here that should be mentioned in the paper
     # one node doesn't have to the lookup for each piece
     # that work is distributed
-    def distributeMapTasks(self, keys):
-        pass
+    def distributeMapTasks(self, keys, outputAddress):
         buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn
         
-        #keep my keys
+        
         myWork = []
         if self.name in buckets.keys():
-            myWork = buckets[self.name]
+            myWork = buckets[self.name] #keep my keys
             del buckets[self.name]
             print  self.name, "got my work"
+        self.mapQueue = self.mapQueue + myWork #add my keys to queue
+        #FT: make backups
         
-        #add my keys to queue
+        
         #send other keys off
-        #FT: inform toplevel I did so this might be added to the previous step
+        threads = []
+        for dest in buckets.keys():
+            t =  Thread(target = self.sendMapJobs, args = (dest, buckets[dest], outputAddress,))
+            t.daemon = True
+        for t in threads():
+            t.start()
+        return True
+        
+        
+    def sendMapJobs(self,node,keys,outputAddress):
+        try:
+            Peer(node).distributeMapTasks(keys,outputAddress)
+        except Exception as e:
+            print self.name, "couldn't send to", node
+            if node ==  self.succ.name:
+                self.fixSuccessor()
+            elif node in self.successorList:
+                self.fixSuccessorList(node)
+            else:
+                self.removeNodeFromFingers(node)
+            #retry
+            newTarget, done = self.find(Peer(node).hashid)
+            
     
     # group each key into a bucket 
     def bucketizeKeys(self,keys):
@@ -117,25 +133,42 @@ class ChordReduceNode(DHTnode):
     # keep on doing maps
     def doMapLoop(self):
         while True:
-            pass
-            # pop off the queue
-            # exceute the job
-            # send reduce out 
-            # FT: inform backups I am done with map 
-            # FT: backup the reduce atom 
+            if len(mapQueue):
+                sleep(MAINT_INT)
+                # pop off the queue
+                # do I really need to lock it?
+                work  = self.mapQueue.pop()
+                # exceute the job
+                results = self.mapFunc(key)
+                # put reduce in my queue 
+                # FT: inform backups I am done with map 
+                # FT: backup the reduce atom 
 
 
     # reduce my jobs to one
     def reduceLoop(self):
         while True:
-            sleep(MAINT_INT*2)
+            time.sleep(MAINT_INT*2)
             while len(self.reduceQueue) >= 2:
                 atom1 = self.reduceQueue.pop()
                 atom2 = self.reduceQueue.pop()
-                self.reduceQueue.append(self.reduceFunc(atom1,atom2))
-            if len(self.reduceQueue):
-                pass
-                #dataAtom= self.reduceQueue.pop() 
-                #while not sent
-                #   find best the one hop neighbor back to the successor
-                #   send the message there
+                results = self.reduceFunc(atom1.results,atom2.results)
+                keysInResults =  self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
+                outputAddress = atom1.outputAddress
+                self.reduceQueue.append(ReduceAtom(results,keysInResults,outputAddress))
+            if len(self.reduceQueue) >= 1:
+                atom = self.reduceQueue.pop() 
+                sent =  False
+                while not sent:
+                    target, done = self.find(outputAddress)
+                # send the message there
+                # handle if he fails to send
+
+
+    def mergeKeyResults(self, a, b):
+        for k in a.keys():
+            if k in b.keys():
+                b[k]+=a[k]
+            else:
+                b[k]=a[k]
+        return b
