@@ -86,14 +86,13 @@ class ChordReduceNode(DHTnode):
         self.reduceThread.start()
 
 
-"""
-Let purgeBackups handle it
+    """
+    Let purgeBackups handle it
     def checkPred(self):
         hasNewPred = super(ChordReduceNode, self).checkPred(self)
         if hasNewPred:  # then the old guy died. I might need to take over
             pass
-"""
-
+    """
 
     def notify(self,poker):
         hasNewPred = super(ChordReduceNode, self).notify(self,poker)
@@ -282,9 +281,9 @@ Let purgeBackups handle it
 
 
 
-"""
-Thread Loops 
-"""
+    """
+    Thread Loops 
+    """
 
 
 
