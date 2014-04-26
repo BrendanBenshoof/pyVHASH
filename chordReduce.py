@@ -12,14 +12,27 @@ import time
 
 1)
     The final results must be backed up as they are added to the results dict.
-    In addition
+    In addition, the backups need to take over if they discover they are the new results man
+
 2)
+    When A sends his atoms to B, then B suddenly fails, A will know to find another one hop person to pass to 
+    If node N fails with map jobs in the Queue,  N's successor will take over.
+    Mapbackups will assume everything is peachy, unless their predecessor list changes.  If it does they will either
+        No longer have to back the data up
+        Need to take over
+    When N finishes a map job, he should inform the backups to destroyMapBackup()
+    Finally, if N's predecessor changes, N passes all data, reduceatoms and mapatoms that are that guy's 
+    In that case, N should inform the backups to destroyMapBackup() of the respective keys 
 
 3)
     We don't want to have to manually ask for reduce tasks to finish getting one of each ReduceAtom
     When passing a ReduceAtom back, if the next hop fails before sending to his next hop, I need to resend.
-    If the ReduceAtom's Owner fails, the 
-    (it is acceptable if somehow we get too many reduces of a sing)
+    If the ReduceAtom's Owner fails, the successor 
+    (it is acceptable if somehow we get too many instances of a reduce atom; we can unreduce)
+
+4) In addition:
+    We need to figure out if a Peer returns, but his caller is no longer there, what exception occurs, if any, and where
+    And most importantly, what ends up catching it.
 
 """
 
@@ -46,7 +59,7 @@ class ChordReduceNode(DHTnode):
         self.reduceQueue = []
         self.outQueue = []
         self.mapsDone = {}
-        self.backupMaps = {}  #
+        self.backupMaps = []  # MapAtoms
         self.backupReduces = []
         self.mapThread = None
         self.reduceThread = None
