@@ -75,16 +75,19 @@ class ChordReduceNode(DHTnode):
         return b #overload this to describe reduce function
         
     # public
+    #output address must be 
     def stage(self,filename, outputAddress):
         # retrieve the key file
         keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
         # distribute map tasks
         # create results
+
         for key in keys:
             self.keysInResults[key] =  0
             #FT and back them up
         self.resultsHolder = True
+
         self.resultsThread = Thread(target =  areWeThereYetLoop)
         self.resultsThread.daemon = True
         self.distributeMapTasks(keys,outputAddress)
@@ -116,7 +119,7 @@ class ChordReduceNode(DHTnode):
     # one node doesn't have to the lookup for each piece
     # that work is distributed
     """ need to handle wrong person getting the maps (IE the person thinks he has the data but he actually doesn't) """ 
-    def distributeMapTasks(self, keys, outputAddress):
+    def distributeMapTasks(self, keys, hexoutputAddress):
         buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn
         myWork = []
         if self.name in buckets.keys():
@@ -155,7 +158,7 @@ class ChordReduceNode(DHTnode):
     def sendReduceJob(self, atom):
         sent  = False
         while not sent:
-            target, done = self.find(outputAddress)
+            target, done = self.find(atom.outputAddress)
             try:
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
                 # # FTI might eb able to use python's queue and  task_done() and join to to this 

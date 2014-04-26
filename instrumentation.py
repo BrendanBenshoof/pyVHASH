@@ -125,9 +125,10 @@ class InstrumentationNode(object):
             self.rezRandom()
             time.sleep(MAINT_INT)
         print "Done."
-        self.startChurn()
-        
-        
+        #self.startChurn()
+
+        print "Allowing network to establish before Store."
+        time.sleep(3)
         print "Storing."
         self.choosing = True
         tester = random.choice(self.aliveNodes)
@@ -144,28 +145,27 @@ class InstrumentationNode(object):
         self.safe.pop()
         
         
-        
-        print "Churning the network before we retrieve."
-        time.sleep(10)
         self.choosing = True
         tester = random.choice(self.aliveNodes)
+        outputAddress = hex(Peer(tester).hashid)
+        print outputAddress
         self.safe.append(tester)
         self.choosing = False
-
-        print "Retrieving"
-        contents = {}
         try:
-            contents = Peer(tester).retrieveFile("constitution.txt")
+            Peer(tester).stage("constitution.txt", outputAddress)
         except:
             print "failed."
             traceback.print_exc(file=sys.stdout)
             print "terminating."
             return
-        print contents
-        
+        print "Store done."
         self.safe.pop()
 
-        
+
+        #print "Churning the network before we retrieve."
+        #time.sleep(10)
+
+        """
         for node in self.aliveNodes:
             try:
                 print Peer(node).myInfo()
@@ -173,6 +173,7 @@ class InstrumentationNode(object):
                 print e 
         self.churn = False 
         print "Done."
+        """
 
 
     # public
