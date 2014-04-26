@@ -77,10 +77,12 @@ class DHTnode(Node):
     def checkPred(self):
         if super(DHTnode,self).checkPred():
             self.purgeBackups()
+            return True
         else:
             self.predecessorList.pop()
             self.pred = Peer(self.predecessorList[-1])
             self.updatePredecessorList()
+            return False
 
     def updatePredecessorList(self):  # what if pred  = self?
         try:

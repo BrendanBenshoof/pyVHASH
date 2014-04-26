@@ -13,6 +13,7 @@ import time
 1)
     The final results must be backed up as they are added to the results dict.
     In addition, the backups need to take over if they discover they are the new results man
+    If a better results man comes in, he needs to be the results man.
 
 2)
     When A sends his atoms to B, then B suddenly fails, A will know to find another one hop person to pass to 
@@ -132,7 +133,9 @@ class ChordReduceNode(DHTnode):
         self.distributeMapTasks(keys,outputAddress)
         return True
 
-    def backupResults(self):
+
+    def backupResults(self, results):
+        pass
 
 
     #public
