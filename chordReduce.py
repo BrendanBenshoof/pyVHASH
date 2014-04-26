@@ -107,7 +107,7 @@ class ChordReduceNode(DHTnode):
         missingKeys = []
         for key in self.keysInResults.keys()[:]:
             if self.keysInResults[key]  ==  0:
-                missingKeys.apped(key)
+                missingKeys.append(key)
         return missingKeys
 
     #public
