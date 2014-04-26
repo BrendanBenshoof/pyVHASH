@@ -82,10 +82,14 @@ class ChordReduceNode(DHTnode):
         self.reduceThread.start()
 
     def checkPred(self):
-        hasNewPred = super(ChordReduceNode, self).checkPred(self)  
+        hasNewPred = super(ChordReduceNode, self).checkPred(self)
+        if hasNewPred:
+            self.adjustChordReduce()
 
     def notify(self,poker):
         hasNewPred = super(ChordReduceNode, self).notify(self,poker)
+        if hasNewPred:
+            self.adjustChordReduce()
 
 
     def mapFunc(self,key):
