@@ -72,7 +72,7 @@ class DHTnode(Node):
                 self.predecessorList.pop()
                 self.pred = Peer(self.predecessorList[-1])
                 self.updatePredecessorList()
-        return True
+        return hasNewPred
     
     def checkPred(self):
         if super(DHTnode,self).checkPred():
