@@ -118,14 +118,15 @@ class ChordReduceNode(DHTnode):
     # this is a big advantage here that should be mentioned in the paper
     # one node doesn't have to the lookup for each piece
     # that work is distributed
-    """ need to handle wrong person getting the maps (IE the person thinks he has the data but he actually doesn't) """ 
-    def distributeMapTasks(self, keys, hexoutputAddress):
+    """FT need to handle wrong person getting the maps (IE the person thinks he has the data but he actually doesn't) """ 
+    def distributeMapTasks(self, keys, outputAddress):
         buckets =  self.bucketizeKeys(keys) #using short circuiting only is a nifty idea iff we don't have any churn
         myWork = []
         if self.name in buckets.keys():
             myWork = buckets[self.name] #keep my keys
             del buckets[self.name]
             print  self.name, "got my work"
+        #print self.name, "adding to map queue"
         self.mapQueue = self.mapQueue + myWork #add my keys to queue
         #FT: make backups
 
@@ -134,7 +135,8 @@ class ChordReduceNode(DHTnode):
         for dest in buckets.keys():
             t =  Thread(target = self.sendMapJobs, args = (dest, buckets[dest], outputAddress,))
             t.daemon = True
-        for t in threads():
+            threads.append(t)
+        for t in threads:
             t.start()
         return True
         
@@ -179,6 +181,7 @@ class ChordReduceNode(DHTnode):
     
     # group each key into a bucket 
     def bucketizeKeys(self,keylist):
+        print self.name, "bucketizing"
         output = {}
         for k in keylist:
             owner = None
@@ -186,7 +189,6 @@ class ChordReduceNode(DHTnode):
                 owner = self.name
             else:
                 owner, t = self.find(k,False)
-            print owner
             if owner in output.keys():
                 output[owner].append(k)
             else:
@@ -199,10 +201,10 @@ class ChordReduceNode(DHTnode):
     def mapLoop(self):
         while self.running:
             if len(self.mapQueue):
-                sleep(MAINT_INT)
+                time.sleep(MAINT_INT)
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
-                # put reduce in my queue 
+                # put reduce in my queue.
                 self.reduceQueue.append(ReduceAtom(results, {word.hashid : 1},  work.outputAddress))
                 # FT: inform backups I am done with map 
                 # FT: backup the reduce atom 
