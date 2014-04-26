@@ -99,11 +99,12 @@ class ChordReduceNode(DHTnode):
         while self.resultsHolder:
             time.sleep(MAINT_INT*10)
             missingKeys  = self.getMissingKeys()
-            if len(missingKeys):
+            if len(missingKeys) > 0:
                 print self.name, "Waiting on ", missingKeys
             else:
                 print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
                 print self.results
+                print self.keysInResults
                 break
 
 
@@ -143,7 +144,7 @@ class ChordReduceNode(DHTnode):
         # I may have to join() here
         # no you don't because when this function returns, he made backups of his work
         # yes you do, because he only made backups of his stuff not the stuff he's sending
-        
+
         return True
         
 
@@ -244,5 +245,5 @@ class ChordReduceNode(DHTnode):
 
     def addToResults(self,atom):
         self.results =  self.mergeKeyResults(atom.results, self.results)
-        self.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results)
+        self.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.keysInResults)
         #FT backup stuff added to results
