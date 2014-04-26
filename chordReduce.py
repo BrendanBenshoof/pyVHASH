@@ -35,6 +35,7 @@ import time
     We need to figure out if a Peer returns, but his caller is no longer there, what exception occurs, if any, and where
     And most importantly, what ends up catching it.
 
+
 """
 
 
@@ -83,13 +84,31 @@ class ChordReduceNode(DHTnode):
 
     def checkPred(self):
         hasNewPred = super(ChordReduceNode, self).checkPred(self)
-        if hasNewPred:
-            self.adjustChordReduce()
+
 
     def notify(self,poker):
         hasNewPred = super(ChordReduceNode, self).notify(self,poker)
-        if hasNewPred:
-            self.adjustChordReduce()
+
+    def purgeBackups(self):
+        super(ChordReduceNode,self).purgeBackups()
+        # also get rid of my backups I no longer need
+        # take over stuff 
+
+
+
+
+    # may need to have a flag in case multiple  threads want to run this at the same time
+    # or a lock
+    def adjustChordReduce(self):
+        pass
+        """
+        if self.resultsHolder:
+            if my new pred is a better guy to do that
+                let him know that he's the better dude
+                make myself a backup
+                send him his data
+            otherwise chill, let other cases handle the rest
+        """
 
 
     def mapFunc(self,key):
