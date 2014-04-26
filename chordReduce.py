@@ -7,6 +7,23 @@ import time
 
 
 
+"""
+3 pieces are needed in order to achieve fault tolerance.
+
+1)
+    The final results must be backed up as they are added to the results dict.
+    In addition
+2)
+
+3)
+    We don't want to have to manually ask for reduce tasks to finish getting one of each ReduceAtom
+    When passing a ReduceAtom back, if the next hop fails before sending to his next hop, I need to resend.
+    If the ReduceAtom's Owner fails, the 
+    (it is acceptable if somehow we get too many reduces of a sing)
+
+"""
+
+
 class MapAtom(object):
     def __init__(self,hashid,outputAddress):
         self.hashid = hashid
