@@ -33,8 +33,12 @@ class ChordReduceNode(DHTnode):
         self.backupReduces = []
         self.mapThread = None
         self.reduceThread = None
+        self.resultsThread =  None
+        self.resultsHolder  = False
         self.results  = {}
-        self.backupResults {}
+        self.keysInResults  = {} # who we have reduce keys from
+        self.backupResults =  {}
+        self.backupKeys = {}
 
     # override
     def kickstart(self):
@@ -76,11 +80,28 @@ class ChordReduceNode(DHTnode):
         keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
         # distribute map tasks
+        # create results
+        for key in keys:
+            self.keysInResults[key] =  0
+            #FT and back them up
+        self.resultsHolder = True
+        self.resultsThread = Thread(target =  areWeThereYetLoop)
+        self.resultsThread.daemon = True
         self.distributeMapTasks(keys,outputAddress)
-        # master reduce node
+        self.resultsThread.start()
         return True
         
-    
+    def areWeThereYetLoop(self):
+        while self.resultsHolder:
+            time.sleep(MAINT_INT*10)
+            missingKeys  = self.getMissingKeys()
+            if len(missingKeys):
+                print self.name, "Waiting on ", missingKeys
+            else:
+                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
+                print self.results
+                break
+
     #public
     # need to work out threading details for this
     # this is a big advantage here that should be mentioned in the paper
@@ -128,7 +149,8 @@ class ChordReduceNode(DHTnode):
         while not sent:
             target, done = self.find(outputAddress)
             try:
-                Peer(target).handleReduceAtom(atom)
+                Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
+                # # FTI might eb able to use python's queue and  task_done() and join to to this 
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
@@ -200,3 +222,8 @@ class ChordReduceNode(DHTnode):
             else:
                 b[k]=a[k]
         return b
+
+    def addToResults(self,atom):
+        self.results =  self.mergeKeyResults(atom.results, self.results)
+        self.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results)
+        #FT backup stuff added to results
