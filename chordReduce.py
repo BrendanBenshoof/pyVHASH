@@ -80,18 +80,19 @@ class ChordReduceNode(DHTnode):
         # retrieve the key file
         keyfile =  self.getKeyfile(filename)
         keys = keyfile['keys']
-        # distribute map tasks
+        
         # create results
-
         for key in keys:
             self.keysInResults[key] =  0
             #FT and back them up
         self.resultsHolder = True
-
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
         self.resultsThread.daemon = True
+        
+
+        # distribute map tasks
         self.distributeMapTasks(keys,outputAddress)
-        self.resultsThread.start()
+        self.resultsThread.start()  #begin waiting for stuff to come back
         return True
         
     def areWeThereYetLoop(self):
@@ -127,7 +128,8 @@ class ChordReduceNode(DHTnode):
             del buckets[self.name]
             print  self.name, "got my work"
         #print self.name, "adding to map queue"
-        self.mapQueue = self.mapQueue + myWork #add my keys to queue
+        myAtoms = [MapAtom(hashid, outputAddress) for hashid in myWork]
+        self.mapQueue = self.mapQueue + myAtoms #add my keys to queue
         #FT: make backups
 
         #send other keys off
@@ -138,6 +140,10 @@ class ChordReduceNode(DHTnode):
             threads.append(t)
         for t in threads:
             t.start()
+        # I may have to join() here
+        # no you don't because when this function returns, he made backups of his work
+        # yes you do, because he only made backups of his stuff not the stuff he's sending
+        
         return True
         
 
@@ -205,7 +211,7 @@ class ChordReduceNode(DHTnode):
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
                 # put reduce in my queue.
-                self.reduceQueue.append(ReduceAtom(results, {word.hashid : 1},  work.outputAddress))
+                self.reduceQueue.append(ReduceAtom(results, {work.hashid : 1},  work.outputAddress))
                 # FT: inform backups I am done with map 
                 # FT: backup the reduce atom 
 
