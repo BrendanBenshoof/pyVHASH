@@ -178,7 +178,7 @@ class ChordReduceNode(DHTnode):
         return True
     
     # group each key into a bucket 
-    def bucketizeKeys(self,keys):
+    def bucketizeKeys(self,keylist):
         output = {}
         for k in keylist:
             owner = None
