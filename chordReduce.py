@@ -30,10 +30,13 @@ import time
     When passing a ReduceAtom back, if the next hop fails before sending to his next hop, I need to resend.
     If the ReduceAtom's Owner fails, the successor 
     (it is acceptable if somehow we get too many instances of a reduce atom; we can unreduce)
+    The ReduceAtom can be stored like other stuff, but the intermediate results must be handled by the senders
+
 
 4) In addition:
     We need to figure out if a Peer returns, but his caller is no longer there, what exception occurs, if any, and where
     And most importantly, what ends up catching it.
+
 
 
 """
@@ -82,17 +85,39 @@ class ChordReduceNode(DHTnode):
         self.mapThread.start()
         self.reduceThread.start()
 
+
+"""
+Let purgeBackups handle it
     def checkPred(self):
         hasNewPred = super(ChordReduceNode, self).checkPred(self)
+        if hasNewPred:  # then the old guy died. I might need to take over
+            pass
+"""
 
 
     def notify(self,poker):
         hasNewPred = super(ChordReduceNode, self).notify(self,poker)
+        if hasNewPred:  # then he was better than my previous guy
+            pass        # he might be taking over for some of my keys 
+            """
+            if self.resultsHolder:
+                if newPred is better owner of outputAddress:
+                    relinquish results
+            let overriding relinquishData to handle taking over MapAtoms and ReduceAtoms
+
+            """ 
 
     def purgeBackups(self):
         super(ChordReduceNode,self).purgeBackups()
-        # also get rid of my backups I no longer need
-        # take over stuff 
+        """
+        just plain throw away backups I no longer have to be responsible for
+        if not self.resultsHolder and self.keyIsMine(outputAddress):
+            becomeResultsHolder()
+        take over for uncompleted maps that are now keyIsMine
+        take over for reduceAtoms that are now mine
+        can we overrid makeBackupsMine for the latter two? 
+        """
+
 
 
 
