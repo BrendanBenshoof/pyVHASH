@@ -88,7 +88,7 @@ class ChordReduceNode(DHTnode):
             #FT and back them up
         self.resultsHolder = True
 
-        self.resultsThread = Thread(target =  areWeThereYetLoop)
+        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
         self.resultsThread.daemon = True
         self.distributeMapTasks(keys,outputAddress)
         self.resultsThread.start()
