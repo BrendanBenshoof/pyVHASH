@@ -9,7 +9,8 @@ from threading import Thread
 
 CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE= 20
+TEST_SIZE = 20
+TEST_FILE = "ti.txt"
 
 
 class ExperimentNode(Node):
@@ -135,7 +136,7 @@ class InstrumentationNode(object):
         self.safe.append(tester)
         self.choosing = False
         try:
-            Peer(tester).storeFile("constitution.txt")
+            Peer(tester).storeFile(TEST_FILE)
         except:
             print "failed."
             traceback.print_exc(file=sys.stdout)
@@ -152,7 +153,7 @@ class InstrumentationNode(object):
         self.safe.append(tester)
         self.choosing = False
         try:
-            Peer(tester).stage("constitution.txt", outputAddress)
+            Peer(tester).stage(TEST_FILE, outputAddress)
         except:
             print "failed."
             traceback.print_exc(file=sys.stdout)
