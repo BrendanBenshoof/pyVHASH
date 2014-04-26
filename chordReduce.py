@@ -102,6 +102,14 @@ class ChordReduceNode(DHTnode):
                 print self.results
                 break
 
+
+    def getMissingKeys(self):
+        missingKeys = []
+        for key in self.keysInResults.keys()[:]:
+            if self.keysInResults[key]  ==  0:
+                missingKeys.apped(key)
+        return missingKeys
+
     #public
     # need to work out threading details for this
     # this is a big advantage here that should be mentioned in the paper
