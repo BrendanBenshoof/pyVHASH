@@ -117,22 +117,22 @@ class ChordReduceNode(DHTnode):
         can we overrid makeBackupsMine for the latter two? 
         """
 
+    def relinquishData(self,key):
+        val = None
+        try:
+            val = self.data[key]
+        except:
+            print self, "Well that was weird", key, self.data
+        else:
+            try:
+                Peer(self.pred.name).put(key,val)
+            except Exception:
+                self.pred = None  #or fix by searching for his hash -1
+                raise Exception("he died on me")
+            else:
+                self.backups[key] = val
+                del self.data[key]
 
-
-
-
-    # may need to have a flag in case multiple  threads want to run this at the same time
-    # or a lock
-    def adjustChordReduce(self):
-        pass
-        """
-        if self.resultsHolder:
-            if my new pred is a better guy to do that
-                let him know that he's the better dude
-                make myself a backup
-                send him his data
-            otherwise chill, let other cases handle the rest
-        """
 
 
     def mapFunc(self,key):
@@ -186,8 +186,6 @@ class ChordReduceNode(DHTnode):
         return True
 
 
-    def backupResults(self, results):
-        pass
 
 
     #public
@@ -257,10 +255,43 @@ class ChordReduceNode(DHTnode):
                     self.removeNodeFromFingers(target)
 
     #public 
-    def handleReduceAtom(self, atomDict):
-        self.reduceQueue.append(ReduceAtom(atomDict['results'],atomDict['keysInResults'], atomDict['outputAddress']))
+    def handleReduceAtom(self, reduceDict):
+        self.reduceQueue.append(self.dictToReduce(reduceDict))
         return True
-    
+
+    # public 
+    # assume value is already there
+    def createMapBackup(self,key, outputAddress):
+        self.backupMaps.append(MapAtom(key, outputAddress))
+        return key in self.backups.keys()
+
+    #public
+    def createReduceBackup(self, reduceDict):
+        self.backupReduces.append(self.dictToReduce(reduceDict))
+        return True
+
+    def dictToReduce(self,reduceDict):
+        return ReduceAtom(reduceDict['results'],reduceDict['keysInResults'], reduceDict['outputAddress'])
+
+    #public
+    def relinquishMap(self, key):
+        for atom in self.backupMaps[:]:
+            if atom.hashid == key:
+                del self.backupMaps[key]
+                return True
+        return False
+
+    def relinquishReduce(self,key):
+        for atom in self.backupReduces[:]:
+            if atom.hashid == key:
+                del self.backupReduces[key]
+                return True
+        return False
+
+
+
+
+
     # group each key into a bucket 
     def bucketizeKeys(self,keylist):
         print self.name, "bucketizing"
@@ -284,9 +315,6 @@ class ChordReduceNode(DHTnode):
     """
     Thread Loops 
     """
-
-
-
     # keep on doing maps
     def mapLoop(self):
         while self.running:
