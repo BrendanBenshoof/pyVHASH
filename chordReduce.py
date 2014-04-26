@@ -151,14 +151,14 @@ class ChordReduceNode(DHTnode):
             else:
                 self.removeNodeFromFingers(node)
             #retry
-            newTarget, done = self.find(Peer(node).hashid)
+            newTarget, done = self.find(Peer(node).hashid,False)
             self.sendMapJobs(self,newTarget, keys, outputAddress)
 
 
     def sendReduceJob(self, atom):
         sent  = False
         while not sent:
-            target, done = self.find(atom.outputAddress)
+            target, done = self.find(atom.outputAddress, False)
             try:
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
                 # # FTI might eb able to use python's queue and  task_done() and join to to this 
@@ -185,7 +185,7 @@ class ChordReduceNode(DHTnode):
             if k in self.data.keys():  # the real question is why doesn't it work without this.  It should now
                 owner = self.name
             else:
-                owner, t = self.find(k)
+                owner, t = self.find(k,False)
             print owner
             if owner in output.keys():
                 output[owner].append(k)
