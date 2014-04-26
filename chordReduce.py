@@ -56,13 +56,17 @@ class ChordReduceNode(DHTnode):
         data = self.get(key) #get the chunk from local storage
         if type(data) == type(dict()):
             data = data['contents']
-        words = data.split()
+        text = data.split()
         output = {}
-        for w in words:
-            if w in output.keys():
-                output[w]+=1
+        for word in text:
+            word = word.lower()
+            word = word.strip(" !?.,;:\"\'*[]()/<>-*~%")
+            if word is u"" or word is u'':
+                continue
+            if word in output.keys():
+                output[word]+=1
             else:
-                output[w]=1
+                output[word]=1
         return output
 
     def reduceFunc(self,a,b):
