@@ -1,6 +1,5 @@
 from pyChord import Peer, getHash, getHashString, RPCThreading, MAINT_INT
-from ChordDHT import DHTnode as Node  
-from ChordDHT import deletions
+from chordReduce import ChordReduceNode as Node  
 
 import time
 import random
@@ -10,7 +9,7 @@ from threading import Thread
 
 CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE= 100
+TEST_SIZE= 20
 
 
 class ExperimentNode(Node):
@@ -179,7 +178,6 @@ class InstrumentationNode(object):
             except Exception as e:
                 print e 
         self.churn = False 
-        print deletions
         print "Done."
 
 

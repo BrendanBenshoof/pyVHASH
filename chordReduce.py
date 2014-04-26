@@ -1,5 +1,5 @@
 #chordReduce on ChordDHT
-from pyChord import Peer, getHashString
+from pyChord import Peer, getHashString, MAINT_INT
 from ChordDHT import DHTnode
 from cfs import DataAtom
 from threading import Thread, Lock
@@ -31,6 +31,21 @@ class ChordReduceNode(DHTnode):
         self.mapsDone = {}
         self.backupMaps = {}  #
         self.backupReduces = []
+        self.mapThread = None
+        self.reduceThread = None
+        self.results  = {}
+        self.backupResults {}
+
+    # override
+    def kickstart(self):
+        super(ChordReduceNode, self).kickstart()
+        self.mapThread = Thread(target = self.mapLoop) 
+        self.mapThread.daemon = True
+        self.reduceThread = Thread(target = self.reduceLoop)
+        self.reduceThread.daemon = True
+        self.mapThread.start()
+        self.reduceThread.start()
+
 
     def mapFunc(self,key):
         print "mapfunc", key, self.name
@@ -149,8 +164,8 @@ class ChordReduceNode(DHTnode):
     
     # keep on doing maps
     def mapLoop(self):
-        while True:
-            if len(mapQueue):
+        while self.running:
+            if len(self.mapQueue):
                 sleep(MAINT_INT)
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
@@ -162,7 +177,7 @@ class ChordReduceNode(DHTnode):
 
     # reduce my jobs to one
     def reduceLoop(self):
-        while True:
+        while self.running:
             time.sleep(MAINT_INT*2)
             while len(self.reduceQueue) >= 2:
                 atom1 = self.reduceQueue.pop()
@@ -172,8 +187,11 @@ class ChordReduceNode(DHTnode):
                 outputAddress = atom1.outputAddress
                 self.reduceQueue.append(ReduceAtom(results,keysInResults,outputAddress))
             if len(self.reduceQueue) >= 1:
-                atom = self.reduceQueue.pop() 
-                self.sendReduceJob(atom)
+                atom = self.reduceQueue.pop()
+                if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
+                    self.addToResults(atom)
+                else:
+                    self.sendReduceJob(atom)
 
     def mergeKeyResults(self, a, b):
         for k in a.keys():
