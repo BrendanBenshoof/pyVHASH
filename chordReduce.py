@@ -70,7 +70,7 @@ class ChordReduceNode(DHTnode):
         self.backupResults =  {}
         self.backupKeys = {}
 
-    # override
+    # overrides
     def kickstart(self):
         super(ChordReduceNode, self).kickstart()
         self.mapThread = Thread(target = self.mapLoop) 
@@ -79,6 +79,7 @@ class ChordReduceNode(DHTnode):
         self.reduceThread.daemon = True
         self.mapThread.start()
         self.reduceThread.start()
+
 
 
     def mapFunc(self,key):
@@ -109,7 +110,8 @@ class ChordReduceNode(DHTnode):
         return b #overload this to describe reduce function
         
     # public
-    #output address must be 
+    # We get to assume the node calling this remains alive until it's done
+    # output address must be hex 
     def stage(self,filename, outputAddress):
         # retrieve the key file
         keyfile =  self.getKeyfile(filename)
@@ -122,32 +124,16 @@ class ChordReduceNode(DHTnode):
         self.resultsHolder = True
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
         self.resultsThread.daemon = True
-        
+        self.resultsThread.start()  #begin waiting for stuff to come back
+
 
         # distribute map tasks
+        # This may have to become a thread
         self.distributeMapTasks(keys,outputAddress)
-        self.resultsThread.start()  #begin waiting for stuff to come back
         return True
-        
-    def areWeThereYetLoop(self):
-        while self.resultsHolder:
-            time.sleep(MAINT_INT*10)
-            missingKeys  = self.getMissingKeys()
-            if len(missingKeys) > 0:
-                print self.name, "Waiting on ", missingKeys
-            else:
-                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
-                print self.results
-                print self.keysInResults
-                break
 
+    def backupResults(self):
 
-    def getMissingKeys(self):
-        missingKeys = []
-        for key in self.keysInResults.keys()[:]:
-            if self.keysInResults[key]  ==  0:
-                missingKeys.append(key)
-        return missingKeys
 
     #public
     # need to work out threading details for this
@@ -236,8 +222,16 @@ class ChordReduceNode(DHTnode):
                 output[owner] = [k]
         return output
     
-    
-    
+
+
+
+
+"""
+Thread Loops 
+"""
+
+
+
     # keep on doing maps
     def mapLoop(self):
         while self.running:
@@ -269,6 +263,22 @@ class ChordReduceNode(DHTnode):
                 else:
                     self.sendReduceJob(atom)
 
+
+    def areWeThereYetLoop(self):
+        while self.resultsHolder:
+            time.sleep(MAINT_INT*10)
+            missingKeys  = self.getMissingKeys()
+            if len(missingKeys) > 0:
+                print self.name, "Waiting on ", missingKeys
+            else:
+                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
+                print self.results
+                print self.keysInResults
+                break
+
+
+
+
     def mergeKeyResults(self, a, b):
         for k in a.keys():
             if k in b.keys():
@@ -276,6 +286,15 @@ class ChordReduceNode(DHTnode):
             else:
                 b[k]=a[k]
         return b
+
+
+    def getMissingKeys(self):
+        missingKeys = []
+        for key in self.keysInResults.keys()[:]:
+            if self.keysInResults[key]  ==  0:
+                missingKeys.append(key)
+        return missingKeys
+
 
     def addToResults(self,atom):
         self.results =  self.mergeKeyResults(atom.results, self.results)

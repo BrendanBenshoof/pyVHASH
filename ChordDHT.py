@@ -22,7 +22,8 @@ class DHTnode(Node):
         
 
     def myInfo(self):
-        return str(self.predecessorList) + self.name + str(self.successorList)+ "\n" +self.ringInfo() + "\nData: "+ str(self.data.values()) +  "\nBackups: " + str(self.backups.values()) + "\n\n"
+        return str(self.predecessorList) + self.name + str(self.successorList)+ "\n" +self.ringInfo() + "\nData: "
+        + str(self.data.values()) +  "\nBackups: " + str(self.backups.values()) + "\n\n"
         #print self.data
 
     def ringInfo(self):
