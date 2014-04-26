@@ -66,6 +66,7 @@ class InstrumentationNode(object):
         self.aliveNodes = []
         self.deadNodes = []
         self.safe = []
+        self.churnThread = None
         t = Thread(target=self.server.serve_forever)
         t.start()    
         self.churn = False
@@ -124,15 +125,8 @@ class InstrumentationNode(object):
             self.rezRandom()
             time.sleep(MAINT_INT)
         print "Done."
-        print "Allowing network to establish before Churn."
-        time.sleep(3)
+        self.startChurn()
         
-        churnThread = Thread(target=self.simulateChurn)
-        churnThread.daemon =  True
-        self.churn = True
-        churnThread.start()
-        print "Started Churn."
-        time.sleep(5)
         
         print "Storing."
         self.choosing = True
@@ -186,6 +180,18 @@ class InstrumentationNode(object):
         self.aliveNodes.append(nodeName)
         print nodeName, "checked in."
         return True
+
+    def startChurn(self):
+        print "Allowing network to establish before Churn."
+        time.sleep(3)
+        
+        self.churnThread = Thread(target=self.simulateChurn)
+        self.churnThread.daemon =  True
+        self.churn = True
+        self.churnThread.start()
+        print "Started Churn."
+        time.sleep(5)
+
         
     def simulateChurn(self):
         while self.churn:
