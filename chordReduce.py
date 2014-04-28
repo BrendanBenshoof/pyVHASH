@@ -60,7 +60,6 @@ class ChordReduceNode(DHTnode):
         self.addNewFunc(self.stage,"stage")
         self.addNewFunc(self.distributeMapTasks,"distributeMapTasks")
         self.addNewFunc(self.handleReduceAtom, "handleReduceAtom")
-        self.outputAddress = None
         self.mapQueue = []
         self.mapLock = Lock()
         self.myReduceAtoms = {}
@@ -99,7 +98,7 @@ class ChordReduceNode(DHTnode):
         hasNewPred = super(ChordReduceNode, self).notify(self,poker)
         if hasNewPred:  # then he was better than my previous guy
             if self.resultsHolder:
-                if not keyIsMine(self.outputAddress):
+                if not keyIsMine(self.results.outputAddress):
                     self.relinquishResults()
 
     def purgeBackups(self):
@@ -112,6 +111,14 @@ class ChordReduceNode(DHTnode):
         take over for reduceAtoms that are now mine
         can we overrid makeBackupsMine for the latter two? 
         """
+
+    def backupToNewSuccessor(self, newSuccessor):
+        try:
+            for k, v in self.data.items():
+                Peer(newSuccessor).backup(k,v)
+        except Exception as e: # and.... it's gone
+            print self.name, "failed backing up stuff to", newSuccessor 
+            self.fixSuccessorList(newSuccessor)
 
     def relinquishData(self,key):
         val = None
@@ -151,11 +158,9 @@ class ChordReduceNode(DHTnode):
         self.resultsHolder =  False
         self.resultsThread.join()
         try:
-            Peer(pred.name).takeoverResults(results, keysInResults)
-            self.backupResults =  self.results.copy()
-            self.backupKeys =  self.keysInResults.copy()
-            self.results =  {}
-            self.keysInResults = {}
+            Peer(pred.name).takeoverResults(results)
+            self.backupResults =  self.results
+            self.results = None
         except Exception, e:
             print self.name, "I'm still the results owner"
             self.resultsHolder = True
@@ -166,8 +171,7 @@ class ChordReduceNode(DHTnode):
 
     #public
     def takeoverResults(self,resultsDict):
-        self.results = results 
-        self.keysInResults = keysInResults  
+        self.results = self.dictToReduce(resultsDict)   
         self.resultsHolder = True
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
         self.resultsThread.daemon = True
@@ -183,7 +187,6 @@ class ChordReduceNode(DHTnode):
         atom = self.dictToReduce(reduceDict) 
         self.myReduceAtoms[key] = atom
         return True
-
 
 
     def mapFunc(self,key):
@@ -217,15 +220,14 @@ class ChordReduceNode(DHTnode):
     # We get to assume the node calling this remains alive until it's done
     # output address must be hex 
     def stage(self,filename, outputAddress):
-        # retrieve the key file
-        self.outputAddress = outputAddress
-        keyfile =  self.getKeyfile(filename)
-        keys = keyfile['keys']
         
-        # create results
+        keyfile =  self.getKeyfile(filename)
+        keys = keyfile['keys'] # retrieve the key file
+
+        self.results =  ReduceAtom({}, {}, outputAddress) # create results
         for key in keys:
-            self.keysInResults[key] =  0
-        self.backupResults(self.results,self.keysInResults) #FT and back them up
+            self.results.keysInResults[key] =  0
+        self.backupNewResults(self.results.results, self.results.keysInResults) #FT and back them up
 
         self.resultsHolder = True
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
@@ -236,16 +238,17 @@ class ChordReduceNode(DHTnode):
         self.distributeMapTasks(keys,outputAddress)
         return True
 
+
     def addToResults(self,atom):
-        self.results =  self.mergeKeyResults(atom.results, self.results)
-        self.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.keysInResults)
+        self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
+        self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
         self.backupNewResults(atom.results,atom.keysInResults) #FT backup stuff added to results
 
     def backupNewResults(self,results, keysInResults):
         fails = []
         for s in self.successorList:
             try:
-                Peer(s).backupResults(results,keysInResults)
+                Peer(s).createBackupResults(results,keysInResults)
             except Exception, e:
                 print self.name, "failed backing up results to", s
                 fails.append(s)
@@ -253,11 +256,6 @@ class ChordReduceNode(DHTnode):
             for f in fails:
                 self.fixSuccessorList(f)
 
-    #public
-    def backupResults(self,results, resultsKeys):
-        self.backupResults = self.mergeKeyResults(results, self.backupResults)
-        self.backupKeys = self.mergeKeyResults(resultsKeys, self.backupKeys)
-        return True
 
 
 
@@ -280,6 +278,15 @@ class ChordReduceNode(DHTnode):
         self.mapQueue = self.mapQueue + myAtoms
         self.mapLock.release()
         #FT: make backups
+        for s in self.successorList:
+            try:
+                Peer(s).createBackupMap(self,key,outputAddress)
+            except Exception, e:
+                print self.name, "failed backing up results to", s
+                fails.append(s)
+        if (len(fails) >= 1):
+            for f in fails:
+                self.fixSuccessorList(f)
 
         #send other keys off
         threads = []
@@ -294,7 +301,6 @@ class ChordReduceNode(DHTnode):
         # yes you do, because he only made backups of his stuff not the stuff he's sending
 
         return True
-        
 
     def sendMapJobs(self,node,keys,outputAddress):
         try:
@@ -345,6 +351,14 @@ class ChordReduceNode(DHTnode):
         self.backupReduces.append(self.dictToReduce(reduceDict))
         return True
 
+    #public
+    def createBackupResults(self,results, resultsKeys):
+        self.backupResults.results = self.mergeKeyResults(results, self.backupResults.results)
+        self.backupResults.keysInResults = self.mergeKeyResults(resultsKeys, self.backupResults.keysInResults)
+        return True
+
+
+
     def dictToReduce(self,reduceDict):
         return ReduceAtom(reduceDict['results'],reduceDict['keysInResults'], reduceDict['outputAddress'])
 
@@ -377,7 +391,7 @@ class ChordReduceNode(DHTnode):
                 owner = self.name
             else:
                 owner, t = self.find(k,False)
-            if owner in output.keys():
+            elif owner in output.keys():
                 output[owner].append(k)
             else:
                 output[owner] = [k]
