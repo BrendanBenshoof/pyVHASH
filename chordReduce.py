@@ -134,7 +134,7 @@ class ChordReduceNode(DHTnode):
                 if mapAtom is not None:
                     Peer(self.pred.name).takeoverMap(mapAtom) 
                 if reduceAtom is not None:
-                    Peer(self.pred.name).takeoverReduce(reduceAtom)
+                    Peer(self.pred.name).takeoverReduce(key,reduceAtom)
             except Exception:
                 self.pred = None  #or fix by searching for his hash -1
                 raise Exception("he died on me")
@@ -177,6 +177,12 @@ class ChordReduceNode(DHTnode):
     #public
     def takeoverMap(self, atom):
         self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
+        return True
+
+    def takeoverReduce(self,key,reduceDict):  # no need to send it along, the guy handing it over should do that.
+        atom = self.dictToReduce(reduceDict) 
+        self.myReduceAtoms[key] = atom
+        return True
 
 
 
