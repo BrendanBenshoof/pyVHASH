@@ -196,6 +196,7 @@ class Node(object):
             self.successorList[0] = self.succ.name
         except Exception as e:
             print "I could not find the server you indicated.\n Go Away.",e
+            traceback.print_exc(file=sys.stdout)
             return False
             #raise Exception("Failed to connect")
         try:
@@ -206,6 +207,7 @@ class Node(object):
                 Peer(self.succ.name).notify(self.name)
             except Exception:
                 print "I could not find the patron you indicated.\n Go Away."
+                traceback.print_exc(file=sys.stdout)
                 return False
         self.kickstart()
         return True

@@ -4,7 +4,7 @@ from ChordDHT import DHTnode
 from cfs import DataAtom
 from threading import Thread, Lock
 import time
-
+from Queue import Queue
 
 
 """
@@ -64,7 +64,6 @@ class ChordReduceNode(DHTnode):
         self.mapLock = Lock()
         self.myReduceAtoms = {}
         self.reduceQueue = []
-        self.reduceLock = Lock()
         self.outQueue = []
         self.backupMaps = []  # MapAtoms
         self.backupReduces = []
@@ -95,11 +94,12 @@ class ChordReduceNode(DHTnode):
     """
 
     def notify(self,poker):
-        hasNewPred = super(ChordReduceNode, self).notify(self,poker)
+        hasNewPred = super(ChordReduceNode, self).notify(poker)
         if hasNewPred:  # then he was better than my previous guy
             if self.resultsHolder:
                 if not keyIsMine(self.results.outputAddress):
                     self.relinquishResults()
+        return hasNewPred
 
     def purgeBackups(self):
         super(ChordReduceNode,self).purgeBackups()
@@ -278,6 +278,7 @@ class ChordReduceNode(DHTnode):
         self.mapQueue = self.mapQueue + myAtoms
         self.mapLock.release()
         #FT: make backups
+        fails= []
         for s in self.successorList:
             try:
                 Peer(s).createBackupMap(self,key,outputAddress)
@@ -318,8 +319,9 @@ class ChordReduceNode(DHTnode):
             self.sendMapJobs(self,newTarget, keys, outputAddress)
 
 
+    #might need to be a thread
     def sendReduceJob(self, atom):
-        sent  = False
+        sent = False
         while not sent:
             target, done = self.find(atom.outputAddress, False)
             try:
@@ -328,7 +330,7 @@ class ChordReduceNode(DHTnode):
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
-                if target ==  self.succ.name:
+                if target == self.succ.name:
                     self.fixSuccessor()
                 elif target in self.successorList:
                     self.fixSuccessorList(target)
@@ -391,7 +393,7 @@ class ChordReduceNode(DHTnode):
                 owner = self.name
             else:
                 owner, t = self.find(k,False)
-            elif owner in output.keys():
+            if owner in output.keys():
                 output[owner].append(k)
             else:
                 output[owner] = [k]
@@ -424,7 +426,6 @@ class ChordReduceNode(DHTnode):
     # reduce my jobs to one
     def reduceLoop(self):
         while self.running:
-            self.reduceLock.acquire()
             time.sleep(MAINT_INT*2)
             while len(self.reduceQueue) >= 2:
                 atom1 = self.reduceQueue.pop()
@@ -439,7 +440,6 @@ class ChordReduceNode(DHTnode):
                     self.addToResults(atom)
                 else:
                     self.sendReduceJob(atom)
-            self.reduceLock.release()
 
 
     def areWeThereYetLoop(self):
@@ -450,8 +450,8 @@ class ChordReduceNode(DHTnode):
                 print self.name, "Waiting on ", missingKeys
             else:
                 print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
-                print self.results
-                print self.keysInResults
+                print self.results.results
+                print self.results.keysInResults
                 break
 
 
@@ -468,8 +468,8 @@ class ChordReduceNode(DHTnode):
 
     def getMissingKeys(self):
         missingKeys = []
-        for key in self.keysInResults.keys()[:]:
-            if self.keysInResults[key]  ==  0:
+        for key in self.results.keysInResults.keys()[:]:
+            if self.results.keysInResults[key]  ==  0:
                 missingKeys.append(key)
         return missingKeys
 
