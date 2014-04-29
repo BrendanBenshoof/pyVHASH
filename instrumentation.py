@@ -86,7 +86,7 @@ class InstrumentationNode(object):
     # tell a node to pretend to diaf
     def kill(self,victim):
         newPort = random.choice(PORTS)
-        print "Killing", victim
+        print "Killing", victim, Peer(victim).hashid
         try:
             oldPort =  int(victim[victim.rfind(":")+1:])
             newName =  victim[:victim.rfind(":")+1]+str(newPort)
@@ -100,7 +100,7 @@ class InstrumentationNode(object):
     
     # add node back in
     def rez(self, nodeName, ringMember):
-        print "Rezzing", nodeName
+        print "Rezzing", nodeName, Peer(nodeName).hashid
         try:
             Peer(nodeName).join(ringMember)
             self.deadNodes.remove(nodeName)

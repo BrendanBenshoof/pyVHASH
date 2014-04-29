@@ -6,7 +6,7 @@ from threading import Thread, Lock
 import time
 from Queue import Queue
 import sys, traceback
-
+import copy
 
 """
 3 pieces are needed in order to achieve fault tolerance.
@@ -75,7 +75,7 @@ class ChordReduceNode(DHTnode):
         self.reduceQueue = Queue()  # turn this into an actual Queue and we can handle FT on the way back
         self.outQueue = []
         self.backupMaps = []  # MapAtoms
-        self.backupReduces = []
+        self.backupReduces = {}
         self.mapThread = None
         self.reduceThread = None
         self.resultsThread =  None
@@ -106,7 +106,7 @@ class ChordReduceNode(DHTnode):
         hasNewPred = super(ChordReduceNode, self).notify(poker)
         if hasNewPred:  # then he was better than my previous guy
             if self.resultsHolder:
-                if not keyIsMine(self.results.outputAddress):
+                if not self.keyIsMine(self.results.outputAddress):
                     self.relinquishResults()
         return hasNewPred
 
@@ -123,25 +123,34 @@ class ChordReduceNode(DHTnode):
                 self.deleteBackupMap(atom.hashid)
             elif not self.shouldKeepBackup(atom.hashid):
                 self.deleteBackupMap(atom.hashid)
-        for atom in self.backupReduces[:]:
-            if keyIsMine(atom.hashid):
+        for key in self.backupReduces.keys()[:]:
+            if self.keyIsMine(key):
                 self.myReduceAtoms[key] = atom
-                self.deleteBackupReduce(atom.hashid)
+                self.deleteBackupReduce(key)
                 #should I selnd it off? no assume it got sent already
-            elif not self.shouldKeepBackup(atom.hashid):
-                self.deleteBackupReduce(atom.hashid)
+            elif not self.shouldKeepBackup(key):
+                self.deleteBackupReduce(key)
         self.mapLock.release()
         
         
     ## TODO create additional backups as we acquire new successors.
     def backupToNewSuccessor(self, newSuccessor):
+        self.mapLock.acquire()
         try:
-            for k, v in self.data.items():
+            for k, v in self.data.items()[:]:
                 Peer(newSuccessor).backup(k,v)
+            for atom in self.mapQueue:
+                Peer(newSuccessor).createBackupMap(atom.hashid,atom.outputAddress)
+            for key in self.myReduceAtoms.keys()[:]:
+                Peer(newSuccessor).createBackupReduce(key, self.myReduceAtoms[key])
+            if self.resultsHolder:
+                Peer(newSuccessor).createBackupResults(self.results)
         except Exception as e: # and.... it's gone
-            print self.name, "failed backing up stuff to", newSuccessor 
+            print self.name, "failed backing up stuff to new successor", newSuccessor 
             traceback.print_exc(file=sys.stdout)
             self.fixSuccessorList(newSuccessor)
+        finally:
+            self.mapLock.release()
 
     def relinquishData(self,key):
         val = None
@@ -260,8 +269,8 @@ class ChordReduceNode(DHTnode):
         return key in self.backups.keys()
 
     #public
-    def createBackupReduce(self, reduceDict):
-        self.backupReduces.append(self.dictToReduce(reduceDict))
+    def createBackupReduce(self, key , reduceDict):
+        self.backupReduces[key] = self.dictToReduce(reduceDict)
         return True
 
     #public
@@ -277,16 +286,24 @@ class ChordReduceNode(DHTnode):
     def deleteBackupMap(self, key):
         for atom in self.backupMaps[:]:
             if atom.hashid == key:
-                del self.backupMaps[key]
-                return True
+                try:
+                    self.backupMaps.remove(atom)
+                except Exception as e:
+                    print self.name, "key doesn't exist in backup maps", key
+                finally:
+                    return True
         return False
         
     #public
     def deleteBackupReduce(self,key):
-        for atom in self.backupReduces[:]:
-            if atom.hashid == key:
-                del self.backupReduces[key]
-                return True
+        for hashid in self.backupReduces.keys()[:]:
+            if hashid == key:
+                try:
+                    del self.backupReduces[key]
+                except Exception as e:
+                    print self.name, "key doesn't exist in backup reduces", key
+                finally:
+                    return True
         return False
 
 
@@ -459,9 +476,6 @@ class ChordReduceNode(DHTnode):
         return output
     
 
-
-
-
     """
     Thread Loops 
     """
@@ -474,9 +488,23 @@ class ChordReduceNode(DHTnode):
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
                 # put reduce in my queue.
-                self.reduceQueue.put(ReduceAtom(results, {work.hashid : 1},  work.outputAddress))
-                # FT: inform backups I am done with map 
-                # FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
+                self.reduceQueue.put(r)
+                self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
+                fails = []
+                for s in self.successorList:
+                    try:
+                        Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                        Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
+                    except Exception, e:
+                        print self.name, "failed to remove maps and give reduce backup to", s
+                        traceback.print_exc(file=sys.stdout)
+                        fails.append(s)
+                if (len(fails) >= 1):
+                    for f in fails:
+                        self.fixSuccessorList(f)
+                
+                
             self.mapLock.release() 
 
 
@@ -513,8 +541,6 @@ class ChordReduceNode(DHTnode):
                 print self.results.results
                 print self.results.keysInResults
                 break
-
-
 
 
     def mergeKeyResults(self, a, b):
