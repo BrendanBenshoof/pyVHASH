@@ -1,6 +1,7 @@
 from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS
 from cfs import DataAtom, KeyFile, makeBlocks
 import sys, traceback
+import time
 deletions = []
 
 NUM_PREDECESSORS = NUM_SUCCESSORS+1

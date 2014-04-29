@@ -107,6 +107,7 @@ class ChordReduceNode(DHTnode):
         if hasNewPred:  # then he was better than my previous guy
             if self.resultsHolder:
                 if not self.keyIsMine(self.results.outputAddress):
+                    print self.name, "is relinquishing results to ", self.pred.name
                     self.relinquishResults()
         return hasNewPred
 
@@ -117,20 +118,30 @@ class ChordReduceNode(DHTnode):
         super(ChordReduceNode,self).purgeBackups()
         self.purgeBackupResults()
         self.mapLock.acquire()
-        for atom in self.backupMaps[:]:
-            if self.keyIsMine(atom.hashid):
-                self.mapQueue.append(MapAtom(atom.hashid, atom.outputAddress))
-                self.deleteBackupMap(atom.hashid)
-            elif not self.shouldKeepBackup(atom.hashid):
-                self.deleteBackupMap(atom.hashid)
-        for key in self.backupReduces.keys()[:]:
-            if self.keyIsMine(key):
-                self.myReduceAtoms[key] = atom
-                self.deleteBackupReduce(key)
-                #should I selnd it off? no assume it got sent already
-            elif not self.shouldKeepBackup(key):
-                self.deleteBackupReduce(key)
-        self.mapLock.release()
+        try:
+            for atom in self.backupMaps[:]:
+                if self.keyIsMine(atom.hashid):
+                    print self.name, "taking over map for", atom.hashid
+                    self.mapQueue.append(MapAtom(atom.hashid, atom.outputAddress))
+                    self.deleteBackupMap(atom.hashid)
+                elif not self.shouldKeepBackup(atom.hashid):
+                    pass
+                    #print self.name, "deleting backup map of", atom.hashid
+                    #self.deleteBackupMap(atom.hashid)
+            for key in self.backupReduces.keys()[:]:
+                if self.keyIsMine(key):
+                    print self.name, "taking over reduce for", key
+                    self.myReduceAtoms[key] = self.backupReduces[key]
+                    self.deleteBackupReduce(key)
+                    #should I selnd it off? no assume it got sent already
+                elif not self.shouldKeepBackup(key):
+                    print self.name, "deleting backup reduce of", key
+                    self.deleteBackupReduce(key)
+        except:
+            print self.name, "something goofed"
+            traceback.print_exc(file=sys.stdout)
+        finally:
+           self.mapLock.release()
         
         
     ## TODO create additional backups as we acquire new successors.
@@ -141,13 +152,12 @@ class ChordReduceNode(DHTnode):
                 Peer(newSuccessor).backup(k,v)
             for atom in self.mapQueue:
                 Peer(newSuccessor).createBackupMap(atom.hashid,atom.outputAddress)
-            for key in self.myReduceAtoms.keys()[:]:
-                Peer(newSuccessor).createBackupReduce(key, self.myReduceAtoms[key])
+            for k, v in self.myReduceAtoms.items()[:]:
+                Peer(newSuccessor).createBackupReduce(k, v)
             if self.resultsHolder:
                 Peer(newSuccessor).createBackupResults(self.results)
         except Exception as e: # and.... it's gone
-            print self.name, "failed backing up stuff to new successor", newSuccessor 
-            traceback.print_exc(file=sys.stdout)
+            print self.name, "failed backing up stuff to new successor", newSuccessor,e
             self.fixSuccessorList(newSuccessor)
         finally:
             self.mapLock.release()
@@ -156,7 +166,6 @@ class ChordReduceNode(DHTnode):
         val = None
         mapAtom = None
         reduceAtom = None
-        print self.name, "acquired lock" 
         self.mapLock.acquire()
         try:
             val = self.data[key]
@@ -180,15 +189,17 @@ class ChordReduceNode(DHTnode):
                 traceback.print_exc(file=sys.stdout)
                 raise Exception("he died on me")
             else:
-                self.backups[key] = val
-                del self.data[key]
-                if mapAtom is not None:
-                    self.mapQueue.remove(mapAtom)
-                if reduceAtom is not None:
-                   del self.myReduceAtoms[key]
+                try:
+                    self.backups[key] = val
+                    del self.data[key]
+                    if mapAtom is not None:
+                        self.mapQueue.remove(mapAtom)
+                    if reduceAtom is not None:
+                       del self.myReduceAtoms[key]
+                except:
+                    traceback.print_exc(file=sys.stdout)
         finally:
             self.mapLock.release()
-            print self.name, "released  lock" 
             
 
     def relinquishResults(self):
@@ -202,6 +213,7 @@ class ChordReduceNode(DHTnode):
             self.results = None
         except Exception, e:
             print self.name, "I'm still the results owner"
+            self.results = self.backupResults
             self.resultsHolder = True
             self.resultsThread = Thread(target =  self.areWeThereYetLoop)
             self.resultsThread.daemon = True
@@ -210,6 +222,7 @@ class ChordReduceNode(DHTnode):
 
     #public
     def takeoverResults(self,resultsDict):
+        print self.name, "taking over results"
         self.results = self.dictToReduce(resultsDict)   
         self.resultsHolder = True
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
@@ -219,6 +232,7 @@ class ChordReduceNode(DHTnode):
 
     #public
     def takeoverMap(self, atom):
+        print self.name, "taking over map", atom['hashid'] 
         self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
         return True
     
@@ -233,6 +247,7 @@ class ChordReduceNode(DHTnode):
         if not self.resultsHolder and self.backupResults is not None: 
             if self.keyIsMine(self.backupResults.outputAddress):
                 try:
+                    print self.name, "I'm taking over" 
                     Peer(self.name).takeoverResults(self.backupResults)
                     self.backupResults = None
                 except:
@@ -243,6 +258,7 @@ class ChordReduceNode(DHTnode):
 
 
     def addToResults(self,atom):
+        print self.name, "adding to results", atom.keysInResults 
         self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
         self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
         self.backupNewResults(atom) #FT backup stuff added to results
@@ -378,7 +394,7 @@ class ChordReduceNode(DHTnode):
         if self.name in buckets.keys():
             myWork = buckets[self.name] #keep my keys
             del buckets[self.name]
-            print  self.name, "got my work"
+            print  self.name, "got my work", myWork
         print self.name, "adding to map queue"
         myAtoms = [MapAtom(hashid, outputAddress) for hashid in myWork]
         self.mapLock.acquire()
@@ -487,14 +503,16 @@ class ChordReduceNode(DHTnode):
     def mapLoop(self):
         while self.running:
             self.mapLock.acquire()
-            if len(self.mapQueue):
+            if len(self.mapQueue) > 1:
                 time.sleep(MAINT_INT)
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
+                print self.name, "mapped", work.hashid
                 # put reduce in my queue.
                 r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
                 self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
                 self.reduceQueue.put(r)
+                print self.name, "added to reduceQueue", work.hashid
                 fails = []
                 for s in self.successorList:
                     try:
@@ -519,17 +537,20 @@ class ChordReduceNode(DHTnode):
                 atom1 = self.reduceQueue.get()
                 atom2 = self.reduceQueue.get()
                 results = self.reduceFunc(atom1.results,atom2.results)
-                keysInResults =  self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
+                keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
+                print self.name, "reduced", keysInResults
                 self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))
                 self.reduceQueue.task_done()
                 self.reduceQueue.task_done()
-            if not self.reduceQueue.empty() >= 1:
+            if not self.reduceQueue.empty():
                 atom = self.reduceQueue.get()
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
+                    print self.name, "sending", atom.keysInResults
                     self.sendReduceJob(atom)
+                    print self.name, "sent", atom.keysInResults
                 self.reduceQueue.task_done()
 
 
@@ -557,9 +578,12 @@ class ChordReduceNode(DHTnode):
 
     def getMissingKeys(self):
         missingKeys = []
-        for key in self.results.keysInResults.keys()[:]:
-            if self.results.keysInResults[key]  ==  0:
-                missingKeys.append(key)
+        try:
+            for key in self.results.keysInResults.keys()[:]:
+                if self.results.keysInResults[key]  ==  0:
+                    missingKeys.append(key)
+        except Exception as e:
+            print self.name, "how the bollocks did this happen?", e
         return missingKeys
 
 

@@ -7,10 +7,10 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.05  #chance out of 1 
+CHURN_RATE = 0.0000001  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE = 10
-TEST_FILE = "ti.txt"
+TEST_SIZE = 20
+TEST_FILE = "constitution.txt"
 
 
 class ExperimentNode(Node):
@@ -86,7 +86,7 @@ class InstrumentationNode(object):
     # tell a node to pretend to diaf
     def kill(self,victim):
         newPort = random.choice(PORTS)
-        print "Killing", victim, Peer(victim).hashid
+        print "Killing", victim, getHashString(victim)
         try:
             oldPort =  int(victim[victim.rfind(":")+1:])
             newName =  victim[:victim.rfind(":")+1]+str(newPort)
@@ -100,7 +100,7 @@ class InstrumentationNode(object):
     
     # add node back in
     def rez(self, nodeName, ringMember):
-        print "Rezzing", nodeName, Peer(nodeName).hashid
+        print "Rezzing", nodeName, getHashString(nodeName)
         try:
             Peer(nodeName).join(ringMember)
             self.deadNodes.remove(nodeName)
@@ -157,7 +157,7 @@ class InstrumentationNode(object):
             traceback.print_exc(file=sys.stdout)
             print "terminating."
             return
-        print "Store done."
+        print "Stage done."
         self.safe.pop()
 
 

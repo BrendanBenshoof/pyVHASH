@@ -145,7 +145,7 @@ class Node(object):
                     try:
                         Peer(last).alert(closest)
                     except:
-                        pass
+                        print self.name, "couldn't alert", last
                     closest = last
                 else:
                     print self.name, "I'm out of options"
