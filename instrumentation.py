@@ -9,7 +9,7 @@ from threading import Thread
 
 CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE = 20
+TEST_SIZE = 10
 TEST_FILE = "ti.txt"
 
 
@@ -115,7 +115,7 @@ class InstrumentationNode(object):
         print "Wanton destruction complete."
         print "alive:", self.aliveNodes
         print len(targets), len(self.deadNodes)
-        time.sleep(5)
+        time.sleep(2)
         
         print "Creating new network."
         n = random.choice(self.deadNodes)
@@ -129,7 +129,7 @@ class InstrumentationNode(object):
         #self.startChurn()
 
         print "Allowing network to establish before Store."
-        time.sleep(3)
+        time.sleep(2)
         print "Storing."
         self.choosing = True
         tester = random.choice(self.aliveNodes)
@@ -148,7 +148,7 @@ class InstrumentationNode(object):
         
         self.choosing = True
         tester = random.choice(self.aliveNodes)
-        outputAddress = hex(Peer(tester).hashid)
+        outputAddress = getHashString( Peer(tester).name)
         print outputAddress
         self.safe.append(tester)
         self.choosing = False

@@ -1,5 +1,5 @@
 #chordReduce on ChordDHT
-from pyChord import Peer, getHashString, MAINT_INT
+from pyChord import Peer, getHashString, MAINT_INT,hashBetweenRightInclusive
 from ChordDHT import DHTnode
 from cfs import DataAtom
 from threading import Thread, Lock
@@ -61,10 +61,18 @@ class ChordReduceNode(DHTnode):
         self.addNewFunc(self.stage,"stage")
         self.addNewFunc(self.distributeMapTasks,"distributeMapTasks")
         self.addNewFunc(self.handleReduceAtom, "handleReduceAtom")
+        self.addNewFunc(self.createBackupMap,"createBackupMap")
+        self.addNewFunc(self.createBackupReduce, "createBackupReduce")
+        self.addNewFunc(self.createBackupResults,"createBackupResults")
+        self.addNewFunc(self.deleteBackupMap,"deleteBackupMap")
+        self.addNewFunc(self.deleteBackupReduce, "deleteBackupReduce")
+        self.addNewFunc(self.takeoverMap,"takeoverMap")
+        self.addNewFunc(self.takeoverReduce,"takeoverReduce")
+        self.addNewFunc(self.takeoverResults,"takeoverResults")
         self.mapQueue = []
         self.mapLock = Lock()
         self.myReduceAtoms = {}
-        self.reduceQueue = []
+        self.reduceQueue = []  # turn this into an actual Queue and we can handle FT on the way back
         self.outQueue = []
         self.backupMaps = []  # MapAtoms
         self.backupReduces = []
@@ -79,9 +87,12 @@ class ChordReduceNode(DHTnode):
     def shouldKeepBackup(self,key):
         if self.pred is None or self.pred.name == self.name:
             return True
-        return hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid):
+        return hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid)
 
     # overrides
+    
+   
+    
     def kickstart(self):
         super(ChordReduceNode, self).kickstart()
         self.mapThread = Thread(target = self.mapLoop) 
@@ -104,9 +115,9 @@ class ChordReduceNode(DHTnode):
     # 2) taking over backups we are now responsible for 
     def purgeBackups(self):
         super(ChordReduceNode,self).purgeBackups()
-        self.purgeResults()
+        self.purgeBackupResults()
         self.mapLock.acquire()
-        for atom in self.backupMaps[:]
+        for atom in self.backupMaps[:]:
             if self.keyIsMine(atom.hashid):
                 self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
                 self.deleteBackupMap(atom.hashid)
@@ -122,11 +133,7 @@ class ChordReduceNode(DHTnode):
         self.mapLock.release()
         
         
-        #just plain throw away backups I no longer have to be responsible for
-        #take over for uncompleted maps that are now keyIsMine
-        #take over for reduceAtoms that are now mine
-        #can we overrid makeBackupsMine for the latter two? 
-
+    ## TODO create additional backups as we acquire new successors.
     def backupToNewSuccessor(self, newSuccessor):
         try:
             for k, v in self.data.items():
@@ -222,24 +229,22 @@ class ChordReduceNode(DHTnode):
                     self.name, "I failed to talk to ... myself? I couldn't take over the results"
             elif not self.shouldKeepBackup(self.backupResults.outputAddress):
                 self.backupResults = None
-        
-        
-        
 
 
 
     def addToResults(self,atom):
         self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
         self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
-        self.backupNewResults(atom.results,atom.keysInResults) #FT backup stuff added to results
+        self.backupNewResults(atom) #FT backup stuff added to results
 
-    def backupNewResults(self,results, keysInResults):
+    def backupNewResults(self,atom):
         fails = []
         for s in self.successorList:
             try:
-                Peer(s).createBackupResults(results,keysInResults)
+                Peer(s).createBackupResults(atom)
             except Exception, e:
                 print self.name, "failed backing up results to", s
+                traceback.print_exc(file=sys.stdout)
                 fails.append(s)
         if (len(fails) >= 1):
             for f in fails:
@@ -249,21 +254,24 @@ class ChordReduceNode(DHTnode):
     
     # public 
     # assume value is already there
-    def createMapBackup(self,key, outputAddress):
+    def createBackupMap(self,key, outputAddress):
         self.backupMaps.append(MapAtom(key, outputAddress))
+        #print "\n\n\n\n\n\n\n\n",key in self.backups.keys()
         return key in self.backups.keys()
 
     #public
-    def createReduceBackup(self, reduceDict):
+    def createBackupReduce(self, reduceDict):
         self.backupReduces.append(self.dictToReduce(reduceDict))
         return True
 
     #public
-    def createBackupResults(self,results, resultsKeys):
-        self.backupResults.results = self.mergeKeyResults(results, self.backupResults.results)
-        self.backupResults.keysInResults = self.mergeKeyResults(resultsKeys, self.backupResults.keysInResults)
+    def createBackupResults(self, resultsDict):
+        if self.backupResults is None:
+            self.backupResults = self.dictToReduce(resultsDict)
+        else:
+            self.backupResults.results = self.mergeKeyResults(resultsDict['results'], self.backupResults.results)
+            self.backupResults.keysInResults = self.mergeKeyResults(resultsDict['keysInResults'], self.backupResults.keysInResults)
         return True
-        
         
     #public
     def deleteBackupMap(self, key):
@@ -325,7 +333,7 @@ class ChordReduceNode(DHTnode):
         self.results =  ReduceAtom({}, {}, outputAddress) # create results
         for key in keys:
             self.results.keysInResults[key] =  0
-        self.backupNewResults(self.results.results, self.results.keysInResults) #FT and back them up
+        self.backupNewResults(self.results) #FT and back them up
 
         self.resultsHolder = True
         self.resultsThread = Thread(target =  self.areWeThereYetLoop)
@@ -361,11 +369,13 @@ class ChordReduceNode(DHTnode):
         #FT: make backups
         fails= []
         for s in self.successorList:
-            try:
-                Peer(s).createBackupMap(self,key,outputAddress)
-            except Exception, e:
-                print self.name, "failed backing up results to", s
-                fails.append(s)
+            for key in myWork:
+                try:
+                    Peer(s).createBackupMap(key,outputAddress)
+                except Exception, e:
+                    print self.name, "failed backing up maps to", s
+                    traceback.print_exc(file=sys.stdout)
+                    fails.append(s)
         if (len(fails) >= 1):
             for f in fails:
                 self.fixSuccessorList(f)
@@ -398,7 +408,8 @@ class ChordReduceNode(DHTnode):
             newTarget, done = self.find(Peer(node).hashid,False)
             self.sendMapJobs(self,newTarget, keys, outputAddress)
 
-
+    
+    
     #might need to be a thread
     def sendReduceJob(self, atom):
         sent = False
