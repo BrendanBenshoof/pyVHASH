@@ -36,3 +36,21 @@ time.sleep(0.5)
 print b.getCount()
 
 print b.getCount()
+
+
+
+
+try:
+    print 1
+except Exception as e:
+    print 2
+else:
+    try:
+        print 1/0
+    except Exception as e:
+        print "NONONONO"
+        raise(e)
+    else: 
+        print 5555
+finally:
+    print "!!!"

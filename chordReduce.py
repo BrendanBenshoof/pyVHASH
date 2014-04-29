@@ -5,6 +5,7 @@ from cfs import DataAtom
 from threading import Thread, Lock
 import time
 from Queue import Queue
+import sys, traceback
 
 
 """
@@ -72,7 +73,13 @@ class ChordReduceNode(DHTnode):
         self.resultsThread =  None
         self.resultsHolder  = False
         self.results  = None  # make a reduce atom
-        self.backupResults= None
+        self.backupResults = None
+        
+        
+    def shouldKeepBackup(self,key):
+        if self.pred is None or self.pred.name == self.name:
+            return True
+        return hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid):
 
     # overrides
     def kickstart(self):
@@ -84,15 +91,6 @@ class ChordReduceNode(DHTnode):
         self.mapThread.start()
         self.reduceThread.start()
 
-
-    """
-    Let purgeBackups handle it
-    def checkPred(self):
-        hasNewPred = super(ChordReduceNode, self).checkPred(self)
-        if hasNewPred:  # then the old guy died. I might need to take over
-            pass
-    """
-
     def notify(self,poker):
         hasNewPred = super(ChordReduceNode, self).notify(poker)
         if hasNewPred:  # then he was better than my previous guy
@@ -101,16 +99,33 @@ class ChordReduceNode(DHTnode):
                     self.relinquishResults()
         return hasNewPred
 
+    ## we purge our cache of backups by 
+    # 1) throwing away backups we're no longer responsible for
+    # 2) taking over backups we are now responsible for 
     def purgeBackups(self):
         super(ChordReduceNode,self).purgeBackups()
-        """
-        just plain throw away backups I no longer have to be responsible for
-        if not self.resultsHolder and self.keyIsMine(outputAddress):
-            becomeResultsHolder()
-        take over for uncompleted maps that are now keyIsMine
-        take over for reduceAtoms that are now mine
-        can we overrid makeBackupsMine for the latter two? 
-        """
+        self.purgeResults()
+        self.mapLock.acquire()
+        for atom in self.backupMaps[:]
+            if self.keyIsMine(atom.hashid):
+                self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
+                self.deleteBackupMap(atom.hashid)
+            elif not self.shouldKeepBackup(atom.hashid):
+                self.deleteBackupMap(atom.hashid)
+        for atom in self.backupReduces[:]:
+            if keyIsMine(atom.hashid):
+                self.myReduceAtoms[key] = atom
+                self.deleteBackupReduce(atom.hashid)
+                #should I selnd it off? no assume it got sent already
+            elif not self.shouldKeepBackup(atom.hashid):
+                self.deleteBackupReduce(atom.hashid)
+        self.mapLock.release()
+        
+        
+        #just plain throw away backups I no longer have to be responsible for
+        #take over for uncompleted maps that are now keyIsMine
+        #take over for reduceAtoms that are now mine
+        #can we overrid makeBackupsMine for the latter two? 
 
     def backupToNewSuccessor(self, newSuccessor):
         try:
@@ -118,12 +133,14 @@ class ChordReduceNode(DHTnode):
                 Peer(newSuccessor).backup(k,v)
         except Exception as e: # and.... it's gone
             print self.name, "failed backing up stuff to", newSuccessor 
+            traceback.print_exc(file=sys.stdout)
             self.fixSuccessorList(newSuccessor)
 
     def relinquishData(self,key):
         val = None
         mapAtom = None
         reduceAtom = None
+        print self.name, "acquired reliquish lock" 
         self.mapLock.acquire()
         try:
             val = self.data[key]
@@ -152,11 +169,16 @@ class ChordReduceNode(DHTnode):
                     self.mapQueue.remove(mapAtom)
                 if reduceAtom is not None:
                    del self.reduceAtoms[key]
-        self.mapLock.release()
+        finally:
+            self.mapLock.release()
+            print self.name, "released reliquish lock" 
+            
 
     def relinquishResults(self):
         self.resultsHolder =  False
+        print self.name, "Waiting for my resultsThread to finish"
         self.resultsThread.join()
+        print self.name, "ResultsThread is done"
         try:
             Peer(pred.name).takeoverResults(results)
             self.backupResults =  self.results
@@ -182,11 +204,83 @@ class ChordReduceNode(DHTnode):
     def takeoverMap(self, atom):
         self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
         return True
-
+    
+    #public
     def takeoverReduce(self,key,reduceDict):  # no need to send it along, the guy handing it over should do that.
         atom = self.dictToReduce(reduceDict) 
         self.myReduceAtoms[key] = atom
         return True
+
+
+    def purgeBackupResults(self):
+        if not self.resultsHolder and self.backupResults is not None: 
+            if self.keyIsMine(self.backupResults.outputAddress):
+                try:
+                    Peer(self.name).takeoverResults(self.backupResults)
+                    self.backupResults = None
+                except:
+                    self.name, "I failed to talk to ... myself? I couldn't take over the results"
+            elif not self.shouldKeepBackup(self.backupResults.outputAddress):
+                self.backupResults = None
+        
+        
+        
+
+
+
+    def addToResults(self,atom):
+        self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
+        self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
+        self.backupNewResults(atom.results,atom.keysInResults) #FT backup stuff added to results
+
+    def backupNewResults(self,results, keysInResults):
+        fails = []
+        for s in self.successorList:
+            try:
+                Peer(s).createBackupResults(results,keysInResults)
+            except Exception, e:
+                print self.name, "failed backing up results to", s
+                fails.append(s)
+        if (len(fails) >= 1):
+            for f in fails:
+                self.fixSuccessorList(f)
+                
+    
+    
+    # public 
+    # assume value is already there
+    def createMapBackup(self,key, outputAddress):
+        self.backupMaps.append(MapAtom(key, outputAddress))
+        return key in self.backups.keys()
+
+    #public
+    def createReduceBackup(self, reduceDict):
+        self.backupReduces.append(self.dictToReduce(reduceDict))
+        return True
+
+    #public
+    def createBackupResults(self,results, resultsKeys):
+        self.backupResults.results = self.mergeKeyResults(results, self.backupResults.results)
+        self.backupResults.keysInResults = self.mergeKeyResults(resultsKeys, self.backupResults.keysInResults)
+        return True
+        
+        
+    #public
+    def deleteBackupMap(self, key):
+        for atom in self.backupMaps[:]:
+            if atom.hashid == key:
+                del self.backupMaps[key]
+                return True
+        return False
+        
+    #public
+    def deleteBackupReduce(self,key):
+        for atom in self.backupReduces[:]:
+            if atom.hashid == key:
+                del self.backupReduces[key]
+                return True
+        return False
+
 
 
     def mapFunc(self,key):
@@ -215,6 +309,10 @@ class ChordReduceNode(DHTnode):
             else:
                 b[k]=a[k]
         return b #overload this to describe reduce function
+
+
+
+
         
     # public
     # We get to assume the node calling this remains alive until it's done
@@ -238,23 +336,6 @@ class ChordReduceNode(DHTnode):
         self.distributeMapTasks(keys,outputAddress)
         return True
 
-
-    def addToResults(self,atom):
-        self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
-        self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
-        self.backupNewResults(atom.results,atom.keysInResults) #FT backup stuff added to results
-
-    def backupNewResults(self,results, keysInResults):
-        fails = []
-        for s in self.successorList:
-            try:
-                Peer(s).createBackupResults(results,keysInResults)
-            except Exception, e:
-                print self.name, "failed backing up results to", s
-                fails.append(s)
-        if (len(fails) >= 1):
-            for f in fails:
-                self.fixSuccessorList(f)
 
 
 
@@ -300,7 +381,6 @@ class ChordReduceNode(DHTnode):
         # I may have to join() here
         # no you don't because when this function returns, he made backups of his work
         # yes you do, because he only made backups of his stuff not the stuff he's sending
-
         return True
 
     def sendMapJobs(self,node,keys,outputAddress):
@@ -342,45 +422,10 @@ class ChordReduceNode(DHTnode):
         self.reduceQueue.append(self.dictToReduce(reduceDict))
         return True
 
-    # public 
-    # assume value is already there
-    def createMapBackup(self,key, outputAddress):
-        self.backupMaps.append(MapAtom(key, outputAddress))
-        return key in self.backups.keys()
-
-    #public
-    def createReduceBackup(self, reduceDict):
-        self.backupReduces.append(self.dictToReduce(reduceDict))
-        return True
-
-    #public
-    def createBackupResults(self,results, resultsKeys):
-        self.backupResults.results = self.mergeKeyResults(results, self.backupResults.results)
-        self.backupResults.keysInResults = self.mergeKeyResults(resultsKeys, self.backupResults.keysInResults)
-        return True
-
 
 
     def dictToReduce(self,reduceDict):
         return ReduceAtom(reduceDict['results'],reduceDict['keysInResults'], reduceDict['outputAddress'])
-
-    #public
-    def deleteBackupMap(self, key):
-        for atom in self.backupMaps[:]:
-            if atom.hashid == key:
-                del self.backupMaps[key]
-                return True
-        return False
-
-    def deleteBackupReduce(self,key):
-        for atom in self.backupReduces[:]:
-            if atom.hashid == key:
-                del self.backupReduces[key]
-                return True
-        return False
-
-    def relinquishResults(self):
-        pass
 
 
     # group each key into a bucket 
