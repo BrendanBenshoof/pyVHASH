@@ -119,7 +119,7 @@ class ChordReduceNode(DHTnode):
         self.mapLock.acquire()
         for atom in self.backupMaps[:]:
             if self.keyIsMine(atom.hashid):
-                self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
+                self.mapQueue.append(MapAtom(atom.hashid, atom.outputAddress))
                 self.deleteBackupMap(atom.hashid)
             elif not self.shouldKeepBackup(atom.hashid):
                 self.deleteBackupMap(atom.hashid)
@@ -156,7 +156,7 @@ class ChordReduceNode(DHTnode):
         val = None
         mapAtom = None
         reduceAtom = None
-        print self.name, "acquired reliquish lock" 
+        print self.name, "acquired lock" 
         self.mapLock.acquire()
         try:
             val = self.data[key]
@@ -177,6 +177,7 @@ class ChordReduceNode(DHTnode):
                     Peer(self.pred.name).takeoverReduce(key,reduceAtom)
             except Exception:
                 self.pred = None  #or fix by searching for his hash -1
+                traceback.print_exc(file=sys.stdout)
                 raise Exception("he died on me")
             else:
                 self.backups[key] = val
@@ -184,10 +185,10 @@ class ChordReduceNode(DHTnode):
                 if mapAtom is not None:
                     self.mapQueue.remove(mapAtom)
                 if reduceAtom is not None:
-                   del self.reduceAtoms[key]
+                   del self.myReduceAtoms[key]
         finally:
             self.mapLock.release()
-            print self.name, "released reliquish lock" 
+            print self.name, "released  lock" 
             
 
     def relinquishResults(self):
@@ -378,7 +379,7 @@ class ChordReduceNode(DHTnode):
             myWork = buckets[self.name] #keep my keys
             del buckets[self.name]
             print  self.name, "got my work"
-        #print self.name, "adding to map queue"
+        print self.name, "adding to map queue"
         myAtoms = [MapAtom(hashid, outputAddress) for hashid in myWork]
         self.mapLock.acquire()
         self.mapQueue = self.mapQueue + myAtoms
@@ -410,6 +411,7 @@ class ChordReduceNode(DHTnode):
         # yes you do, because he only made backups of his stuff not the stuff he's sending
         for t in threads:
             t.join()
+        print self.name, "sent maps"
         return True
 
     def sendMapJobs(self,node,keys,outputAddress):
@@ -417,6 +419,7 @@ class ChordReduceNode(DHTnode):
             Peer(node).distributeMapTasks(keys,outputAddress)
         except Exception as e:
             print self.name, "couldn't send to", node
+            traceback.print_exc(file=sys.stdout)
             if node ==  self.succ.name:
                 self.fixSuccessor()
             elif node in self.successorList:
@@ -440,6 +443,7 @@ class ChordReduceNode(DHTnode):
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
+                traceback.print_exc(file=sys.stdout)
                 if target == self.succ.name:
                     self.fixSuccessor()
                 elif target in self.successorList:
@@ -489,8 +493,8 @@ class ChordReduceNode(DHTnode):
                 results = self.mapFunc(work.hashid) # excute the job
                 # put reduce in my queue.
                 r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
-                self.reduceQueue.put(r)
                 self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
+                self.reduceQueue.put(r)
                 fails = []
                 for s in self.successorList:
                     try:
@@ -503,7 +507,6 @@ class ChordReduceNode(DHTnode):
                 if (len(fails) >= 1):
                     for f in fails:
                         self.fixSuccessorList(f)
-                
                 
             self.mapLock.release() 
 

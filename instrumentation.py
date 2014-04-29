@@ -7,7 +7,7 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.002  #chance out of 1 
+CHURN_RATE = 0.05  #chance out of 1 
 PORTS =  range(9101,9999)
 TEST_SIZE = 10
 TEST_FILE = "ti.txt"
@@ -126,10 +126,8 @@ class InstrumentationNode(object):
             self.rezRandom()
             time.sleep(MAINT_INT)
         print "Done."
-        #self.startChurn()
+        self.startChurn()
 
-        print "Allowing network to establish before Store."
-        time.sleep(2)
         print "Storing."
         self.choosing = True
         tester = random.choice(self.aliveNodes)

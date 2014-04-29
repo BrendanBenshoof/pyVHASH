@@ -1,6 +1,6 @@
 from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS
 from cfs import DataAtom, KeyFile, makeBlocks
-
+import sys, traceback
 deletions = []
 
 NUM_PREDECESSORS = NUM_SUCCESSORS+1
@@ -69,6 +69,7 @@ class DHTnode(Node):
                         self.relinquishData(key)
             except Exception:
                 print self.name, "fix this"
+                traceback.print_exc(file=sys.stdout)
                 self.predecessorList.pop()
                 self.pred = Peer(self.predecessorList[-1])
                 self.updatePredecessorList()
