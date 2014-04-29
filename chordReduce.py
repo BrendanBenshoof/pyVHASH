@@ -72,7 +72,7 @@ class ChordReduceNode(DHTnode):
         self.mapQueue = []
         self.mapLock = Lock()
         self.myReduceAtoms = {}
-        self.reduceQueue = []  # turn this into an actual Queue and we can handle FT on the way back
+        self.reduceQueue = Queue()  # turn this into an actual Queue and we can handle FT on the way back
         self.outQueue = []
         self.backupMaps = []  # MapAtoms
         self.backupReduces = []
@@ -430,7 +430,7 @@ class ChordReduceNode(DHTnode):
 
     #public 
     def handleReduceAtom(self, reduceDict):
-        self.reduceQueue.append(self.dictToReduce(reduceDict))
+        self.reduceQueue.put(self.dictToReduce(reduceDict))
         return True
 
 
@@ -471,11 +471,9 @@ class ChordReduceNode(DHTnode):
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
                 # put reduce in my queue.
-                self.reduceQueue.append(ReduceAtom(results, {work.hashid : 1},  work.outputAddress))
+                self.reduceQueue.put(ReduceAtom(results, {work.hashid : 1},  work.outputAddress))
                 # FT: inform backups I am done with map 
-
-                # FT: backup the reduce atom
-                self.myReduceAtoms #deepcopy of atom
+                # FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
             self.mapLock.release() 
 
 
@@ -483,15 +481,15 @@ class ChordReduceNode(DHTnode):
     def reduceLoop(self):
         while self.running:
             time.sleep(MAINT_INT*2)
-            while len(self.reduceQueue) >= 2:
-                atom1 = self.reduceQueue.pop()
-                atom2 = self.reduceQueue.pop()
+            while self.reduceQueue.qsize() >= 2:
+                atom1 = self.reduceQueue.get()
+                atom2 = self.reduceQueue.get()
                 results = self.reduceFunc(atom1.results,atom2.results)
                 keysInResults =  self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
-                self.reduceQueue.append(ReduceAtom(results,keysInResults,outputAddress))
-            if len(self.reduceQueue) >= 1:
-                atom = self.reduceQueue.pop()
+                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))
+            if not self.reduceQueue.empty() >= 1:
+                atom = self.reduceQueue.get()
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
