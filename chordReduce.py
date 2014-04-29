@@ -431,6 +431,7 @@ class ChordReduceNode(DHTnode):
     #public 
     def handleReduceAtom(self, reduceDict):
         self.reduceQueue.put(self.dictToReduce(reduceDict))
+        self.reduceQueue.join()
         return True
 
 
@@ -488,12 +489,15 @@ class ChordReduceNode(DHTnode):
                 keysInResults =  self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
                 self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))
+                self.reduceQueue.task_done()
+                self.reduceQueue.task_done()
             if not self.reduceQueue.empty() >= 1:
                 atom = self.reduceQueue.get()
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
                     self.sendReduceJob(atom)
+                self.reduceQueue.task_done()
 
 
     def areWeThereYetLoop(self):
