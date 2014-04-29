@@ -391,6 +391,8 @@ class ChordReduceNode(DHTnode):
         # I may have to join() here
         # no you don't because when this function returns, he made backups of his work
         # yes you do, because he only made backups of his stuff not the stuff he's sending
+        for t in threads:
+            t.join()
         return True
 
     def sendMapJobs(self,node,keys,outputAddress):
