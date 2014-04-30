@@ -503,7 +503,7 @@ class ChordReduceNode(DHTnode):
     def mapLoop(self):
         while self.running:
             self.mapLock.acquire()
-            if len(self.mapQueue) > 1:
+            if len(self.mapQueue) >= 1:
                 time.sleep(MAINT_INT)
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job

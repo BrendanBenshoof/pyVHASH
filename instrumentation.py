@@ -7,7 +7,7 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.0000001  #chance out of 1 
+CHURN_RATE = 0.02  #chance out of 1 
 PORTS =  range(9101,9999)
 TEST_SIZE = 20
 TEST_FILE = "constitution.txt"
