@@ -288,6 +288,7 @@ class Node(object):
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
         except Exception as e:
+            print self.name, "updateSuccessorList failed on successor", self.succ.name 
             self.fixSuccessor()
 
 

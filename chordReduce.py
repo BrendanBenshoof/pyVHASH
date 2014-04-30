@@ -437,8 +437,7 @@ class ChordReduceNode(DHTnode):
         try:
             Peer(node).distributeMapTasks(keys,outputAddress)
         except Exception as e:
-            print self.name, "couldn't send to", node
-            traceback.print_exc(file=sys.stdout)
+            print self.name, "couldn't send maps to", node
             if node ==  self.succ.name:
                 self.fixSuccessor()
             elif node in self.successorList:
@@ -447,6 +446,7 @@ class ChordReduceNode(DHTnode):
                 self.removeNodeFromFingers(node)
             #retry
             newTarget, done = self.find(Peer(node).hashid,False)
+            print self.name, "resending maps to", newTarget
             self.sendMapJobs(self,newTarget, keys, outputAddress)
 
     
@@ -548,7 +548,7 @@ class ChordReduceNode(DHTnode):
                 keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
                 print self.name, "reduced", keysInResults
-                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))
+                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))  #BUG? Does order for task_done matter?
                 self.reduceQueue.task_done()
                 numTask = numTask - 1
                 print self.name, "num tasks", numTask
@@ -573,7 +573,6 @@ class ChordReduceNode(DHTnode):
 
     def areWeThereYetLoop(self):
         while self.resultsHolder:
-            time.sleep(MAINT_INT*10)
             missingKeys  = self.getMissingKeys()
             if len(missingKeys) > 0:
                 print self.name, "Waiting on ", missingKeys
@@ -582,6 +581,7 @@ class ChordReduceNode(DHTnode):
                 print self.results.results
                 print self.results.keysInResults
                 break
+            time.sleep(MAINT_INT*10)
 
 
     def mergeKeyResults(self, a, b):
