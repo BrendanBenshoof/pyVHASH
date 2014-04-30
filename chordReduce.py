@@ -398,7 +398,7 @@ class ChordReduceNode(DHTnode):
             myWork = buckets[self.name] #keep my keys
             del buckets[self.name]
             print  self.name, "got my work", myWork
-        print self.name, "adding to map queue"
+        #print self.name, "adding to map queue"
         myAtoms = [MapAtom(hashid, outputAddress) for hashid in myWork]
         self.mapLock.acquire()
         self.mapQueue = self.mapQueue + myAtoms

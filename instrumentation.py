@@ -158,7 +158,7 @@ class InstrumentationNode(object):
             print "terminating."
             return
         print "Stage done."
-        self.safe.pop()
+        #self.safe.pop()
 
 
         #print "Churning the network before we retrieve."
