@@ -1,4 +1,4 @@
-from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS
+from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS, MAINT_INT
 from cfs import DataAtom, KeyFile, makeBlocks
 import sys, traceback
 import time

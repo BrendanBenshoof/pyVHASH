@@ -40,6 +40,8 @@ import copy
 
 
 
+
+5)  We keep getting a none error.  One solution is to ensure that if the node add
 """
 
 
@@ -261,6 +263,7 @@ class ChordReduceNode(DHTnode):
         print self.name, "adding to results", atom.keysInResults 
         self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
         self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
+        print self.name, "current results", self.results.keysInResults
         self.backupNewResults(atom) #FT backup stuff added to results
 
     def backupNewResults(self,atom):
@@ -534,24 +537,38 @@ class ChordReduceNode(DHTnode):
         while self.running:
             time.sleep(MAINT_INT*2)
             while self.reduceQueue.qsize() >= 2:
+                numTask = 0
                 atom1 = self.reduceQueue.get()
+                numTask = numTask + 1
+                print self.name, "num tasks", numTask
                 atom2 = self.reduceQueue.get()
+                numTask = numTask + 1
+                print self.name, "num tasks", numTask
                 results = self.reduceFunc(atom1.results,atom2.results)
                 keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
                 print self.name, "reduced", keysInResults
                 self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))
                 self.reduceQueue.task_done()
+                numTask = numTask - 1
+                print self.name, "num tasks", numTask
                 self.reduceQueue.task_done()
+                numTask = numTask - 1
+                print self.name, "num tasks", numTask
             if not self.reduceQueue.empty():
+                numTask = 0
                 atom = self.reduceQueue.get()
+                numTask = numTask + 1
+                print self.name, "num tasks", numTask 
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
-                    print self.name, "sending", atom.keysInResults
+                    print self.name, "sending reduce of", atom.keysInResults,
                     self.sendReduceJob(atom)
-                    print self.name, "sent", atom.keysInResults
+                    print self.name, "sent reduce of", atom.keysInResults
                 self.reduceQueue.task_done()
+                numTask = numTask - 1
+                print self.name, "num tasks", numTask
 
 
     def areWeThereYetLoop(self):
