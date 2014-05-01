@@ -162,7 +162,7 @@ class InstrumentationNode(object):
         print "Stage done."
         self.churn = False
         #self.safe.pop()
-
+        tester.resultsThread.join()
 
         #print "Churning the network before we retrieve."
         #time.sleep(10)
