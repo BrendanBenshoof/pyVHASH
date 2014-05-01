@@ -159,15 +159,15 @@ class InstrumentationNode(object):
             print "failed."
             traceback.print_exc(file=sys.stdout)
             print "terminating."
-            return
         print "Stage done."
+        self.churn = False
         #self.safe.pop()
 
 
         #print "Churning the network before we retrieve."
         #time.sleep(10)
 
-        """
+
         for node in self.aliveNodes:
             try:
                 print Peer(node).myInfo()
@@ -175,7 +175,6 @@ class InstrumentationNode(object):
                 print e 
         self.churn = False 
         print "Done."
-        """
 
 
     # public
