@@ -54,7 +54,7 @@ class DHTnode(Node):
             return super(DHTnode,self).find(key,dataRequest)
 
     def updateSuccessorList(self):
-        oldList  = self.successorList
+        oldList  = self.successorList[:]
         super(DHTnode,self).updateSuccessorList()
         newSuccessors = [node for node in self.successorList if node not in oldList]
         for node in newSuccessors:
@@ -145,6 +145,7 @@ class DHTnode(Node):
             while not done:
                 try:
                     target = self.findSuccessor(block.hashid)
+                    print self.name, "storing in", target
                     Peer(target).put(block.hashid, block)
                 except Exception as e:
                     print self.name, "failed put at", target, "retrying"  
@@ -152,8 +153,6 @@ class DHTnode(Node):
                 else:
                     done = True
         return True
-
-
 
 
     def retrieveFile(self, filename):
@@ -167,8 +166,11 @@ class DHTnode(Node):
                 try:
                     target = self.findSuccessor(key,True)
                     block = Peer(target).get(key)
-                    blocks.append(block)
-                    done = True
+                    if block != "FAIL":
+                        blocks.append(block)
+                        done = True
+                    else:
+                        raise("oops")
                 except:
                     tries = tries + 1
                     print self.name, "failed to get a piece from", target, "retrying" 
@@ -180,14 +182,20 @@ class DHTnode(Node):
 
     def getKeyfile(self, filename):
         key = getHashString(filename)
-        while True:
+        tries = 0
+        while tries <10:
             try:
                 target = self.findSuccessor(key)
                 keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
-                return keyfile
+                if keyfile == "FAIL":
+                    tries = tries + 1
+                else:
+                    return keyfile
+                    time.sleep(MAINT_INT)
             except Exception as e:
                 print self.name, "failed to retrieve keyfile from", target 
                 time.sleep(MAINT_INT)
+            return False
 
     #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
@@ -199,6 +207,7 @@ class DHTnode(Node):
                 self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
+        self.successorLock.acquire()
         fails = []
         for s in self.successorList:
             try:
@@ -209,6 +218,7 @@ class DHTnode(Node):
         if (len(fails) >= 1):
             for f in fails:
                 self.fixSuccessorList(f)
+        self.successorLock.release()
                 
                 
     

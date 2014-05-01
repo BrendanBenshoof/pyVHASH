@@ -4,7 +4,7 @@ import hashlib
 import math
 import time
 import SocketServer
-from threading import Thread
+from threading import Thread, RLock as Lock
 import sys, traceback
 
 
@@ -115,6 +115,7 @@ class Node(object):
         self.successorList = [self.name]*NUM_SUCCESSORS
         self.running = False
         self.myThread = None
+        self.successorLock =  Lock()
         t = Thread(target=self.server.serve_forever)
         t.daemon = True
         t.start()
@@ -127,7 +128,10 @@ class Node(object):
         return Peer(self.name)
 
     def getSuccessorList(self):
-        return self.successorList[:]
+        self.successorLock.acquire()
+        temp = self.successorList[:]
+        self.successorLock.release()
+        return temp
 
     def getPredID(self):
         if self.pred is None:
@@ -290,16 +294,18 @@ class Node(object):
         
 
 
-    #we don't want try catch here because we want to handle stuff differently each time
     def updateSuccessorList(self):
+        self.successorLock.acquire()
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
         except Exception as e:
-            print self.name, "updateSuccessorList failed on successor", self.succ.name 
+            print self.name, "updateSuccessorList failed on successor", self.succ.name
             self.fixSuccessor()
+        self.successorLock.release()
 
 
     def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
+        self.successorLock.acquire()
         self.removeNodeFromFingers(self.succ.name)
         self.succ = Peer(self.successorList[1])
         try:
@@ -310,16 +316,17 @@ class Node(object):
                 self.succ = self
                 self.successorList  = [self.name]*NUM_SUCCESSORS
             else:
-                self.successorList = self.successorList [1:]
+                self.successorList = self.successorList[1:]
                 self.fixSuccessor()
         else:
             self.updateSuccessorList()
             print self.name, "fixed successor", self.succ.name
+        finally:
+            self.successorLock.release()
             
             
-    
-
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
+        self.successorLock.acquire()
         mySucc = Peer(self.succ.name)
         try:
             mySucc.alert(failedSucc)
@@ -328,7 +335,8 @@ class Node(object):
         except Exception:
             print self.name, "Tried to fix successor list but successor is gone!", self.succ.name
             self.fixSuccessor()
-
+        finally:
+            self.successorLock.release()
 
     def removeNodeFromFingers(self,nodeName):
         for i in range(1,len(self.fingers)):

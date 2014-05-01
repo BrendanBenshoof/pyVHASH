@@ -363,22 +363,25 @@ class ChordReduceNode(DHTnode):
     # We get to assume the node calling this remains alive until it's done
     # output address must be hex 
     def stage(self,filename, outputAddress):
-        
-        keyfile =  self.getKeyfile(filename)
-        keys = keyfile['keys'] # retrieve the key file
+        try:
+            keyfile =  self.getKeyfile(filename)
+            keys = keyfile['keys'] # retrieve the key file
 
-        self.results =  ReduceAtom({}, {}, outputAddress) # create results
-        for key in keys:
-            self.results.keysInResults[key] =  0
-        self.backupNewResults(self.results) #FT and back them up
+            self.results =  ReduceAtom({}, {}, outputAddress) # create results
+            for key in keys:
+                self.results.keysInResults[key] =  0
+            self.backupNewResults(self.results) #FT and back them up
 
-        self.resultsHolder = True
-        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-        self.resultsThread.daemon = True
-        self.resultsThread.start()  #begin waiting for stuff to come back
-        # distribute map tasks
-        # This may have to become a thread
-        self.distributeMapTasks(keys,outputAddress)
+            self.resultsHolder = True
+            self.resultsThread = Thread(target =  self.areWeThereYetLoop)
+            self.resultsThread.daemon = True
+            self.resultsThread.start()  #begin waiting for stuff to come back
+            # distribute map tasks
+            # This may have to become a thread
+            self.distributeMapTasks(keys,outputAddress)
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            raise(e)
         return True
 
 
@@ -508,6 +511,8 @@ class ChordReduceNode(DHTnode):
             self.mapLock.acquire()
             if len(self.mapQueue) >= 1:
                 time.sleep(MAINT_INT)
+                
+                # do the map
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
                 print self.name, "mapped", work.hashid
@@ -516,10 +521,13 @@ class ChordReduceNode(DHTnode):
                 self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
                 self.reduceQueue.put(r)
                 print self.name, "added to reduceQueue", work.hashid
+                
+                # tell successors that I did this map
                 fails = []
                 for s in self.successorList:
                     try:
-                        Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                        #Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                        #above is not necessarily needed yet
                         Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
                     except Exception, e:
                         print self.name, "failed to remove maps and give reduce backup to", s
@@ -528,7 +536,6 @@ class ChordReduceNode(DHTnode):
                 if (len(fails) >= 1):
                     for f in fails:
                         self.fixSuccessorList(f)
-                
             self.mapLock.release() 
 
 
