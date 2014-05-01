@@ -189,16 +189,16 @@ class DHTnode(Node):
                 target = self.findSuccessor(key)
                 keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
                 if keyfile == "FAIL":
-                    print "retrying"
-                    tries = tries + 1
-                    time.sleep(MAINT_INT*2)
+                    print "retrying", tries
+                    time.sleep(MAINT_INT)
                 else:
                     return keyfile                    
             except Exception as e:
-                print self.name, "failed to retrieve keyfile from", target 
+                print self.name, "failed to retrieve keyfile from", target, " due to" , e
                 time.sleep(MAINT_INT)
             print self.name, "failed to retrieve keyfile from", target 
-            return False
+            tries = tries + 1
+        return False
 
     #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
