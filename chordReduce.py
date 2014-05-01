@@ -130,6 +130,7 @@ class ChordReduceNode(DHTnode):
                     pass
                     #print self.name, "deleting backup map of", atom.hashid
                     #self.deleteBackupMap(atom.hashid)
+
             for key in self.backupReduces.keys()[:]:
                 if self.keyIsMine(key):
                     print self.name, "taking over reduce for", key
@@ -152,7 +153,7 @@ class ChordReduceNode(DHTnode):
         try:
             for k, v in self.data.items()[:]:
                 Peer(newSuccessor).backup(k,v)
-            for atom in self.mapQueue:
+            for atom in self.mapQueue[:]:
                 Peer(newSuccessor).createBackupMap(atom.hashid,atom.outputAddress)
             for k, v in self.myReduceAtoms.items()[:]:
                 Peer(newSuccessor).createBackupReduce(k, v)
@@ -199,6 +200,7 @@ class ChordReduceNode(DHTnode):
                     if reduceAtom is not None:
                        del self.myReduceAtoms[key]
                 except:
+                    print self.name, "new bug in relinquishData"
                     traceback.print_exc(file=sys.stdout)
         finally:
             self.mapLock.release()
@@ -234,7 +236,7 @@ class ChordReduceNode(DHTnode):
 
     #public
     def takeoverMap(self, atom):
-        print self.name, "taking over map", atom['hashid'] 
+        print self.name, " was told to take  over map", atom['hashid'] 
         self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
         return True
     
@@ -284,6 +286,7 @@ class ChordReduceNode(DHTnode):
     # public 
     # assume value is already there
     def createBackupMap(self,key, outputAddress):
+        print self.name, "created backup map job of ", key
         self.backupMaps.append(MapAtom(key, outputAddress))
         #print "\n\n\n\n\n\n\n\n",key in self.backups.keys()
         return key in self.backups.keys()
@@ -468,12 +471,13 @@ class ChordReduceNode(DHTnode):
         while not sent:
             target, done = self.find(atom.outputAddress, False)
             try:
+                print self.name, "sending reduce of", atom.keysInResults, "to ", target
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
+                print self.name, "sent reduce of", atom.keysInResults, "to ", target
                 # # FTI might eb able to use python's queue and  task_done() and join to to this 
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
-                traceback.print_exc(file=sys.stdout)
                 if target == self.succ.name:
                     self.fixSuccessor()
                 elif target in self.successorList:
@@ -517,34 +521,38 @@ class ChordReduceNode(DHTnode):
     def mapLoop(self):
         while self.running:
             self.mapLock.acquire()
-            if len(self.mapQueue) >= 1:
-                # do the map
-                work  = self.mapQueue.pop() # pop off the queue
-                results = self.mapFunc(work.hashid) # excute the job
-                print self.name, "mapped", work.hashid
-                # put reduce in my queue.
-                r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
-                self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
-                self.reduceQueue.put(r) 
-                print self.name, "added to reduceQueue", work.hashid
-                
-                # tell successors that I did this map
-                fails = []
-                for s in self.successorList:
-                    try:
-                        Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
-                        #above is not necessarily needed yet
-                        Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
-                        #FT failure is me dying here
-                    except Exception, e:
-                        print self.name, "failed to remove maps and give reduce backup to", s
-                        traceback.print_exc(file=sys.stdout)
-                        fails.append(s)
-                if (len(fails) >= 1):
-                    for f in fails:
-                        self.fixSuccessorList(f)
-            else:
-                time.sleep(MAINT_INT)
+            try:
+                if len(self.mapQueue) >= 1:
+                    # do the map
+                    work  = self.mapQueue.pop() # pop off the queue
+                    results = self.mapFunc(work.hashid) # excute the job
+                    print self.name, "mapped", work.hashid
+                    # put reduce in my queue.
+                    r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
+                    self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
+                    self.reduceQueue.put(r) 
+                    print self.name, "added to reduceQueue", work.hashid
+                    
+                    # tell successors that I did this map
+                    fails = []
+                    for s in self.successorList:
+                        try:
+                            Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                            #above is not necessarily needed yet
+                            #Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
+                            #FT failure is me dying here
+                        except Exception, e:
+                            print self.name, "failed to remove maps and give reduce backup to", s
+                            traceback.print_exc(file=sys.stdout)
+                            fails.append(s)
+                    if (len(fails) >= 1):
+                        for f in fails:
+                            self.fixSuccessorList(f)
+                else:
+                    time.sleep(MAINT_INT)
+            except e:
+                print self.name, "new bug in MapLoop!!!!"
+                traceback.print_exc(file=sys.stdout)
             self.mapLock.release() 
 
 
@@ -568,9 +576,7 @@ class ChordReduceNode(DHTnode):
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
-                    print self.name, "sending reduce of", atom.keysInResults
                     self.sendReduceJob(atom)
-                    print self.name, "sent reduce of", atom.keysInResults
                 self.reduceQueue.task_done()
 
 

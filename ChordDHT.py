@@ -113,6 +113,7 @@ class DHTnode(Node):
                     except Exception, e:
                         print self.backups, e
                 elif self.keyIsMine(key):
+                    print self.name, "taking over key", key
                     self.makeBackupMine(key)
 
 
@@ -182,18 +183,21 @@ class DHTnode(Node):
     def getKeyfile(self, filename):
         key = getHashString(filename)
         tries = 0
+        print self.name, "getting keyfile", key
         while tries < 10:
             try:
                 target = self.findSuccessor(key)
                 keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
                 if keyfile == "FAIL":
+                    print "retrying"
                     tries = tries + 1
+                    time.sleep(MAINT_INT*2)
                 else:
-                    return keyfile
-                    time.sleep(MAINT_INT)
+                    return keyfile                    
             except Exception as e:
                 print self.name, "failed to retrieve keyfile from", target 
                 time.sleep(MAINT_INT)
+            print self.name, "failed to retrieve keyfile from", target 
             return False
 
     #make more efficient
@@ -251,7 +255,7 @@ class DHTnode(Node):
 
 
     def keyIsMine(self, key):
-        if self.pred is None:
+        if self.pred is None or self.pred.name == self.name :
             return True
         return hashBetweenRightInclusive(long(key,16), self.pred.hashid, self.hashid)
 
