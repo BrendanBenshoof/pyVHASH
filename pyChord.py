@@ -7,6 +7,13 @@ import SocketServer
 from threading import Thread
 import sys, traceback
 
+
+"""
+possible bug: fix successor is called multiple times
+IE fixed successor message followed by a can't connect to the guy they just got rid of
+"""
+
+
 HASHFUNC = hashlib.sha1
 HASHSIZE = HASHFUNC().digest_size * 8
 MAX = 2**(HASHSIZE)

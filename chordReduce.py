@@ -186,10 +186,10 @@ class ChordReduceNode(DHTnode):
                     Peer(self.pred.name).takeoverMap(mapAtom) 
                 if reduceAtom is not None:
                     Peer(self.pred.name).takeoverReduce(key,reduceAtom)
-            except Exception:
+            except Exception as e:
                 self.pred = None  #or fix by searching for his hash -1
                 traceback.print_exc(file=sys.stdout)
-                raise Exception("he died on me")
+                raise e
             else:
                 try:
                     self.backups[key] = val
@@ -563,7 +563,7 @@ class ChordReduceNode(DHTnode):
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
-                    print self.name, "sending reduce of", atom.keysInResults,
+                    print self.name, "sending reduce of", atom.keysInResults
                     self.sendReduceJob(atom)
                     print self.name, "sent reduce of", atom.keysInResults
                 self.reduceQueue.task_done()
