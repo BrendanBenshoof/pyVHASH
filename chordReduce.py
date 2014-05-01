@@ -265,7 +265,6 @@ class ChordReduceNode(DHTnode):
         print self.name, "adding to results", atom.keysInResults 
         self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
         self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
-        print self.name, "current results", self.results.keysInResults
         self.backupNewResults(atom) #FT backup stuff added to results
 
     def backupNewResults(self,atom):
@@ -592,7 +591,7 @@ class ChordReduceNode(DHTnode):
                 print self.results.results
                 print self.results.keysInResults
                 break
-            time.sleep(MAINT_INT*10)
+            time.sleep(MAINT_INT*50)
 
 
     def mergeKeyResults(self, a, b):

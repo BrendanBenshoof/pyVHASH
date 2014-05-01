@@ -9,7 +9,7 @@ from threading import Thread
 
 CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE = 20
+TEST_SIZE = 50
 TEST_FILE = "ti.txt"
 
 
