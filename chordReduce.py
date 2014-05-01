@@ -399,6 +399,9 @@ class ChordReduceNode(DHTnode):
         myWork = []
         if self.name in buckets.keys():
             myWork = buckets[self.name] #keep my keys
+            for key in myWork:
+                if key not in self.data.keys():
+                    print self.name, "doesn't have key", key, "but should."
             del buckets[self.name]
             print  self.name, "got my work", myWork
         #print self.name, "adding to map queue"
@@ -411,10 +414,15 @@ class ChordReduceNode(DHTnode):
         for s in self.successorList:
             for key in myWork:
                 try:
-                    Peer(s).createBackupMap(key,outputAddress)
+                    if not Peer(s).createBackupMap(key,outputAddress):
+                        if key in self.data.keys():
+                            Peer(s).backup(key, self.data[key])
+                        elif key in self.backups.keys():
+                            Peer(s).backup(key, self.backups[key])
+                        else:
+                            Peer(s).backup(key,"REDO"+str(key))
                 except Exception, e:
                     print self.name, "failed backing up maps to", s
-                    traceback.print_exc(file=sys.stdout)
                     fails.append(s)
         if (len(fails) >= 1):
             for f in fails:
@@ -510,8 +518,6 @@ class ChordReduceNode(DHTnode):
         while self.running:
             self.mapLock.acquire()
             if len(self.mapQueue) >= 1:
-                time.sleep(MAINT_INT)
-                
                 # do the map
                 work  = self.mapQueue.pop() # pop off the queue
                 results = self.mapFunc(work.hashid) # excute the job
@@ -519,16 +525,17 @@ class ChordReduceNode(DHTnode):
                 # put reduce in my queue.
                 r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
                 self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
-                self.reduceQueue.put(r)
+                self.reduceQueue.put(r) 
                 print self.name, "added to reduceQueue", work.hashid
                 
                 # tell successors that I did this map
                 fails = []
                 for s in self.successorList:
                     try:
-                        #Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                        Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
                         #above is not necessarily needed yet
                         Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
+                        #FT failure is me dying here
                     except Exception, e:
                         print self.name, "failed to remove maps and give reduce backup to", s
                         traceback.print_exc(file=sys.stdout)
@@ -536,6 +543,8 @@ class ChordReduceNode(DHTnode):
                 if (len(fails) >= 1):
                     for f in fails:
                         self.fixSuccessorList(f)
+            else:
+                time.sleep(MAINT_INT)
             self.mapLock.release() 
 
 
@@ -544,29 +553,18 @@ class ChordReduceNode(DHTnode):
         while self.running:
             time.sleep(MAINT_INT*2)
             while self.reduceQueue.qsize() >= 2:
-                numTask = 0
                 atom1 = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask
+                self.reduceQueue.task_done()
                 atom2 = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask
+                
                 results = self.reduceFunc(atom1.results,atom2.results)
                 keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
                 print self.name, "reduced", keysInResults
                 self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))  #BUG? Does order for task_done matter?
                 self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
-                self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
             if not self.reduceQueue.empty():
-                numTask = 0
                 atom = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask 
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
@@ -574,8 +572,6 @@ class ChordReduceNode(DHTnode):
                     self.sendReduceJob(atom)
                     print self.name, "sent reduce of", atom.keysInResults
                 self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
 
 
     def areWeThereYetLoop(self):

@@ -7,7 +7,7 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.0000000001  #chance out of 1 
+CHURN_RATE = 0.03  #chance out of 1 
 PORTS =  range(9101,9999)
 TEST_SIZE = 20
 TEST_FILE = "constitution.txt"
@@ -48,9 +48,10 @@ class ExperimentNode(Node):
       
     """
     def kill(self,newPort, polite = False):
-        self.server.finished = True
         self.running = False
-        x = self
+        self.runningLock.acquire()
+        self.server.finished = True
+        self.runningLock.release()
         self = self.__init__(self.ip,newPort,self.inst)
         return True
 
@@ -143,7 +144,7 @@ class InstrumentationNode(object):
         print "Store done."
         self.safe.pop()
         
-        #self.startChurn()
+        self.startChurn()
 
 
         self.choosing = True

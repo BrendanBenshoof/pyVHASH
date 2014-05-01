@@ -1,16 +1,18 @@
 from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS, MAINT_INT
 from cfs import DataAtom, KeyFile, makeBlocks
+from threading import RLock as Lock
 import sys, traceback
 import time
 deletions = []
 
-NUM_PREDECESSORS = NUM_SUCCESSORS+1
+NUM_PREDECESSORS = NUM_SUCCESSORS + 1
 class DHTnode(Node):
     def __init__(self,host,ip):
         Node.__init__(self,host,ip)
         self.data = {} # data I'm responsible for 
         self.backups = {} # data I'm holding onto for someone else
         self.predecessorList = [self.name]*NUM_PREDECESSORS
+        self.predecessorLock = Lock()
         self.addNewFunc(self.getPredecessorList, "getPredecessorList")
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
@@ -35,9 +37,6 @@ class DHTnode(Node):
         for x in self.successorList:
             info = info + str(Peer(x).hashid)[:6] + " "
         return info
-
-
-
 
     def findSuccessor(self, key, dataRequest = False):
         if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
@@ -66,10 +65,10 @@ class DHTnode(Node):
         if hasNewPred:
             try:
                 for key in self.data.keys()[:]:
-                    if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
+                    if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid, self.pred.hashid):  #check here for weird behavioer
                         self.relinquishData(key)
             except Exception:
-                print self.name, "fix this"
+                print self.name, "couldn't relinquish data"
                 traceback.print_exc(file=sys.stdout)
                 self.predecessorList.pop()
                 self.pred = Peer(self.predecessorList[-1])
@@ -95,7 +94,7 @@ class DHTnode(Node):
             self.predecessorList.pop()
             if len(self.predecessorList) == 0:
                 self.pred =  None
-                [self.name]*NUM_PREDECESSORS
+                self.predecessorList = [self.name]*NUM_PREDECESSORS
             else:
                 self.pred = Peer(self.predecessorList[-1])
                 self.updatePredecessorList()
@@ -183,7 +182,7 @@ class DHTnode(Node):
     def getKeyfile(self, filename):
         key = getHashString(filename)
         tries = 0
-        while tries <10:
+        while tries < 10:
             try:
                 target = self.findSuccessor(key)
                 keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out

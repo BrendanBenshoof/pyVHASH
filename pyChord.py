@@ -116,6 +116,7 @@ class Node(object):
         self.running = False
         self.myThread = None
         self.successorLock =  Lock()
+        self.runningLock = Lock()
         t = Thread(target=self.server.serve_forever)
         t.daemon = True
         t.start()
@@ -128,9 +129,7 @@ class Node(object):
         return Peer(self.name)
 
     def getSuccessorList(self):
-        self.successorLock.acquire()
         temp = self.successorList[:]
-        self.successorLock.release()
         return temp
 
     def getPredID(self):
@@ -232,6 +231,7 @@ class Node(object):
 
 
     def mainloop(self):
+        self.runningLock.acquire()
         while(self.running):
             try: #mainloop must never die!
                 time.sleep(MAINT_INT)
@@ -242,6 +242,7 @@ class Node(object):
             except Exception as e:
                 print "MAINLOOP EXCEPTION",e
                 traceback.print_exc(file=sys.stdout)
+        self.runningLock.release()
 
 
 
@@ -301,7 +302,8 @@ class Node(object):
         except Exception as e:
             print self.name, "updateSuccessorList failed on successor", self.succ.name
             self.fixSuccessor()
-        self.successorLock.release()
+        finally:
+            self.successorLock.release()
 
 
     def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
