@@ -131,6 +131,9 @@ class InstrumentationNode(object):
         print "Done."
         
 
+        print "Allowing network to establish before Store."
+        time.sleep(MAINT_INT*TEST_SIZE)
+
         print "Storing."
         self.choosing = True
         tester = random.choice(self.aliveNodes)
