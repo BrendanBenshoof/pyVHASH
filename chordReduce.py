@@ -474,7 +474,7 @@ class ChordReduceNode(DHTnode):
                 print self.name, "sending reduce of", atom.keysInResults, "to ", target
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
                 print self.name, "sent reduce of", atom.keysInResults, "to ", target
-                # # FTI might eb able to use python's queue and  task_done() and join to to this 
+                # # FTI might eb able to use python's queue and  t_d() and join to to this 
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
@@ -569,15 +569,17 @@ class ChordReduceNode(DHTnode):
                 keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
                 print self.name, "reduced", keysInResults
-                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))  #BUG? Does order for task_done matter?
+                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress)) 
                 self.reduceQueue.task_done()
             if not self.reduceQueue.empty():
                 atom = self.reduceQueue.get()
+                self.reduceQueue.task_done()
+                #this is the one to cause an error
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
                     self.sendReduceJob(atom)
-                self.reduceQueue.task_done()
+                
 
 
     def areWeThereYetLoop(self):

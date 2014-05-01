@@ -7,10 +7,10 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.03  #chance out of 1 
+CHURN_RATE = 0.002  #chance out of 1 
 PORTS =  range(9101,9999)
 TEST_SIZE = 20
-TEST_FILE = "constitution.txt"
+TEST_FILE = "ti.txt"
 
 
 class ExperimentNode(Node):
@@ -50,8 +50,10 @@ class ExperimentNode(Node):
     def kill(self,newPort, polite = False):
         self.running = False
         self.runningLock.acquire()
+        self.mapLock.acquire()
         self.server.finished = True
         self.runningLock.release()
+        self.mapLock.release()
         self = self.__init__(self.ip,newPort,self.inst)
         return True
 
@@ -162,12 +164,11 @@ class InstrumentationNode(object):
         print "Stage done."
         self.churn = False
         #self.safe.pop()
-        tester.resultsThread.join()
 
         #print "Churning the network before we retrieve."
         #time.sleep(10)
 
-
+        """
         for node in self.aliveNodes:
             try:
                 print Peer(node).myInfo()
@@ -175,7 +176,7 @@ class InstrumentationNode(object):
                 print e 
         self.churn = False 
         print "Done."
-
+        """
 
     # public
     def checkIn(self,nodeName):
