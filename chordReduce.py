@@ -8,6 +8,8 @@ from Queue import Queue
 import sys, traceback
 import copy
 
+
+MAPPED = {}
 """
 3 pieces are needed in order to achieve fault tolerance.
 
@@ -179,7 +181,7 @@ class ChordReduceNode(DHTnode):
             if key in self.myReduceAtoms.keys():
                 reduceAtom = self.myReduceAtoms[key]
         except:
-            print self.name, "Well that was weird", key, self.data
+            print self.name, "Well that was weird", key
         else:
             try:
                 Peer(self.pred.name).put(key,val)
@@ -372,6 +374,7 @@ class ChordReduceNode(DHTnode):
             self.results =  ReduceAtom({}, {}, outputAddress) # create results
             for key in keys:
                 self.results.keysInResults[key] =  0
+                MAPPED[key] = False
             self.backupNewResults(self.results) #FT and back them up
 
             self.resultsHolder = True
@@ -468,9 +471,9 @@ class ChordReduceNode(DHTnode):
     def sendReduceJob(self, atom):
         sent = False
         while not sent:
-            target, done = self.find(atom.outputAddress, False)
+            target = self.findSuccessor(atom.outputAddress, False)
             try:
-                print self.name, "sending reduce of", atom.keysInResults, "to ", target
+                #print self.name, "sending reduce of", atom.keysInResults, "to ", target
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
                 print self.name, "sent reduce of", atom.keysInResults, "to ", target
                 # # FTI might eb able to use python's queue and  t_d() and join to to this 
@@ -487,7 +490,7 @@ class ChordReduceNode(DHTnode):
     #public 
     def handleReduceAtom(self, reduceDict):
         self.reduceQueue.put(self.dictToReduce(reduceDict))
-        self.reduceQueue.join()
+        #self.reduceQueue.join()
         return True
 
 
@@ -547,6 +550,7 @@ class ChordReduceNode(DHTnode):
                     if (len(fails) >= 1):
                         for f in fails:
                             self.fixSuccessorList(f)
+                    MAPPED[work.hashid] = True
                 else:
                     time.sleep(MAINT_INT)
             except e:
@@ -563,7 +567,6 @@ class ChordReduceNode(DHTnode):
                 atom1 = self.reduceQueue.get()
                 self.reduceQueue.task_done()
                 atom2 = self.reduceQueue.get()
-                
                 results = self.reduceFunc(atom1.results,atom2.results)
                 keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
                 outputAddress = atom1.outputAddress
@@ -572,12 +575,13 @@ class ChordReduceNode(DHTnode):
                 self.reduceQueue.task_done()
             if not self.reduceQueue.empty():
                 atom = self.reduceQueue.get()
-                self.reduceQueue.task_done()
-                #this is the one to cause an error
+                print self.name, "popped", atom.keysInResults
+                self.reduceQueue.task_done()  #this is the one to cause an error
                 if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
                     self.addToResults(atom)
                 else:
                     self.sendReduceJob(atom)
+
                 
 
 
@@ -585,6 +589,7 @@ class ChordReduceNode(DHTnode):
         while self.resultsHolder:
             missingKeys  = self.getMissingKeys()
             if len(missingKeys) > 0:
+                print self.name, "MAPPED", MAPPED
                 print self.name, "Waiting on ", missingKeys
             else:
                 print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"

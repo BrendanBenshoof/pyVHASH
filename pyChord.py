@@ -148,7 +148,7 @@ class Node(object):
                 closest, done = Peer(closest).find(hexHashid,dataRequest)
                 trace.append(closest)
             except Exception as e:
-                print self.name, "Could not connect to", closest, e
+                print self.name, "Could not connect to next hop", closest, e
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
                     last = trace.pop()
@@ -156,7 +156,8 @@ class Node(object):
                         Peer(last).alert(closest)
                     except:
                         print self.name, "couldn't alert", last
-                    closest = last
+                    finally:
+                        closest = last
                 else:
                     print self.name, "I'm out of options"
                     closest, done = self.find(hexHashid,dataRequest)
@@ -257,7 +258,7 @@ class Node(object):
                 sucessorPredName = Peer(self.succ.name).getPred()
                 done = True
             except Exception: #my sucessor died on me
-                print self.name, "my successor died", self.succ.name
+                print self.name, "my successor died in stabilize", self.succ.name
                 done = False
                 self.fixSuccessor()
         if sucessorPredName != "":
@@ -328,7 +329,6 @@ class Node(object):
             
             
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
-        self.successorLock.acquire()
         mySucc = Peer(self.succ.name)
         try:
             mySucc.alert(failedSucc)
@@ -337,8 +337,6 @@ class Node(object):
         except Exception:
             print self.name, "Tried to fix successor list but successor is gone!", self.succ.name
             self.fixSuccessor()
-        finally:
-            self.successorLock.release()
 
     def removeNodeFromFingers(self,nodeName):
         for i in range(1,len(self.fingers)):
@@ -352,6 +350,9 @@ class Node(object):
     def alert(self,failedName):
         if(failedName == self.succ.name):
             self.fixSuccessor()
+        elif failedName in successorList:
+            self.fixSuccessorList(failedName)
+            self.removeNodeFromFingers(failedName)
         else:
             self.removeNodeFromFingers(failedName)
         return True

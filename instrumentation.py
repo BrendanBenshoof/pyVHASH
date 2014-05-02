@@ -7,9 +7,9 @@ import sys, traceback
 from threading import Thread
 
 
-CHURN_RATE = 0.002  #chance out of 1 
+CHURN_RATE = 0.02  #chance out of 1 
 PORTS =  range(9101,9999)
-TEST_SIZE = 50
+TEST_SIZE = 30
 TEST_FILE = "ti.txt"
 
 
@@ -28,7 +28,10 @@ class ExperimentNode(Node):
         
     def join(self,nodeName):
         super(ExperimentNode,self).join(nodeName)
-        Peer(self.inst).checkIn(self.name)
+        try:
+            Peer(self.inst).checkIn(self.name)
+        except Exception as e: 
+            print self.name, "WTF.  Why can't I check in?"
         return True
         
     def ping(self,nodeName):
@@ -165,11 +168,14 @@ class InstrumentationNode(object):
             traceback.print_exc(file=sys.stdout)
             print "terminating."
         print "Stage done."
-        self.churn = False
+        #self.churn = False
         #self.safe.pop()
 
         #print "Churning the network before we retrieve."
         #time.sleep(10)
+
+        while True:
+            time.sleep(0.1)
 
         """
         for node in self.aliveNodes:
