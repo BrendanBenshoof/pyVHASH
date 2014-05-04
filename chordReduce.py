@@ -44,8 +44,9 @@ MAPPED = {}
 
 
 5)  We keep getting a none error.  One solution is to ensure that if the node add
-"""
 
+6) I didn't handle the following: map done, I'm going to send a reduce.... and I die.  The reduce never gets sent. 
+"""
 
 class MapAtom(object):
     def __init__(self,hashid,outputAddress):
