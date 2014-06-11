@@ -191,45 +191,7 @@ class ChordReduceNode(DHTnode):
             self.mapLock.release()
             
 
-    def relinquishResults(self):
-        self.resultsHolder =  False
-        print self.name, "Waiting for my resultsThread to finish"
-        self.resultsThread.join()
-        print self.name, "ResultsThread is done"
-        try:
-            Peer(pred.name).takeoverResults(results)
-            self.backupResults =  self.results
-            self.results = None
-        except Exception, e:
-            print self.name, "I'm still the results owner"
-            self.results = self.backupResults
-            self.resultsHolder = True
-            self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-            self.resultsThread.daemon = True
-            self.resultsThread.start()  #begin waiting for stuff to come back
 
-
-    #public
-    def takeoverResults(self,resultsDict):
-        print self.name, "taking over results"
-        self.results = self.dictToReduce(resultsDict)   
-        self.resultsHolder = True
-        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-        self.resultsThread.daemon = True
-        self.resultsThread.start()  #begin waiting for stuff to come back
-        return True
-
-    #public
-    def takeoverMap(self, atom):
-        print self.name, " was told to take  over map", atom['hashid'] 
-        self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
-        return True
-    
-    #public
-    def takeoverReduce(self,key,reduceDict):  # no need to send it along, the guy handing it over should do that.
-        atom = self.dictToReduce(reduceDict) 
-        self.myReduceAtoms[key] = atom
-        return True
 
 
     def purgeBackupResults(self):
@@ -252,42 +214,16 @@ class ChordReduceNode(DHTnode):
         self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
         self.backupNewResults(atom) #FT backup stuff added to results
 
-    def backupNewResults(self,atom):
-        fails = []
-        for s in self.successorList:
-            try:
-                Peer(s).createBackupResults(atom)
-            except Exception, e:
-                print self.name, "failed backing up results to", s
-                traceback.print_exc(file=sys.stdout)
-                fails.append(s)
-        if (len(fails) >= 1):
-            for f in fails:
-                self.fixSuccessorList(f)
+    
                 
     
     
     # public 
-    # assume value is already there
-    def createBackupMap(self,key, outputAddress):
-        print self.name, "created backup map job of ", key
-        self.backupMaps.append(MapAtom(key, outputAddress))
-        #print "\n\n\n\n\n\n\n\n",key in self.backups.keys()
-        return key in self.backups.keys()
+    
 
     #public
-    def createBackupReduce(self, key , reduceDict):
-        self.backupReduces[key] = self.dictToReduce(reduceDict)
-        return True
-
-    #public
-    def createBackupResults(self, resultsDict):
-        if self.backupResults is None:
-            self.backupResults = self.dictToReduce(resultsDict)
-        else:
-            self.backupResults.results = self.mergeKeyResults(resultsDict['results'], self.backupResults.results)
-            self.backupResults.keysInResults = self.mergeKeyResults(resultsDict['keysInResults'], self.backupResults.keysInResults)
-        return True
+    
+    
         
     #public
     def deleteBackupMap(self, key):
@@ -565,21 +501,7 @@ class ChordReduceNode(DHTnode):
                 else:
                     self.sendReduceJob(atom)
 
-                
-
-
-    def areWeThereYetLoop(self):
-        while self.resultsHolder:
-            missingKeys  = self.getMissingKeys()
-            if len(missingKeys) > 0:
-                print self.name, "MAPPED", MAPPED
-                print self.name, "Waiting on ", missingKeys
-            else:
-                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
-                print self.results.results
-                print self.results.keysInResults
-                break
-            time.sleep(MAINT_INT*50)
+        
 
 
     def mergeKeyResults(self, a, b):
@@ -590,15 +512,5 @@ class ChordReduceNode(DHTnode):
                 b[k]=a[k]
         return b
 
-
-    def getMissingKeys(self):
-        missingKeys = []
-        try:
-            for key in self.results.keysInResults.keys()[:]:
-                if self.results.keysInResults[key]  ==  0:
-                    missingKeys.append(key)
-        except Exception as e:
-            print self.name, "how the bollocks did this happen?", e
-        return missingKeys
 
 
