@@ -52,6 +52,23 @@ class ChordReduceNode(DHTnode):
 
 
 
+
+
+
+"""
+Mapreduce fault tolerence DETECTION STARTS
+
+"""
+
+
+
+"""
+Mapreduce fault tolerence DETECTION ENDS 
+
+"""
+
+
+
 """ 
 Mapreduce fault tolerence ACTIONS starts here 
 Detecting what's gone wrong isn't the problem
@@ -71,19 +88,16 @@ An aside to the reader, all faults are considered equal.  It's a primitive solut
 ### Results
 
 ## Normal Operations 
-
 # backing up the results I just received.
-def backupNewResult():
-    pass
-
 # inform the owners of these keys that the reduceAtoms corresponding to the hashkeys were received
+# Give the new successor an infodump of my results
+
 
 
 ## Churn operations
-# My predecessor has died.  He had the results.  Bugger.
-
+# My predecessor has died.  He had the results.  Bugger.  This means I need to be responsible for the results
 # I'm holding the results and decided that my predecessor is a better candidate to hold this ticking time bomb we call "results" than me.
-
+# Potential: due to churn, I somehow am assumed to be respobsible for this result (and results in general).  I am totally not that node.   Solution:  generate a fault!
 
 
 ### Maps
