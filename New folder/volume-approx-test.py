@@ -1,8 +1,9 @@
 ###
 import math
 import random
+import vhash_greedy
 
-d = 10
+d = 2
 
 space_size = 100.0
 
@@ -50,7 +51,7 @@ def randSample(center):
 def calc_radius(center, points, unit_vec):
         distances = []
         for p in points:
-                AB = map(lambda x,y: y-x, center, p)
+                AB = map(lambda x,y: min([y-x,space_size-(y-x)]), center, p)
                 cos_theta = sum(map(lambda x,y: x*y, AB,unit_vec))/(magnitude(AB)*magnitude(unit_vec))
                 theta = math.acos(cos_theta)
                 dist = ((0.5*magnitude(AB))**2.0 + (0.5*magnitude(AB)*math.tan(theta))**2.0)**0.5
@@ -75,3 +76,10 @@ def get_delunay_peers(center, points):
                         vol = tmp_vol
                         peers.append(p)
         return peers
+
+points = []
+center = [0.0]*d
+for i in range(0,20):
+        points.append(randPoint())
+        #print points
+        print i,len(get_delunay_peers(center,points)),len(vhash_greedy.getShell(center,points))
