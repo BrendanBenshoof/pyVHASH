@@ -4,7 +4,7 @@ import hashlib
 import math
 import time
 import SocketServer
-from threading import Thread
+from threading import Thread, RLock as Lock
 import sys, traceback
 
 
@@ -115,6 +115,8 @@ class Node(object):
         self.successorList = [self.name]*NUM_SUCCESSORS
         self.running = False
         self.myThread = None
+        self.successorLock =  Lock()
+        self.runningLock = Lock()
         t = Thread(target=self.server.serve_forever)
         t.daemon = True
         t.start()
@@ -127,7 +129,8 @@ class Node(object):
         return Peer(self.name)
 
     def getSuccessorList(self):
-        return self.successorList[:]
+        temp = self.successorList[:]
+        return temp
 
     def getPredID(self):
         if self.pred is None:
@@ -145,7 +148,7 @@ class Node(object):
                 closest, done = Peer(closest).find(hexHashid,dataRequest)
                 trace.append(closest)
             except Exception as e:
-                print self.name, "Could not connect to", closest, e
+                print self.name, "Could not connect to next hop", closest, e
                 self.removeNodeFromFingers(closest)
                 if len(trace) > 0:
                     last = trace.pop()
@@ -153,7 +156,8 @@ class Node(object):
                         Peer(last).alert(closest)
                     except:
                         print self.name, "couldn't alert", last
-                    closest = last
+                    finally:
+                        closest = last
                 else:
                     print self.name, "I'm out of options"
                     closest, done = self.find(hexHashid,dataRequest)
@@ -228,6 +232,7 @@ class Node(object):
 
 
     def mainloop(self):
+        self.runningLock.acquire()
         while(self.running):
             try: #mainloop must never die!
                 time.sleep(MAINT_INT)
@@ -238,6 +243,7 @@ class Node(object):
             except Exception as e:
                 print "MAINLOOP EXCEPTION",e
                 traceback.print_exc(file=sys.stdout)
+        self.runningLock.release()
 
 
 
@@ -252,7 +258,7 @@ class Node(object):
                 sucessorPredName = Peer(self.succ.name).getPred()
                 done = True
             except Exception: #my sucessor died on me
-                print self.name, "my successor died", self.succ.name
+                print self.name, "my successor died in stabilize", self.succ.name
                 done = False
                 self.fixSuccessor()
         if sucessorPredName != "":
@@ -290,16 +296,19 @@ class Node(object):
         
 
 
-    #we don't want try catch here because we want to handle stuff differently each time
     def updateSuccessorList(self):
+        self.successorLock.acquire()
         try:
             self.successorList = [self.succ.name] + Peer(self.succ.name).getSuccessorList()[:-1]
         except Exception as e:
-            print self.name, "updateSuccessorList failed on successor", self.succ.name 
+            print self.name, "updateSuccessorList failed on successor", self.succ.name
             self.fixSuccessor()
+        finally:
+            self.successorLock.release()
 
 
     def fixSuccessor(self):  #called when MY IMMEDIATE successor fails
+        self.successorLock.acquire()
         self.removeNodeFromFingers(self.succ.name)
         self.succ = Peer(self.successorList[1])
         try:
@@ -310,15 +319,15 @@ class Node(object):
                 self.succ = self
                 self.successorList  = [self.name]*NUM_SUCCESSORS
             else:
-                self.successorList = self.successorList [1:]
+                self.successorList = self.successorList[1:]
                 self.fixSuccessor()
         else:
             self.updateSuccessorList()
             print self.name, "fixed successor", self.succ.name
+        finally:
+            self.successorLock.release()
             
             
-    
-
     def fixSuccessorList(self,failedSucc):  # called when a specific successor encounters failure
         mySucc = Peer(self.succ.name)
         try:
@@ -328,7 +337,6 @@ class Node(object):
         except Exception:
             print self.name, "Tried to fix successor list but successor is gone!", self.succ.name
             self.fixSuccessor()
-
 
     def removeNodeFromFingers(self,nodeName):
         for i in range(1,len(self.fingers)):
@@ -342,6 +350,9 @@ class Node(object):
     def alert(self,failedName):
         if(failedName == self.succ.name):
             self.fixSuccessor()
+        elif failedName in successorList:
+            self.fixSuccessorList(failedName)
+            self.removeNodeFromFingers(failedName)
         else:
             self.removeNodeFromFingers(failedName)
         return True

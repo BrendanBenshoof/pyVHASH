@@ -1,4 +1,3 @@
-#chordReduce on ChordDHT
 from pyChord import Peer, getHashString, MAINT_INT,hashBetweenRightInclusive
 from ChordDHT import DHTnode
 from cfs import DataAtom
@@ -7,42 +6,6 @@ import time
 from Queue import Queue
 import sys, traceback
 import copy
-
-"""
-3 pieces are needed in order to achieve fault tolerance.
-
-1)
-    The final results must be backed up as they are added to the results dict.
-    In addition, the backups need to take over if they discover they are the new results man
-    If a better results man comes in, he needs to be the results man.
-
-2)
-    When A sends his atoms to B, then B suddenly fails, A will know to find another one hop person to pass to 
-    If node N fails with map jobs in the Queue,  N's successor will take over.
-    Mapbackups will assume everything is peachy, unless their predecessor list changes.  If it does they will either
-        No longer have to back the data up
-        Need to take over
-    When N finishes a map job, he should inform the backups to destroyMapBackup()
-    Finally, if N's predecessor changes, N passes all data, reduceatoms and mapatoms that are that guy's 
-    In that case, N should inform the backups to destroyMapBackup() of the respective keys 
-
-3)
-    We don't want to have to manually ask for reduce tasks to finish getting one of each ReduceAtom
-    When passing a ReduceAtom back, if the next hop fails before sending to his next hop, I need to resend.
-    If the ReduceAtom's Owner fails, the successor 
-    (it is acceptable if somehow we get too many instances of a reduce atom; we can unreduce)
-    The ReduceAtom can be stored like other stuff, but the intermediate results must be handled by the senders
-
-
-4) In addition:
-    We need to figure out if a Peer returns, but his caller is no longer there, what exception occurs, if any, and where
-    And most importantly, what ends up catching it.
-
-
-
-
-5)  We keep getting a none error.  One solution is to ensure that if the node add
-"""
 
 
 class MapAtom(object):
@@ -56,6 +19,7 @@ class ReduceAtom(object):
         self.results = results
         self.keysInResults = keysInResults
         self.outputAddress = outputAddress
+
 
 class ChordReduceNode(DHTnode):
     def __init__(self,host,ip):
@@ -84,17 +48,12 @@ class ChordReduceNode(DHTnode):
         self.resultsHolder  = False
         self.results  = None  # make a reduce atom
         self.backupResults = None
-        
-        
-    def shouldKeepBackup(self,key):
-        if self.pred is None or self.pred.name == self.name:
-            return True
-        return hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid)
 
-    # overrides
-    
-   
-    
+
+    """
+    Overidden functions
+    """
+
     def kickstart(self):
         super(ChordReduceNode, self).kickstart()
         self.mapThread = Thread(target = self.mapLoop) 
@@ -113,6 +72,7 @@ class ChordReduceNode(DHTnode):
                     self.relinquishResults()
         return hasNewPred
 
+
     ## we purge our cache of backups by 
     # 1) throwing away backups we're no longer responsible for
     # 2) taking over backups we are now responsible for 
@@ -130,6 +90,7 @@ class ChordReduceNode(DHTnode):
                     pass
                     #print self.name, "deleting backup map of", atom.hashid
                     #self.deleteBackupMap(atom.hashid)
+
             for key in self.backupReduces.keys()[:]:
                 if self.keyIsMine(key):
                     print self.name, "taking over reduce for", key
@@ -152,7 +113,7 @@ class ChordReduceNode(DHTnode):
         try:
             for k, v in self.data.items()[:]:
                 Peer(newSuccessor).backup(k,v)
-            for atom in self.mapQueue:
+            for atom in self.mapQueue[:]:
                 Peer(newSuccessor).createBackupMap(atom.hashid,atom.outputAddress)
             for k, v in self.myReduceAtoms.items()[:]:
                 Peer(newSuccessor).createBackupReduce(k, v)
@@ -178,7 +139,7 @@ class ChordReduceNode(DHTnode):
             if key in self.myReduceAtoms.keys():
                 reduceAtom = self.myReduceAtoms[key]
         except:
-            print self.name, "Well that was weird", key, self.data
+            print self.name, "Well that was weird", key
         else:
             try:
                 Peer(self.pred.name).put(key,val)
@@ -199,52 +160,11 @@ class ChordReduceNode(DHTnode):
                     if reduceAtom is not None:
                        del self.myReduceAtoms[key]
                 except:
+                    print self.name, "new bug in relinquishData"
                     traceback.print_exc(file=sys.stdout)
         finally:
             self.mapLock.release()
             
-
-    def relinquishResults(self):
-        self.resultsHolder =  False
-        print self.name, "Waiting for my resultsThread to finish"
-        self.resultsThread.join()
-        print self.name, "ResultsThread is done"
-        try:
-            Peer(pred.name).takeoverResults(results)
-            self.backupResults =  self.results
-            self.results = None
-        except Exception, e:
-            print self.name, "I'm still the results owner"
-            self.results = self.backupResults
-            self.resultsHolder = True
-            self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-            self.resultsThread.daemon = True
-            self.resultsThread.start()  #begin waiting for stuff to come back
-
-
-    #public
-    def takeoverResults(self,resultsDict):
-        print self.name, "taking over results"
-        self.results = self.dictToReduce(resultsDict)   
-        self.resultsHolder = True
-        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-        self.resultsThread.daemon = True
-        self.resultsThread.start()  #begin waiting for stuff to come back
-        return True
-
-    #public
-    def takeoverMap(self, atom):
-        print self.name, "taking over map", atom['hashid'] 
-        self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
-        return True
-    
-    #public
-    def takeoverReduce(self,key,reduceDict):  # no need to send it along, the guy handing it over should do that.
-        atom = self.dictToReduce(reduceDict) 
-        self.myReduceAtoms[key] = atom
-        return True
-
-
     def purgeBackupResults(self):
         if not self.resultsHolder and self.backupResults is not None: 
             if self.keyIsMine(self.backupResults.outputAddress):
@@ -258,75 +178,81 @@ class ChordReduceNode(DHTnode):
                 self.backupResults = None
 
 
-
-    def addToResults(self,atom):
-        print self.name, "adding to results", atom.keysInResults 
-        self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
-        self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
-        print self.name, "current results", self.results.keysInResults
-        self.backupNewResults(atom) #FT backup stuff added to results
-
-    def backupNewResults(self,atom):
-        fails = []
-        for s in self.successorList:
+    """
+    Thread Loops 
+    These large functions are the threads for performing map and combining the reduceAtoms
+    """
+    # keep on doing maps
+    def mapLoop(self):
+        while self.running:
+            self.mapLock.acquire()
             try:
-                Peer(s).createBackupResults(atom)
-            except Exception, e:
-                print self.name, "failed backing up results to", s
+                if len(self.mapQueue) >= 1:
+                    # do the map
+                    work  = self.mapQueue.pop() # pop off the queue
+                    results = self.mapFunc(work.hashid) # excute the job
+                    print self.name, "mapped", work.hashid
+                    # put reduce in my queue.
+                    r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
+                    self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
+                    self.reduceQueue.put(r) 
+                    print self.name, "added to reduceQueue", work.hashid
+                    
+                    # tell successors that I did this map
+                    fails = []
+                    for s in self.successorList:
+                        try:
+                            Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
+                            #above is not necessarily needed yet
+                            #Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
+                            #FT failure is me dying here
+                        except Exception, e:
+                            print self.name, "failed to remove maps and give reduce backup to", s
+                            traceback.print_exc(file=sys.stdout)
+                            fails.append(s)
+                    if (len(fails) >= 1):
+                        for f in fails:
+                            self.fixSuccessorList(f)
+                    MAPPED[work.hashid] = True
+                else:
+                    time.sleep(MAINT_INT)
+            except e:
+                print self.name, "new bug in MapLoop!!!!"
                 traceback.print_exc(file=sys.stdout)
-                fails.append(s)
-        if (len(fails) >= 1):
-            for f in fails:
-                self.fixSuccessorList(f)
-                
-    
-    
-    # public 
-    # assume value is already there
-    def createBackupMap(self,key, outputAddress):
-        self.backupMaps.append(MapAtom(key, outputAddress))
-        #print "\n\n\n\n\n\n\n\n",key in self.backups.keys()
-        return key in self.backups.keys()
-
-    #public
-    def createBackupReduce(self, key , reduceDict):
-        self.backupReduces[key] = self.dictToReduce(reduceDict)
-        return True
-
-    #public
-    def createBackupResults(self, resultsDict):
-        if self.backupResults is None:
-            self.backupResults = self.dictToReduce(resultsDict)
-        else:
-            self.backupResults.results = self.mergeKeyResults(resultsDict['results'], self.backupResults.results)
-            self.backupResults.keysInResults = self.mergeKeyResults(resultsDict['keysInResults'], self.backupResults.keysInResults)
-        return True
-        
-    #public
-    def deleteBackupMap(self, key):
-        for atom in self.backupMaps[:]:
-            if atom.hashid == key:
-                try:
-                    self.backupMaps.remove(atom)
-                except Exception as e:
-                    print self.name, "key doesn't exist in backup maps", key
-                finally:
-                    return True
-        return False
-        
-    #public
-    def deleteBackupReduce(self,key):
-        for hashid in self.backupReduces.keys()[:]:
-            if hashid == key:
-                try:
-                    del self.backupReduces[key]
-                except Exception as e:
-                    print self.name, "key doesn't exist in backup reduces", key
-                finally:
-                    return True
-        return False
+            self.mapLock.release() 
 
 
+    # reduce my jobs to one
+    def reduceLoop(self):
+        while self.running:
+            time.sleep(MAINT_INT*2)
+            while self.reduceQueue.qsize() >= 2:
+                atom1 = self.reduceQueue.get()
+                self.reduceQueue.task_done()
+                atom2 = self.reduceQueue.get()
+                results = self.reduceFunc(atom1.results,atom2.results)
+                keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
+                outputAddress = atom1.outputAddress
+                print self.name, "reduced", keysInResults
+                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress)) 
+                self.reduceQueue.task_done()
+            if not self.reduceQueue.empty():
+                atom = self.reduceQueue.get()
+                print self.name, "popped", atom.keysInResults
+                self.reduceQueue.task_done()  #this is the one to cause an error
+                if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
+                    self.addToResults(atom)
+                else:
+                    self.sendReduceJob(atom)
+
+
+    """
+    Map Reduce Functions
+    Here we
+    Define map and reduce functions
+    distribute the map
+    and pass the reduce atoms back to the top
+    """
 
     def mapFunc(self,key):
         print "mapfunc", key, self.name
@@ -357,33 +283,31 @@ class ChordReduceNode(DHTnode):
 
 
 
-
-        
     # public
     # We get to assume the node calling this remains alive until it's done
     # output address must be hex 
     def stage(self,filename, outputAddress):
-        
-        keyfile =  self.getKeyfile(filename)
-        keys = keyfile['keys'] # retrieve the key file
+        try:
+            keyfile =  self.getKeyfile(filename)
+            keys = keyfile['keys'] # retrieve the key file
 
-        self.results =  ReduceAtom({}, {}, outputAddress) # create results
-        for key in keys:
-            self.results.keysInResults[key] =  0
-        self.backupNewResults(self.results) #FT and back them up
+            self.results =  ReduceAtom({}, {}, outputAddress) # create results
+            for key in keys:
+                self.results.keysInResults[key] =  0
+                MAPPED[key] = False
+            self.backupNewResults(self.results) #FT and back them up
 
-        self.resultsHolder = True
-        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
-        self.resultsThread.daemon = True
-        self.resultsThread.start()  #begin waiting for stuff to come back
-        # distribute map tasks
-        # This may have to become a thread
-        self.distributeMapTasks(keys,outputAddress)
+            self.resultsHolder = True
+            self.resultsThread = Thread(target =  self.areWeThereYetLoop)
+            self.resultsThread.daemon = True
+            self.resultsThread.start()  #begin waiting for stuff to come back
+            # distribute map tasks
+            # This may have to become a thread
+            self.distributeMapTasks(keys,outputAddress)
+        except Exception as e:
+            traceback.print_exc(file=sys.stdout)
+            raise(e)
         return True
-
-
-
-
 
     #public
     # need to work out threading details for this
@@ -396,6 +320,9 @@ class ChordReduceNode(DHTnode):
         myWork = []
         if self.name in buckets.keys():
             myWork = buckets[self.name] #keep my keys
+            for key in myWork:
+                if key not in self.data.keys():
+                    print self.name, "doesn't have key", key, "but should."
             del buckets[self.name]
             print  self.name, "got my work", myWork
         #print self.name, "adding to map queue"
@@ -408,10 +335,15 @@ class ChordReduceNode(DHTnode):
         for s in self.successorList:
             for key in myWork:
                 try:
-                    Peer(s).createBackupMap(key,outputAddress)
+                    if not Peer(s).createBackupMap(key,outputAddress):
+                        if key in self.data.keys():
+                            Peer(s).backup(key, self.data[key])
+                        elif key in self.backups.keys():
+                            Peer(s).backup(key, self.backups[key])
+                        else:
+                            Peer(s).backup(key,"REDO"+str(key))
                 except Exception, e:
                     print self.name, "failed backing up maps to", s
-                    traceback.print_exc(file=sys.stdout)
                     fails.append(s)
         if (len(fails) >= 1):
             for f in fails:
@@ -432,6 +364,23 @@ class ChordReduceNode(DHTnode):
             t.join()
         print self.name, "sent maps"
         return True
+
+    def bucketizeKeys(self,keylist):
+        print self.name, "bucketizing"
+        output = {}
+        for k in keylist:
+            owner = None
+            if k in self.data.keys():  # the real question is why doesn't it work without this.  It should now
+                owner = self.name
+            else:
+                owner, t = self.find(k,False)
+            if owner in output.keys():
+                output[owner].append(k)
+            else:
+                output[owner] = [k]
+        return output
+    
+
 
     def sendMapJobs(self,node,keys,outputAddress):
         try:
@@ -455,14 +404,15 @@ class ChordReduceNode(DHTnode):
     def sendReduceJob(self, atom):
         sent = False
         while not sent:
-            target, done = self.find(atom.outputAddress, False)
+            target = self.findSuccessor(atom.outputAddress, False)
             try:
+                #print self.name, "sending reduce of", atom.keysInResults, "to ", target
                 Peer(target).handleReduceAtom(atom)  #FT what if he dies after I hand it off?
-                # # FTI might eb able to use python's queue and  task_done() and join to to this 
+                print self.name, "sent reduce of", atom.keysInResults, "to ", target
+                # # FTI might eb able to use python's queue and  t_d() and join to to this 
                 sent =  True
             except:
                 print self.name, "can't send reduce to ", target
-                traceback.print_exc(file=sys.stdout)
                 if target == self.succ.name:
                     self.fixSuccessor()
                 elif target in self.successorList:
@@ -470,118 +420,12 @@ class ChordReduceNode(DHTnode):
                 else:
                     self.removeNodeFromFingers(target)
 
-    #public 
-    def handleReduceAtom(self, reduceDict):
-        self.reduceQueue.put(self.dictToReduce(reduceDict))
-        self.reduceQueue.join()
-        return True
+    def addToResults(self,atom):
+        print self.name, "adding to results", atom.keysInResults 
+        self.results.results =  self.mergeKeyResults(atom.results, self.results.results)
+        self.results.keysInResults =  self.mergeKeyResults(atom.keysInResults, self.results.keysInResults)
+        self.backupNewResults(atom) #FT backup stuff added to results
 
-
-
-    def dictToReduce(self,reduceDict):
-        return ReduceAtom(reduceDict['results'],reduceDict['keysInResults'], reduceDict['outputAddress'])
-
-
-    # group each key into a bucket 
-    def bucketizeKeys(self,keylist):
-        print self.name, "bucketizing"
-        output = {}
-        for k in keylist:
-            owner = None
-            if k in self.data.keys():  # the real question is why doesn't it work without this.  It should now
-                owner = self.name
-            else:
-                owner, t = self.find(k,False)
-            if owner in output.keys():
-                output[owner].append(k)
-            else:
-                output[owner] = [k]
-        return output
-    
-
-    """
-    Thread Loops 
-    """
-    # keep on doing maps
-    def mapLoop(self):
-        while self.running:
-            self.mapLock.acquire()
-            if len(self.mapQueue) >= 1:
-                time.sleep(MAINT_INT)
-                work  = self.mapQueue.pop() # pop off the queue
-                results = self.mapFunc(work.hashid) # excute the job
-                print self.name, "mapped", work.hashid
-                # put reduce in my queue.
-                r = ReduceAtom(results, {work.hashid : 1},  work.outputAddress)
-                self.myReduceAtoms[work.hashid] =  ReduceAtom(copy.deepcopy(results), {work.hashid : 1},  work.outputAddress)
-                self.reduceQueue.put(r)
-                print self.name, "added to reduceQueue", work.hashid
-                fails = []
-                for s in self.successorList:
-                    try:
-                        Peer(s).createBackupReduce(work.hashid,r)# FT: backup the reduce atom self.myReduceAtoms #deepcopy of atom
-                        Peer(s).deleteBackupMap(work.hashid)# FT: inform backups I am done with map
-                    except Exception, e:
-                        print self.name, "failed to remove maps and give reduce backup to", s
-                        traceback.print_exc(file=sys.stdout)
-                        fails.append(s)
-                if (len(fails) >= 1):
-                    for f in fails:
-                        self.fixSuccessorList(f)
-                
-            self.mapLock.release() 
-
-
-    # reduce my jobs to one
-    def reduceLoop(self):
-        while self.running:
-            time.sleep(MAINT_INT*2)
-            while self.reduceQueue.qsize() >= 2:
-                numTask = 0
-                atom1 = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask
-                atom2 = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask
-                results = self.reduceFunc(atom1.results,atom2.results)
-                keysInResults = self.mergeKeyResults(atom1.keysInResults, atom2.keysInResults)
-                outputAddress = atom1.outputAddress
-                print self.name, "reduced", keysInResults
-                self.reduceQueue.put(ReduceAtom(results,keysInResults,outputAddress))  #BUG? Does order for task_done matter?
-                self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
-                self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
-            if not self.reduceQueue.empty():
-                numTask = 0
-                atom = self.reduceQueue.get()
-                numTask = numTask + 1
-                print self.name, "num tasks", numTask 
-                if self.keyIsMine(atom.outputAddress):  #FT I thought it was, later it turns out not to be the case
-                    self.addToResults(atom)
-                else:
-                    print self.name, "sending reduce of", atom.keysInResults
-                    self.sendReduceJob(atom)
-                    print self.name, "sent reduce of", atom.keysInResults
-                self.reduceQueue.task_done()
-                numTask = numTask - 1
-                print self.name, "num tasks", numTask
-
-
-    def areWeThereYetLoop(self):
-        while self.resultsHolder:
-            missingKeys  = self.getMissingKeys()
-            if len(missingKeys) > 0:
-                print self.name, "Waiting on ", missingKeys
-            else:
-                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
-                print self.results.results
-                print self.results.keysInResults
-                break
-            time.sleep(MAINT_INT*10)
 
 
     def mergeKeyResults(self, a, b):
@@ -592,6 +436,225 @@ class ChordReduceNode(DHTnode):
                 b[k]=a[k]
         return b
 
+    #public 
+    def handleReduceAtom(self, reduceDict):
+        self.reduceQueue.put(self.dictToReduce(reduceDict))
+        #self.reduceQueue.join()
+        return True
+
+
+
+    def dictToReduce(self,reduceDict):
+        return ReduceAtom(reduceDict['results'],reduceDict['keysInResults'], reduceDict['outputAddress'])
+
+
+    def shouldKeepBackup(self,key):
+        if self.pred is None or self.pred.name == self.name:
+            return True
+        return hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[0]).hashid, self.hashid)
+
+
+
+    """ 
+    Mapreduce fault tolerence ACTIONS starts here 
+    Detecting what's gone wrong isn't the problem
+    When things Go Wrong, this is how we ensure that things Go Right.
+    I've split up the functions up into three categories:
+
+    Results - The head honcho node collecting all the ReduceAtoms
+    Maps -  Making sure the Map tasks get done
+    Reduce - Making sure the Reduce tasks make it to the final destination
+
+    I've further divided each part into two subparts:
+    Normal Actions - How things SHOULD go, but won't because Murphy has a very sadistic sense of humor
+    Churn Actions - How things are handled when Murphy decides to simulate an exploding computer or a new victim joining.  Consider predecessor dying, new node joining as pred, new succ.
+
+    An aside to the reader, all faults are considered equal.  It's a primitive solution, but I am just one man.
+    """
+
+
+    ### Maps
+    ## Normal Actions 
+    # Send backup of map task to successor list 
+    #$Receive backup map, assume value is already there
+    def createBackupMap(self,key, outputAddress):
+        print self.name, "created backup map job of ", key
+        self.backupMaps.append(MapAtom(key, outputAddress))
+        #print "\n\n\n\n\n\n\n\n",key in self.backups.keys()
+        return key in self.backups.keys()
+
+    #public
+    def deleteBackupMap(self, key):
+        for atom in self.backupMaps[:]:
+            if atom.hashid == key:
+                try:
+                    self.backupMaps.remove(atom)
+                except Exception as e:
+                    print self.name, "key doesn't exist in backup maps", key
+                finally:
+                    return True
+        return False
+    
+
+
+    # When I finish doing a map task, I need to notify sucessors of completion of map task by sending a backup of the reduce atom I just created.  This leads into the section below
+    #$Receive map task done
+
+
+
+
+
+
+    ## Churn Actions
+    # My predecessor has died, but despair not, for I, the successor will take up his mantle and accomplish his task.  Or my successors will! 1) Add mapatom to the queue 2) Make sure all my successors are backups now using an above function
+
+    # Hand over work to newly joined predecessor.  He should receive the task and back it up.  I need to make sure I know I'm not responsible for it any more.
+    
+
+    #$Receive the work that belongs to me
+    def takeoverMap(self, atom):
+        print self.name, " was told to take  over map", atom['hashid'] 
+        self.mapQueue.append(MapAtom(atom['hashid'], atom['outputAddress']))
+        return True
+
+    # Handover all map backup to new successor 
+    #$I'm a new successor getting all the map backups
+
+    ### Reduce
+    ## Normal Actions
+    # Backup the reduce atom I just created.  Also let them know that if I die, I want them to avenge me.  Or at the very least, ensure the reduce atom makes its way to the output address
+    #$Receive backup of reduce atom
+    def createBackupReduce(self, key, reduceDict):
+        self.backupReduces[key] = self.dictToReduce(reduceDict)
+        return True
+
+    def deleteBackupReduce(self,key):
+        for hashid in self.backupReduces.keys()[:]:
+            if hashid == key:
+                try:
+                    del self.backupReduces[key]
+                except Exception as e:
+                    print self.name, "key doesn't exist in backup reduces", key
+                finally:
+                    return True
+        return False
+
+
+    # receive the ack from the output address and notify successors that my reduce atom in question successfully made it's way to the results 
+    #$backups get the results ack
+
+
+    ## Churn Actions
+    # My predecessor died and he didn't tell me the reduce was successfully sent, so I'm going to resend it.  This may result in too many copies of one result, but that's okay in the long scheme of things
+
+    # A new predecessor joins and he should hold onto the reduce and.... this is actually a toughy.  Let's go with I tell him he's responsible for it and since he'll receive the ack, he'll have to tell everyone about it.   I also give him the reduce atom
+    #$ Now I get the reduce atom
+    def takeoverReduce(self,key,reduceDict):  # no need to send it along, the guy handing it over should do that.
+        atom = self.dictToReduce(reduceDict) 
+        self.myReduceAtoms[key] = atom
+        return True
+
+    # 
+    #$ and the corresponding action
+
+
+    ### Results
+
+    ## Normal Actions 
+    # send the results I just received to backups.
+    def backupNewResults(self,atom):
+        fails = []
+        for s in self.successorList:
+            try:
+                Peer(s).createBackupResults(atom)
+            except Exception, e:
+                print self.name, "failed backing up results to", s
+                traceback.print_exc(file=sys.stdout)
+                fails.append(s)
+        if (len(fails) >= 1):
+            for f in fails:
+                self.fixSuccessorList(f)
+
+
+    #$recieving the backup of the results.
+    #public
+    def createBackupResults(self, resultsDict):
+        if self.backupResults is None:
+            self.backupResults = self.dictToReduce(resultsDict)
+        else:
+            self.backupResults.results = self.mergeKeyResults(resultsDict['results'], self.backupResults.results)
+            self.backupResults.keysInResults = self.mergeKeyResults(resultsDict['keysInResults'], self.backupResults.keysInResults)
+        return True
+    
+    # Give the new successor an infodump of my results
+    #$Backup the infodump of results to backup
+
+
+    # inform the owners of these keys that the reduceAtoms corresponding to the hashkeys were received.  The other half of this is in reduce actions
+    
+
+
+    ## Churn Actions
+    # My predecessor has died.  He had the results.  Bugger.  This means I need to be responsible for the results.
+    # I'm holding the results and decided that my predecessor is a better candidate to hold this ticking time bomb we call "results" than me.
+    def relinquishResults(self):
+        self.resultsHolder =  False
+        print self.name, "Waiting for my resultsThread to finish"
+        self.resultsThread.join()
+        print self.name, "ResultsThread is done"
+        try:
+            Peer(pred.name).takeoverResults(results)
+            self.backupResults =  self.results
+            self.results = None
+        except Exception, e:
+            print self.name, "I'm still the results owner"
+            self.results = self.backupResults
+            self.resultsHolder = True
+            self.resultsThread = Thread(target =  self.areWeThereYetLoop)
+            self.resultsThread.daemon = True
+            self.resultsThread.start()  #begin waiting for stuff to come back
+
+
+    #$I'm taking over the results for my successor.
+    def takeoverResults(self,resultsDict):
+        print self.name, "taking over results"
+        self.results = self.dictToReduce(resultsDict)   
+        self.resultsHolder = True
+        self.resultsThread = Thread(target =  self.areWeThereYetLoop)
+        self.resultsThread.daemon = True
+        self.resultsThread.start()  #begin waiting for stuff to come back
+        return True
+
+
+    # Potential: due to churn, I somehow am assumed to be respobsible for this result (and results in general).  I am totally not that node.   Solution:  generate a fault!
+
+    """
+    End Mapreduce Fault tolerence actions 
+    """ 
+
+
+
+
+
+
+
+    """
+    Begin debug actions. 
+
+    These actions let me see the progress of the overall program
+    """
+    def areWeThereYetLoop(self):
+        while self.resultsHolder:
+            missingKeys  = self.getMissingKeys()
+            if len(missingKeys) > 0:
+                print self.name, "MAPPED", MAPPED
+                print self.name, "Waiting on ", missingKeys
+            else:
+                print self.name, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone"
+                print self.results.results
+                print self.results.keysInResults
+                break
+            time.sleep(MAINT_INT*50)
 
     def getMissingKeys(self):
         missingKeys = []
@@ -604,3 +667,7 @@ class ChordReduceNode(DHTnode):
         return missingKeys
 
 
+
+    """
+    End debug actions. 
+    """ 

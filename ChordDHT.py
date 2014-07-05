@@ -1,16 +1,18 @@
 from pyChord import Node, getHashString, Peer, hashBetweenRightInclusive, NUM_SUCCESSORS, MAINT_INT
 from cfs import DataAtom, KeyFile, makeBlocks
+from threading import RLock as Lock
 import sys, traceback
 import time
 deletions = []
 
-NUM_PREDECESSORS = NUM_SUCCESSORS+1
+NUM_PREDECESSORS = NUM_SUCCESSORS + 1
 class DHTnode(Node):
     def __init__(self,host,ip):
         Node.__init__(self,host,ip)
         self.data = {} # data I'm responsible for 
         self.backups = {} # data I'm holding onto for someone else
         self.predecessorList = [self.name]*NUM_PREDECESSORS
+        self.predecessorLock = Lock()
         self.addNewFunc(self.getPredecessorList, "getPredecessorList")
         self.addNewFunc(self.put,"put")
         self.addNewFunc(self.get,"get")
@@ -36,9 +38,6 @@ class DHTnode(Node):
             info = info + str(Peer(x).hashid)[:6] + " "
         return info
 
-
-
-
     def findSuccessor(self, key, dataRequest = False):
         if dataRequest and (key in self.data.keys() or key in self.backups.keys()):
             #print self.name, "short circuited the request"
@@ -54,7 +53,7 @@ class DHTnode(Node):
             return super(DHTnode,self).find(key,dataRequest)
 
     def updateSuccessorList(self):
-        oldList  = self.successorList
+        oldList  = self.successorList[:]
         super(DHTnode,self).updateSuccessorList()
         newSuccessors = [node for node in self.successorList if node not in oldList]
         for node in newSuccessors:
@@ -66,10 +65,10 @@ class DHTnode(Node):
         if hasNewPred:
             try:
                 for key in self.data.keys()[:]:
-                    if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid,self.pred.hashid):  #check here for weird behavioer
+                    if hashBetweenRightInclusive(long(key,16), Peer(self.predecessorList[-2]).hashid, self.pred.hashid):  #check here for weird behavioer
                         self.relinquishData(key)
             except Exception:
-                print self.name, "fix this"
+                print self.name, "couldn't relinquish data"
                 traceback.print_exc(file=sys.stdout)
                 self.predecessorList.pop()
                 self.pred = Peer(self.predecessorList[-1])
@@ -95,7 +94,7 @@ class DHTnode(Node):
             self.predecessorList.pop()
             if len(self.predecessorList) == 0:
                 self.pred =  None
-                [self.name]*NUM_PREDECESSORS
+                self.predecessorList = [self.name]*NUM_PREDECESSORS
             else:
                 self.pred = Peer(self.predecessorList[-1])
                 self.updatePredecessorList()
@@ -114,6 +113,7 @@ class DHTnode(Node):
                     except Exception, e:
                         print self.backups, e
                 elif self.keyIsMine(key):
+                    print self.name, "taking over key", key
                     self.makeBackupMine(key)
 
 
@@ -145,6 +145,7 @@ class DHTnode(Node):
             while not done:
                 try:
                     target = self.findSuccessor(block.hashid)
+                    print self.name, "storing in", target
                     Peer(target).put(block.hashid, block)
                 except Exception as e:
                     print self.name, "failed put at", target, "retrying"  
@@ -152,8 +153,6 @@ class DHTnode(Node):
                 else:
                     done = True
         return True
-
-
 
 
     def retrieveFile(self, filename):
@@ -167,8 +166,11 @@ class DHTnode(Node):
                 try:
                     target = self.findSuccessor(key,True)
                     block = Peer(target).get(key)
-                    blocks.append(block)
-                    done = True
+                    if block != "FAIL":
+                        blocks.append(block)
+                        done = True
+                    else:
+                        raise("oops")
                 except:
                     tries = tries + 1
                     print self.name, "failed to get a piece from", target, "retrying" 
@@ -180,14 +182,22 @@ class DHTnode(Node):
 
     def getKeyfile(self, filename):
         key = getHashString(filename)
-        while True:
+        tries = 0
+        print self.name, "getting keyfile", key
+        while tries < 20:
             try:
-                target = self.findSuccessor(key)
+                target = self.findSuccessor(key, True)
                 keyfile =  Peer(target).get(key) # why is this a dict?  rpc it turns out
-                return keyfile
+                if keyfile == "FAIL":
+                    time.sleep(3)
+                else:
+                    return keyfile                    
             except Exception as e:
-                print self.name, "failed to retrieve keyfile from", target 
-                time.sleep(MAINT_INT)
+                print self.name, "failed to retrieve keyfile from", target, " due to" , e
+                time.sleep(1)
+            print self.name, "failed to retrieve keyfile from", target 
+            tries = tries + 1
+        return False
 
     #make more efficient
     def backupToNewSuccessor(self, newSuccessor):
@@ -199,6 +209,7 @@ class DHTnode(Node):
                 self.fixSuccessorList(newSuccessor)
 
     def backupNewData(self, key, val):
+        self.successorLock.acquire()
         fails = []
         for s in self.successorList:
             try:
@@ -209,6 +220,7 @@ class DHTnode(Node):
         if (len(fails) >= 1):
             for f in fails:
                 self.fixSuccessorList(f)
+        self.successorLock.release()
                 
                 
     
@@ -242,7 +254,7 @@ class DHTnode(Node):
 
 
     def keyIsMine(self, key):
-        if self.pred is None:
+        if self.pred is None or self.pred.name == self.name :
             return True
         return hashBetweenRightInclusive(long(key,16), self.pred.hashid, self.hashid)
 
