@@ -1,11 +1,11 @@
 #simulates vhash network to test hit-rate
 from vol_util import *
-
+from vhash_greedy import *
 max_update_size = 10
 
 def hit_miss_test(nodes):
         correct = 0.0
-        samples = 20
+        samples = 100
         for i in range(0,samples):
                 p = randPoint()
                 start = random.choice(nodes)
@@ -13,7 +13,7 @@ def hit_miss_test(nodes):
                 right = min(nodes,key=lambda x: dist(x.loc,p))
                 if end == right:
                         correct+=1.0
-        return correct/samples
+        return correct/float(samples)
 
 
 
@@ -76,19 +76,22 @@ class Node(object):
                 locs = {}
                 for p in self.long_peers:
                         locs[p.loc] = p
-                peers = get_delunay_peers(self.loc,locs.keys())
+                peers = getShell(self.loc,locs.keys())
                 self.short_peers = []
                 for p in peers:
                         self.short_peers.append(locs[p])
 
 all_nodes = [Node()]
-for i in range(0,20):
+# Inserts n nodes into the network
+n =100
+generations = 100
+for i in range(0,n):
         new_node = Node()
         contact_node = random.choice(all_nodes)
         contact_node.join(new_node)
         all_nodes.append(new_node)
 
-for i in range(0,20):
+for i in range(0,generations):
         print hit_miss_test(all_nodes)
         print map(lambda x: len(x.short_peers), all_nodes)
         print map(lambda x: len(x.long_peers), all_nodes)
