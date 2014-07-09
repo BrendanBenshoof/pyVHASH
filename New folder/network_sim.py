@@ -80,10 +80,13 @@ class Node(object):
                 self.short_peers = []
                 for p in peers:
                         self.short_peers.append(locs[p])
+                        
+        def approx_region(center, others):
+            pass
 
 all_nodes = [Node()]
 # Inserts n nodes into the network
-n =100
+n =1000
 generations = 100
 for i in range(0,n):
         new_node = Node()
