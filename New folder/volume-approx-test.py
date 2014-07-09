@@ -76,10 +76,10 @@ def get_delunay_peers(center, points):
                         vol = tmp_vol
                         peers.append(p)
         return peers
-
-points = []
-center = [0.0]*d
-for i in range(0,20):
+if __name__ == '__main__':
+    points = []
+    center = [0.0]*d
+    for i in range(0,20):
         points.append(randPoint())
         #print points
         print i,len(get_delunay_peers(center,points)),len(vhash_greedy.getShell(center,points))

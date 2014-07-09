@@ -45,11 +45,12 @@ def getShell(center,others):
         if best:
             result.append(o)
     return result
-"""
-points = []
-center = [0.0]*d
-for i in range(0,20):
+
+
+if __name__ ==  '__main__':
+    points = []
+    center = [0.0]*d
+    for i in range(0,20):
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))
-"""

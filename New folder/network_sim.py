@@ -5,7 +5,7 @@ max_update_size = 10
 
 def hit_miss_test(nodes):
         correct = 0.0
-        samples = 100
+        samples = 1000
         for i in range(0,samples):
                 p = randPoint()
                 start = random.choice(nodes)
