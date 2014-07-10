@@ -15,18 +15,26 @@ class Node(object):
     # works only because this is a  static simulation
     def gossip(self, peers):
         yenta = random.choice(peers) # yenta is yiddish for a woman unable to keep a secret
-        tmp = self.peers
-        self.peers = self.peers + list(set(yenta.peers) - set(self.peers))  # In set notaion A <- A union B
-        print tmp, self.peers
-        yenta.peers = yenta.peers + list(set(tmp) - set(yenta.peers))
-        self.update_region()
-        yenta.update_region()
         
-    def update_region(self):
+        my_candidates = self.peers + list(set(yenta.peers) - set(self.peers))  # In set notaion A <- A union B
+        yenta_candidates = yenta.peers + list(set(self.peers) - set(yenta.peers))
+        
+        self.update_peers(my_candidates)
+        yenta.update_peers(yenta_candidates)
+
+        
+    def update_peers(self,candidates):
         pass
         
-        
+    def approx_region(self, candidates):
+        new_peers = []
+        candidates =  sorted(candidates, key = lambda x: dist(self.loc, x.loc)) #sort candidates
+        new_peers =  candidates.pop(0)
+        for c in candidates[:]:
+            midpoint = calc_midpoint()
 
 
 # Goals print out routing success rate, average degree, largest degree
-        
+
+if __name__ ==  '__main__':
+    print "okay"

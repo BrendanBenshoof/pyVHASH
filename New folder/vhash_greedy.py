@@ -9,16 +9,21 @@ def dist(p0,p1):
         deltas = map(lambda x: x**2.0 if x < space_size else (space_size-x)**2.0, deltas)
         return sum(deltas)**0.5
         
+def calc_midpoint(A,B):
+    tmp = map(lambda a,b: min([(b-a),space_size-(b-a)])*0.5, A, B)
+    return vec_sum(A,tmp)
+    
     
 
 def vec_sum(a,b):
-
         tmp_sum = map(lambda x,y: (x+y)%space_size, a,b)
+        """
         for i in range(0,len(a)):
                 if tmp_sum[i] >= space_size:
                         tmp_sum[i] = space_size-tmp_sum[i]
                 if tmp_sum[i] < 0:
                            tmp_sum[i] = space_size+tmp_sum[i]
+        """
         return tmp_sum
 
 def voronoi_filter(objects,test_point):
@@ -50,9 +55,12 @@ def getShell(center,others):
 
 
 if __name__ ==  '__main__':
+    """
     points = []
     center = [0.0]*d
     for i in range(0,1000):
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))
+    """
+    print calc_midpoint([90,50,4,97],[10,20,98,98])
