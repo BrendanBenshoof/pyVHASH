@@ -10,8 +10,16 @@ def dist(p0,p1):
         return sum(deltas)**0.5
         
 def calc_midpoint(A,B):
-    tmp = map(lambda a,b: min([(b-a),space_size-(b-a)])*0.5, A, B)
-    return vec_sum(A,tmp)
+    midpoint = []
+    for a,b in zip(A,B):
+        c = 0
+        ab = math.sqrt((a-b)**2)
+        if ab < (space_size -ab):
+            c = (a+b)/2.0
+        else:
+            c = ((a+b)%space_size)/2.0
+        midpoint.append(c)
+    return midpoint
     
     
 
@@ -38,8 +46,8 @@ def randPoint():
 def getShell(center,others):
     result = []
     for o in others:
-        AB_half = map(lambda x,y: min([y-x,space_size-(y-x)])*0.5, center, o)
-        midpoint = vec_sum(center,AB_half)
+        #AB_half = map(lambda x,y: min([y-x,space_size-(y-x)])*0.5, center, o)
+        midpoint = calc_midpoint(center,o) #vec_sum(center,AB_half)
         tobeat = min([dist(center,midpoint),dist(midpoint,o)])
         best = True
         for othero in others:
@@ -55,12 +63,9 @@ def getShell(center,others):
 
 
 if __name__ ==  '__main__':
-    """
     points = []
     center = [0.0]*d
     for i in range(0,1000):
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))
-    """
-    print calc_midpoint([90,50,4,97],[10,20,98,98])

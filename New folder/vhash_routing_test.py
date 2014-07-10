@@ -31,7 +31,8 @@ class Node(object):
         candidates =  sorted(candidates, key = lambda x: dist(self.loc, x.loc)) #sort candidates
         new_peers =  candidates.pop(0)
         for c in candidates[:]:
-            midpoint = calc_midpoint()
+            midpoint = calc_midpoint(self.loc,c)
+            
 
 
 # Goals print out routing success rate, average degree, largest degree

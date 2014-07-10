@@ -86,7 +86,7 @@ class Node(object):
 
 all_nodes = [Node()]
 # Inserts n nodes into the network
-n =100
+n = 100
 generations = 100
 for i in range(0,n):
         new_node = Node()
