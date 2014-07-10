@@ -14,7 +14,7 @@ class Node(object):
         
     # works only because this is a  static simulation
     def gossip(self, peers):
-        yenta = random.choice(peers) # yenta is yiddish for a woman unable to keep a secret
+        yenta = random.choice(peers) # yenta is yiddish for a rumormonger
         
         my_candidates = self.peers + list(set(yenta.peers) - set(self.peers))  # In set notaion A <- A union B
         yenta_candidates = yenta.peers + list(set(self.peers) - set(yenta.peers))
