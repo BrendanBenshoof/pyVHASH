@@ -1,5 +1,5 @@
 #simulates vhash network to test hit-rate
-from vol_util import *
+
 from vhash_greedy import *
 max_update_size = 10
 
@@ -81,12 +81,12 @@ class Node(object):
                 for p in peers:
                         self.short_peers.append(locs[p])
                         
-        def approx_region(center, others):
+        def approx_region(self, center, others):
             pass
 
 all_nodes = [Node()]
 # Inserts n nodes into the network
-n =1000
+n =100
 generations = 100
 for i in range(0,n):
         new_node = Node()

@@ -8,6 +8,8 @@ def dist(p0,p1):
         deltas = map(lambda x,y: math.fabs(x-y),p0,p1)
         deltas = map(lambda x: x**2.0 if x < space_size else (space_size-x)**2.0, deltas)
         return sum(deltas)**0.5
+        
+    
 
 def vec_sum(a,b):
 
@@ -50,7 +52,7 @@ def getShell(center,others):
 if __name__ ==  '__main__':
     points = []
     center = [0.0]*d
-    for i in range(0,20):
+    for i in range(0,1000):
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))
