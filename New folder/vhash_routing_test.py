@@ -3,7 +3,7 @@ import random
 
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 100
+NETWORK_SIZE = 200
 CYCLES = 100
 
 def simulate_routing(nodes):
@@ -100,9 +100,7 @@ if __name__ ==  '__main__':
         parent = random.choice(nodes)
         n.join(parent)
         nodes.append(n)
-        for node in nodes:
-            node.gossip()
-        print simulate_routing(nodes),i
+
 
 print "DONE ADDING"
 
