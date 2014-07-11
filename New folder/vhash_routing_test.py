@@ -3,7 +3,7 @@ import random
 
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 500
+NETWORK_SIZE = 100
 CYCLES = 100
 
 def simulate_routing(nodes):
@@ -24,6 +24,7 @@ class Node(object):
     def __init__(self):
         self.loc = randPoint()
         self.peers =  []
+        self.long_peers = []
         
     # works only because this is a  static simulation
     def gossip(self):
@@ -47,6 +48,11 @@ class Node(object):
         
     def update_peers(self,candidates):
         self.peers = self.approx_region(candidates)
+        for c in candidates:
+            if c not in self.long_peers and c is not self:
+                self.long_peers.append(c)
+        if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
+            self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
         
     def approx_region(self, candidates):
         new_peers = []
@@ -70,7 +76,7 @@ class Node(object):
     def lookup(self, loc):
         if len(self.peers) == 0:
             return self
-        best_peer =  min(self.peers, key = lambda x: dist(loc, x.loc))
+        best_peer =  min(self.peers+self.long_peers, key = lambda x: dist(loc, x.loc))
         mydist = dist(loc, self.loc)
         if dist(loc, best_peer.loc) < mydist:
             return best_peer.lookup(loc)
@@ -94,12 +100,19 @@ if __name__ ==  '__main__':
         parent = random.choice(nodes)
         n.join(parent)
         nodes.append(n)
-        
+        for node in nodes:
+            node.gossip()
+        print simulate_routing(nodes),i
+
+print "DONE ADDING"
+
 
 for i in range(0,CYCLES):
     for node in nodes:
         node.gossip()
     print simulate_routing(nodes)
 
+"""
 for node in nodes:
     print node.loc, [x.loc for x in node.peers]
+"""
