@@ -50,7 +50,13 @@ class Node(object):
         if len(self.peers) == 0:
             return self
         best_peer =  min(self.peers, key = lambda x: dist(loc, x.loc))
-        
+        mydist = dist(loc, self.loc)
+        if dist(loc, best_peer.loc) < mydist:
+            return best_peer.seek(loc)
+        else:
+            return self
+
+    
 
 
             
