@@ -3,9 +3,21 @@ import random
 
 random.seed(12345)
 TABLE_SIZE = 3*d +1
+NETWORK_SIZE = 1000
+CYCLES = 1000
 
 def simulate_routing(nodes):
-    pass
+    correct = 0.0
+    samples = 1000
+    for i in range(0,samples):
+        p = randPoint()
+        start = random.choice(nodes)
+        end = start.lookup(p)
+        right = min(nodes,key=lambda x: dist(x.loc,p))
+        if end == right:
+                correct+=1.0
+    return correct/float(samples)
+
 
 
 class Node(object):
@@ -14,9 +26,10 @@ class Node(object):
         self.peers =  []
         
     # works only because this is a  static simulation
-    def gossip(self, peers):
-        yenta = random.choice(peers) # yenta is yiddish for a rumormonger
+    def gossip(self):
+        yenta = random.choice(self.peers) # yenta is yiddish for a rumormonger
         
+        #need to remove self and yenta from our own lists
         my_candidates = self.peers + list(set(yenta.peers) - set(self.peers))  # In set notaion A <- A union B
         yenta_candidates = yenta.peers + list(set(self.peers) - set(yenta.peers))
         
@@ -55,14 +68,15 @@ class Node(object):
             return best_peer.seek(loc)
         else:
             return self
-
-    
-
-
             
-
+    def join(self, member):  # sorta the reverse of how it was previously done
+        parent = member.lookup(self.loc)
+        self.peers.append(parent)
+        self.gossip()
 
 # Goals print out routing success rate, average degree, largest degree
 
 if __name__ ==  '__main__':
-    print "okay"
+    nodes = []
+    for i in range(0,NETWORK_SIZE):
+        n = Node()
