@@ -3,7 +3,7 @@ import random
 
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 4000
+NETWORK_SIZE = 1000
 CYCLES = 100
 
 def simulate_routing(nodes):
