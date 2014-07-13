@@ -1,6 +1,6 @@
 import math, random
 
-d = 4
+d = 5
 
 space_size = 100.0
 
