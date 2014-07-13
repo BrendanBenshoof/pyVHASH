@@ -3,7 +3,7 @@ import random
 
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 5000
+NETWORK_SIZE = 500
 CYCLES = 100
 
 def simulate_routing(nodes):
@@ -75,8 +75,8 @@ class Node(object):
             if good:
                 candidates.remove(c)
                 new_peers.append(c)
-        while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
-            new_peers.append(candidates.pop(0))
+        #while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
+        #    new_peers.append(candidates.pop(0))
         return new_peers
 
     def lookup(self, loc):
