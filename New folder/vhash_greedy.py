@@ -4,11 +4,16 @@ d = 2
 
 space_size = 100.0
 
-def dist(p0,p1):
-        deltas = map(lambda x,y: math.fabs(x-y),p0,p1)
-        deltas = map(lambda x: x**2.0 if x < space_size else (space_size-x)**2.0, deltas)
-        return sum(deltas)**0.5
-        
+def dist(A,B):
+    distance = 0
+    for a,b in zip(A,B):
+        ab = math.sqrt((a-b)**2)
+        if ab < (space_size - ab):
+            distance = distance + (a-b)**2
+        else:
+            distance =  distance + (space_size - math.fabs(a-b))**2
+    return math.sqrt(distance)
+
 def calc_midpoint(A,B):
     midpoint = []
     for a,b in zip(A,B):
@@ -70,5 +75,6 @@ if __name__ ==  '__main__':
         #print points
         print i,len(getShell(center,points))"""
     a = [0, 5.0]
-    b = [0, 95.0]
+    b = [0, 98.0]
     print dist(a,b)
+    print calc_midpoint(a,b)
