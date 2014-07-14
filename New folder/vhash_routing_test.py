@@ -5,14 +5,14 @@ import random
 
 
 G=nx.DiGraph()
-#random.seed(12345)
+random.seed(12345)
 TABLE_SIZE = 3*d +1
 NETWORK_SIZE = 100
-CYCLES = 100
+CYCLES = 1000
 
 def simulate_routing(nodes):
     correct = 0.0
-    samples = 1000
+    samples = 100
     for i in range(0,samples):
         p = randPoint()
         start = random.choice(nodes)
