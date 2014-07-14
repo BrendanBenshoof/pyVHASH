@@ -5,9 +5,9 @@ import random
 
 
 G=nx.DiGraph()
-random.seed(12345)
+#random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 1000
+NETWORK_SIZE = 100
 CYCLES = 100
 
 def simulate_routing(nodes):
@@ -126,5 +126,6 @@ if __name__ ==  '__main__':
         centerist = max(nodes, key= lambda x: len(x.peers))
         saddest =  min(nodes, key= lambda x: len(x.peers))
         print i, simulate_routing(nodes), len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
-        
+        print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
+        print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
