@@ -80,8 +80,8 @@ class Node(object):
             if good:
                 candidates.remove(c)
                 new_peers.append(c)
-        while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
-            new_peers.append(candidates.pop(0))
+        #while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
+        #    new_peers.append(candidates.pop(0))
         return new_peers
 
     def lookup(self, loc):
