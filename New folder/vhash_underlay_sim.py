@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import vhash_greedy as vhash
 
 
+render_overlay_plot = True
+
 def generate_vhash_graph(nodes):
     locs = {}
     revlocs = {}
@@ -61,22 +63,35 @@ def generate_optimized_vhash_graph(nodes,real,gens):
                     if p2 not in far_peers[p] and p2 != p:
                         far_peers[p].append(p2)
         for n in nodes:
-            weighted_vectors = []
-            weight_sum = 0.0
+            unit_distance_per_hop = sum([vhash.dist(locs[n], locs[x]) for x in close_peers[n]])
+            unit_distance_per_hop /=sum([ float(underlay.hops(real,n,x)) for x in close_peers[n]])
+
+            error_vector = [0.0,0.0]
             for p in close_peers[n]:
                 latency = float(underlay.hops(real,n,p))
-                delta_vec = map(lambda x,y: min([y-x,vhash.space_size-(y-x)])/latency, locs[p], locs[n])
-                weight_sum+=latency**-1.0
-                weighted_vectors.append(delta_vec)
-            delta_vec = map(lambda x: x/weight_sum, reduce(vhash.vec_sum, weighted_vectors))
+                ideal_length = latency*unit_distance_per_hop
+                delta_vec = map(lambda x,y: min([y-x,vhash.space_size-(y-x)]), locs[p], locs[n])
+                delta_dist = vhash.dist([0.0,0.0],delta_vec)
+                error_dist = ideal_length-delta_dist
+                error_delta = map(lambda x: error_dist*x/delta_dist,delta_vec)
+                error_vector = vhash.vec_sum(error_vector, error_delta)
             del revlocs[locs[n]]
-            locs[n] = tuple(vhash.vec_sum(locs[n],delta_vec))
+            locs[n] = tuple(vhash.vec_sum(locs[n],error_vector))
             revlocs[locs[n]] = n
+
     for n in nodes:
         for p in close_peers[n]:
             overlay.add_edge(n,p)
         for p in far_peers[n]:
             overlay.add_edge(n,p)
+
+    if render_overlay_plot:
+        xs = [locs[x][0] for x in nodes]
+        ys = [locs[x][1] for x in nodes]
+        plt.scatter(xs,ys)
+        plt.show()
+
+
     return overlay
 
 def get_real_hops(real_graph,overlay,A,B):
@@ -98,9 +113,9 @@ def get_real_hops(real_graph,overlay,A,B):
 if __name__ == "__main__":
     hoplist = []
     real_graph = underlay.generate_underlay(1000)
-    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),100), real_graph, 20)
+    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),200), real_graph, 20)
 
-    for i in range(0,100):
+    for i in range(0,1000):
         x = random.choice(chord_overlay.nodes())
         y = random.choice(chord_overlay.nodes())
         while(x==y):

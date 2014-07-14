@@ -14,7 +14,7 @@ def hops(G,A,B):
 if __name__ == "__main__":
     start = timeit.default_timer()
     hoplist = []
-    underlay = generate_underlay(5000)
+    underlay = generate_underlay(1000)
 
     for i in range(0,1000):
         x = random.choice(underlay.nodes())

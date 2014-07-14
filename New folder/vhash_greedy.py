@@ -7,7 +7,7 @@ space_size = 100.0
 def dist(A,B):
     distance = 0.0
     for a,b in zip(A,B):
-        ab = math.sqrt((a-b)**2)
+        ab = math.fabs(a-b)
         if ab < (space_size - ab):
             distance = distance + (a-b)**2
         else:
@@ -48,23 +48,26 @@ def randPoint():
                 output.append(random.random()*space_size)
         return tuple(output)
 
-def getShell(center,others):
-    result = []
-    for o in others:
-        #AB_half = map(lambda x,y: min([y-x,space_size-(y-x)])*0.5, center, o)
-        midpoint = calc_midpoint(center,o) #vec_sum(center,AB_half)
-        tobeat = min([dist(center,midpoint),dist(midpoint,o)])
-        best = True
-        for othero in others:
-            if o==othero:
-                continue
-            if dist(othero,midpoint) < tobeat:
-                #print dist(othero,midpoint), tobeat
-                best = False
-                break
-        if best:
-            result.append(o)
-    return result
+
+def getShell(center, others):
+    new_peers = []
+    candidates =  sorted(others, key=lambda x: dist(center, x)) #sort candidates
+    new_peers.append(candidates.pop(0))
+    for c in candidates[:]:
+        midpoint = calc_midpoint(center,c)  # find the midpoint between myself and the new point
+        dist_to_midpoint = dist(center, midpoint)
+        good = True
+        for p in new_peers:  # now for each peer that I've added
+            if dist(p, midpoint) < dist_to_midpoint: # if p is closer to the midpoint than I am...
+                good = False
+                break # reject it
+        if good:
+            candidates.remove(c)
+            new_peers.append(c)
+    if not False:
+        while len(new_peers) < 3*d+1 and len(candidates) > 0:  #is this block nessecary
+            new_peers.append(c)
+    return new_peers
 
 
 if __name__ ==  '__main__':
@@ -74,7 +77,7 @@ if __name__ ==  '__main__':
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))"""
-    a = [1, 5.0]
-    b = [2, 5]
+    a = [10, 5.0]
+    b = [90, 5.0]
     print dist(a,b)
     print calc_midpoint(a,b)

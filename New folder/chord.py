@@ -62,9 +62,9 @@ def get_real_hops(real_graph,overlay,A,B):
 if __name__ == "__main__":
     hoplist = []
     real_graph = underlay.generate_underlay(1000)
-    chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),100))
+    chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),200))
 
-    for i in range(0,100):
+    for i in range(0,1000):
         x = random.choice(chord_overlay.nodes())
         y = random.choice(chord_overlay.nodes())
         while(x==y):

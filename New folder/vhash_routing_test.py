@@ -7,10 +7,10 @@ import random
 G=nx.DiGraph()
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 1000
+NETWORK_SIZE = 100
 CYCLES = 100
-CHATTY_JOIN = False
-USING_LONG_PEERS = False
+CHATTY_JOIN = True
+USING_LONG_PEERS = True
 
 def simulate_routing(nodes):
     correct = 0.0
@@ -83,7 +83,7 @@ class Node(object):
             if good:
                 candidates.remove(c)
                 new_peers.append(c)
-        if not USING_LONG_PEERS:
+        if not False:
             while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
                 new_peers.append(candidates.pop(0))
         return new_peers
@@ -132,13 +132,17 @@ if __name__ ==  '__main__':
 
     print "DONE ADDING"
 
-
+    accuracy_list = []
     for i in range(0,CYCLES):
         for node in nodes:
             node.gossip()
         centerist = max(nodes, key= lambda x: len(x.peers))
         saddest =  min(nodes, key= lambda x: len(x.peers))
-        print i, simulate_routing(nodes), len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
+        accuracy = simulate_routing(nodes)
+        print i, accuracy, len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
+        accuracy_list.append(accuracy)
+    plt.plot(range(0,100), accuracy_list)
+    plt.show()
         #print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
         #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
