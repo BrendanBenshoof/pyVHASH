@@ -8,7 +8,7 @@ G=nx.DiGraph()
 random.seed(12345)
 TABLE_SIZE = 3*d +1
 NETWORK_SIZE = 100
-CYCLES = 1000
+CYCLES = 300
 
 def simulate_routing(nodes):
     correct = 0.0
@@ -79,8 +79,8 @@ class Node(object):
             if good:
                 candidates.remove(c)
                 new_peers.append(c)
-        #while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
-        #    new_peers.append(candidates.pop(0))
+        while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
+            new_peers.append(candidates.pop(0))
         return new_peers
 
     def lookup(self, loc):
@@ -126,6 +126,6 @@ if __name__ ==  '__main__':
         centerist = max(nodes, key= lambda x: len(x.peers))
         saddest =  min(nodes, key= lambda x: len(x.peers))
         print i, simulate_routing(nodes), len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
-        print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
-        print saddest.loc, [x.loc for x in saddest.peers]
+        #print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
+        #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
