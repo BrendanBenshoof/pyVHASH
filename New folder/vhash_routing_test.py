@@ -7,12 +7,12 @@ import random
 G=nx.DiGraph()
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 100
+NETWORK_SIZE = 1000
 CYCLES = 100
 
 def simulate_routing(nodes):
     correct = 0.0
-    samples = 2
+    samples = 1000
     for i in range(0,samples):
         p = randPoint()
         start = random.choice(nodes)
@@ -123,21 +123,8 @@ if __name__ ==  '__main__':
     for i in range(0,CYCLES):
         for node in nodes:
             node.gossip()
-        print i, simulate_routing(nodes), get_avg_degree(nodes), len(max(nodes, key= lambda x: len(x.peers)).peers)
-
-
-    G.add_nodes_from(nodes)
-    for n in nodes:
-        for p in n.peers:
-            G.add_edge(n,p)
-
-    print G.number_of_nodes()
-    print G.number_of_edges()
-
-
-    nx.draw(G)
-    plt.show()
-    """
-    for node in nodes:
-        print node.loc, [x.loc for x in node.peers]
-    """
+        centerist = max(nodes, key= lambda x: len(x.peers))
+        saddest =  min(nodes, key= lambda x: len(x.peers))
+        print i, simulate_routing(nodes), len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
+        
+        #print centerist.loc, [x.loc for x in centerist.peers]
