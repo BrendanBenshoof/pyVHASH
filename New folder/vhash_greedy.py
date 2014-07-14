@@ -5,7 +5,7 @@ d = 2
 space_size = 100.0
 
 def dist(A,B):
-    distance = 0
+    distance = 0.0
     for a,b in zip(A,B):
         ab = math.sqrt((a-b)**2)
         if ab < (space_size - ab):
@@ -74,7 +74,7 @@ if __name__ ==  '__main__':
         points.append(randPoint())
         #print points
         print i,len(getShell(center,points))"""
-    a = [0, 5.0]
-    b = [0, 98.0]
+    a = [1, 5.0]
+    b = [2, 5]
     print dist(a,b)
     print calc_midpoint(a,b)
