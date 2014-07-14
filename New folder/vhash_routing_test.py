@@ -37,8 +37,9 @@ class Node(object):
         self.long_peers = []
         
     # works only because this is a  static simulation
-    def gossip(self):
-        yenta = random.choice(self.peers) # yenta is yiddish for a rumormonger
+    def gossip(self, yenta =  None):
+        if yenta is None:
+            yenta = random.choice(self.peers) # yenta is yiddish for a rumormonger
         
         #need to remove self and yenta from our own lists
         my_candidates = self.create_candidates(yenta)  # In set notaion A <- A union B
@@ -95,9 +96,9 @@ class Node(object):
             
     def join(self, member):  # sorta the reverse of how it was previously done
         parent = member.lookup(self.loc)
-        self.peers.append(parent)
-        self.gossip()
-        #or gossip with all peers
+        self.peers = [parent] + parent.peers
+        for p in self.peers[:]:
+            self.gossip(p)
 
 # Goals print out routing success rate, average degree, largest degree
 
