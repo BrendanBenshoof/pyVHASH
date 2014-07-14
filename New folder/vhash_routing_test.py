@@ -117,27 +117,27 @@ if __name__ ==  '__main__':
             print simulate_routing(nodes), i
         """
 
-print "DONE ADDING"
+    print "DONE ADDING"
 
 
-for i in range(0,CYCLES):
+    for i in range(0,CYCLES):
+        for node in nodes:
+            node.gossip()
+        print i, simulate_routing(nodes), get_avg_degree(nodes), len(max(nodes, key= lambda x: len(x.peers)).peers)
+
+
+    G.add_nodes_from(nodes)
+    for n in nodes:
+        for p in n.peers:
+            G.add_edge(n,p)
+
+    print G.number_of_nodes()
+    print G.number_of_edges()
+
+
+    nx.draw(G)
+    plt.show()
+    """
     for node in nodes:
-        node.gossip()
-    print i, simulate_routing(nodes), get_avg_degree(nodes), len(max(nodes, key= lambda x: len(x.peers)).peers)
-
-
-G.add_nodes_from(nodes)
-for n in nodes:
-    for p in n.peers:
-        G.add_edge(n,p)
-
-print G.number_of_nodes()
-print G.number_of_edges()
-
-
-nx.draw(G)
-plt.show()
-"""
-for node in nodes:
-    print node.loc, [x.loc for x in node.peers]
-"""
+        print node.loc, [x.loc for x in node.peers]
+    """
