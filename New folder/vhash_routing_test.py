@@ -7,8 +7,10 @@ import random
 G=nx.DiGraph()
 random.seed(12345)
 TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 100
-CYCLES = 300
+NETWORK_SIZE = 1000
+CYCLES = 100
+CHATTY_JOIN = False
+USING_LONG_PEERS = False
 
 def simulate_routing(nodes):
     correct = 0.0
@@ -59,12 +61,13 @@ class Node(object):
         
     def update_peers(self,candidates):
         self.peers = self.approx_region(candidates)
-        for c in candidates:
-            if c not in self.long_peers and c is not self:
-                self.long_peers.append(c)
-        if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
-            self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
-        
+        if USING_LONG_PEERS:
+            for c in candidates:
+                if c not in self.long_peers and c is not self:
+                    self.long_peers.append(c)
+            if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
+                self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
+            
     def approx_region(self, candidates):
         new_peers = []
         candidates =  sorted(candidates, key=lambda x: dist(self.loc, x.loc)) #sort candidates
@@ -80,14 +83,19 @@ class Node(object):
             if good:
                 candidates.remove(c)
                 new_peers.append(c)
-        #while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
-        #    new_peers.append(candidates.pop(0))
+        if not USING_LONG_PEERS:
+            while len(new_peers) < TABLE_SIZE and len(candidates) > 0:  #is this block nessecary
+                new_peers.append(candidates.pop(0))
         return new_peers
 
     def lookup(self, loc):
         if len(self.peers) == 0:
             return self
-        best_peer =  min(self.peers+self.long_peers, key = lambda x: dist(loc, x.loc))
+        best_peer = None
+        if USING_LONG_PEERS:
+            best_peer =  min(self.peers+self.long_peers, key = lambda x: dist(loc, x.loc))
+        else:
+            best_peer =  min(self.peers, key = lambda x: dist(loc, x.loc))
         mydist = dist(loc, self.loc)
         if dist(loc, best_peer.loc) < mydist:
             return best_peer.lookup(loc)
@@ -96,9 +104,13 @@ class Node(object):
             
     def join(self, member):  # sorta the reverse of how it was previously done
         parent = member.lookup(self.loc)
-        self.peers = [parent] + parent.peers
-        for p in self.peers[:]:
-            self.gossip(p)
+        if CHATTY_JOIN:
+            self.peers = [parent] + parent.peers
+            for p in self.peers[:]:
+                self.gossip(p)
+        else:
+            self.peers = [parent]
+            self.gossip()
 
 # Goals print out routing success rate, average degree, largest degree
 
