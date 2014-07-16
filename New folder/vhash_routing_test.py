@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import random
 from math import log
+import csv
+
 
 G=nx.DiGraph()
 random.seed(12345)
@@ -121,7 +123,10 @@ class Node(object):
 
 # Goals print out routing success rate, average degree, largest degree
 
-if __name__ ==  '__main__':
+def run_trial(num, dim, filename):
+    global NETWORK_SIZE
+    setd(dim)
+    NETWORK_SIZE = num
     nodes = []
     bootstrapper = Node()
     nodes.append(bootstrapper) 
@@ -142,37 +147,44 @@ if __name__ ==  '__main__':
     print "DONE ADDING"
 
     accuracy_list = []
-    for i in range(0,CYCLES):
-        centerist = 0# max(nodes, key= lambda x: len(x.peers))
-        saddest =  NETWORK_SIZE#min(nodes, key= lambda x: len(x.peers))
-        centerist_long = 0
-        saddest_long = NETWORK_SIZE
-        total_short = 0.0
-        total_long = 0.0
-        for node in nodes:
-            if i < 2:
-                node.peers.extend(random.sample(nodes,10))
+    with open(filename+".csv","w+") as fp:
+        writer = csv.writer(fp)
+        for i in range(0,CYCLES):
+            centerist = 0# max(nodes, key= lambda x: len(x.peers))
+            saddest =  NETWORK_SIZE#min(nodes, key= lambda x: len(x.peers))
+            centerist_long = 0
+            saddest_long = NETWORK_SIZE
+            total_short = 0.0
+            total_long = 0.0
+            for node in nodes:
+                if i < 2:
+                    node.peers.extend(random.sample(nodes,10))
 
-            node.gossip()
-            tmp = len(node.peers)
-            tmp_long = len(node.long_peers)
-            if tmp > centerist:
-                centerist=tmp
-            if tmp_long > centerist_long:
-                centerist_long=tmp_long
-            if tmp < saddest:
-                saddest = tmp
-            if tmp_long < saddest_long:
-                saddest_long = tmp_long
-            total_short += tmp
-            total_long += tmp_long
+                node.gossip()
+                tmp = len(node.peers)
+                tmp_long = len(node.long_peers)
+                if tmp > centerist:
+                    centerist=tmp
+                if tmp_long > centerist_long:
+                    centerist_long=tmp_long
+                if tmp < saddest:
+                    saddest = tmp
+                if tmp_long < saddest_long:
+                    saddest_long = tmp_long
+                total_short += tmp
+                total_long += tmp_long
 
 
-        accuracy = simulate_routing(nodes)
-        print i, accuracy, saddest, total_short/float(NETWORK_SIZE), centerist, saddest_long, total_long/float(NETWORK_SIZE), centerist_long
-        accuracy_list.append(accuracy)
-    plt.plot(range(0,100), accuracy_list)
-    plt.show()
+            accuracy = simulate_routing(nodes)
+            writer.writerow([i, accuracy, saddest, total_short/float(NETWORK_SIZE), centerist, saddest_long, total_long/float(NETWORK_SIZE), centerist_long])
+            accuracy_list.append(accuracy)
+        plt.plot(range(0,100), accuracy_list)
+        plt.savefig(filename+".png")
         #print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
         #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
+
+for n in [500,1000,2000,5000,10000]:
+    for d in [2,3,4,5,6]:
+        print "working on:", n, d
+        run_trial(n,d,"n_"+str(n)+"_d_"+str(d))
