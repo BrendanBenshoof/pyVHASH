@@ -2,19 +2,26 @@ from vhash_greedy import *
 import matplotlib.pyplot as plt
 import networkx as nx
 import random
-
+from math import log
 
 G=nx.DiGraph()
 random.seed(12345)
-TABLE_SIZE = 3*d +1
-NETWORK_SIZE = 100
+setd(2)
+
+
+
+NETWORK_SIZE = 5000
+n = float(NETWORK_SIZE)
+TABLE_SIZE = 2*int(log(n)/log(log(n)))+getd()
+print TABLE_SIZE
+
 CYCLES = 100
-CHATTY_JOIN = True
+CHATTY_JOIN = False
 USING_LONG_PEERS = True
 
 def simulate_routing(nodes):
     correct = 0.0
-    samples = 100
+    samples = 2000
     for i in range(0,samples):
         p = randPoint()
         start = random.choice(nodes)
@@ -65,8 +72,8 @@ class Node(object):
             for c in candidates:
                 if c not in self.long_peers and c is not self:
                     self.long_peers.append(c)
-            if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
-                self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
+            #if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
+            #    self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
             
     def approx_region(self, candidates):
         new_peers = []
@@ -120,8 +127,11 @@ if __name__ ==  '__main__':
     nodes.append(bootstrapper) 
     for i in range(1,NETWORK_SIZE):
         n = Node()
+        """
         parent = random.choice(nodes)
         n.join(parent)
+        
+        """
         nodes.append(n)
         """
         if i%50 ==0:
@@ -129,17 +139,37 @@ if __name__ ==  '__main__':
                 node.gossip()
             print simulate_routing(nodes), i
         """
-
     print "DONE ADDING"
 
     accuracy_list = []
     for i in range(0,CYCLES):
+        centerist = 0# max(nodes, key= lambda x: len(x.peers))
+        saddest =  NETWORK_SIZE#min(nodes, key= lambda x: len(x.peers))
+        centerist_long = 0
+        saddest_long = NETWORK_SIZE
+        total_short = 0.0
+        total_long = 0.0
         for node in nodes:
+            if i < 2:
+                node.peers.extend(random.sample(nodes,10))
+
             node.gossip()
-        centerist = max(nodes, key= lambda x: len(x.peers))
-        saddest =  min(nodes, key= lambda x: len(x.peers))
+            tmp = len(node.peers)
+            tmp_long = len(node.long_peers)
+            if tmp > centerist:
+                centerist=tmp
+            if tmp_long > centerist_long:
+                centerist_long=tmp_long
+            if tmp < saddest:
+                saddest = tmp
+            if tmp_long < saddest_long:
+                saddest_long = tmp_long
+            total_short += tmp
+            total_long += tmp_long
+
+
         accuracy = simulate_routing(nodes)
-        print i, accuracy, len(saddest.peers), get_avg_degree(nodes), len(centerist.peers)
+        print i, accuracy, saddest, total_short/float(NETWORK_SIZE), centerist, saddest_long, total_long/float(NETWORK_SIZE), centerist_long
         accuracy_list.append(accuracy)
     plt.plot(range(0,100), accuracy_list)
     plt.show()

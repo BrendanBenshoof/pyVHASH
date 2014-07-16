@@ -2,6 +2,14 @@ import math, random
 
 d = 2
 
+def setd(newd):
+    global d
+    d = newd
+
+def getd():
+    global d
+    return d
+
 space_size = 100.0
 
 def dist(A,B):
