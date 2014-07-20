@@ -1,6 +1,7 @@
 import networkx, underlay
 import math, random
 import matplotlib.pyplot as plt
+import csv
 
 hash_space = 64
 maxhash = 2**hash_space
