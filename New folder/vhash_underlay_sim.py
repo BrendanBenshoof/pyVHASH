@@ -153,8 +153,8 @@ def runTrail(num, real_graph):
 
 if __name__ == "__main__":
     print "generating underlay"
-    real_graph = underlay.generate_underlay(2000)
+    real_graph = underlay.generate_underlay(5000)
     with open("underlay_trail.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100,500,1000,2000]:
+        for n in [100,250,500,750,1000]:
             writer.writerow([n]+runTrail(n, real_graph))

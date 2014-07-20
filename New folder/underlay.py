@@ -15,13 +15,13 @@ def hops(G,A,B):
 
 if __name__ == "__main__":
     start = timeit.default_timer()
-    underlay = generate_underlay(2000)
+    underlay = generate_underlay(5000)
     with open("underlay_perfect_trial.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100,500,1000,2000]:
+        for n in [100,250,500,750,1000]:
             hoplist = []
             subset = random.sample(underlay.nodes(),n)
-            for i in range(0,1000):
+            for i in range(0,100000):
                 x = random.choice(subset)
                 y = random.choice(subset)
                 while(x==y):
