@@ -62,10 +62,10 @@ def get_real_hops(real_graph,overlay,A,B):
 #plt.show()
 
 if __name__ == "__main__":
-    real_graph = underlay.generate_underlay(2000)
+    real_graph = underlay.generate_underlay(5000)
     with open("underlay_chord_trial.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100,500,1000,2000]:
+        for n in [100,250,500,750,1000]:
             hoplist = []
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))

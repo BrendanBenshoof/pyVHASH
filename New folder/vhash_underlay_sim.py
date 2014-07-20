@@ -126,7 +126,7 @@ def runTrail(num, real_graph):
     hoplist = []
 
 
-    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, 20)
+    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, num/10)
     print "done generating overlay. Sampling"
 
     now = time.time()
