@@ -9,6 +9,10 @@ import numpy as np
 render_overlay_plot = False
 bother_showing_results = False
 def generate_vhash_graph(nodes):
+    n = float(len(nodes))
+    TABLE_SIZE = 2*int(log(n)/log(log(n)))+2
+
+    print "generating overlay", n
     locs = {}
     revlocs = {}
     overlay = networkx.DiGraph()
@@ -24,13 +28,18 @@ def generate_vhash_graph(nodes):
         close_peers[n] = []
         for ploc in vhash.getShell(locs[n],map(lambda x: locs[x],others)):
             close_peers[n].append(revlocs[ploc])
+        if len(close_peers[n]) < TABLE_SIZE:
+            missing = TABLE_SIZE - len(close_peers[n])
+            close_peers[n] += sorted(others,key=lambda x: vhash.dist(loc[n],loc[x]))[:missing]
     for n in nodes:
         far_peers[n] = []
     for n in nodes:
         for p in close_peers[n]:
             for p2 in close_peers[n]:
                 if p2 not in far_peers[p] and p2 != p:
-                    far_peers[p].append(p2)
+                    far_peers[n].append(p2)
+        if len(far_peers[n]) > TABLE_SIZE*TABLE_SIZE:
+            far_peers[n] = random.sample(far_peers[n],TABLE_SIZE*TABLE_SIZE)
     for n in nodes:
         for p in close_peers[n]:
             overlay.add_edge(n,p)
@@ -118,7 +127,7 @@ def runTrail(num, real_graph):
 
 
     chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, 20)
-
+    print "done generating overlay. Sampling"
 
     now = time.time()
     for i in range(0,1000):
@@ -143,7 +152,7 @@ def runTrail(num, real_graph):
 
 
 if __name__ == "__main__":
-
+    print "generating underlay"
     real_graph = underlay.generate_underlay(2000)
     with open("underlay_trail.csv","w+") as fp:
         writer = csv.writer(fp)

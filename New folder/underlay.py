@@ -26,7 +26,7 @@ if __name__ == "__main__":
                 y = random.choice(subset)
                 while(x==y):
                     x = random.choice(subset)
-                    y = random.choice(underlay.nodes())
+                    y = random.choice(subset)
 
                 hoplist.append(hops(underlay,x,y))
             mean = np.mean(hoplist)
