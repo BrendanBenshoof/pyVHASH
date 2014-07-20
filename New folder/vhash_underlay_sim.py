@@ -2,10 +2,12 @@ import networkx, underlay
 import math, random
 import matplotlib.pyplot as plt
 import vhash_greedy as vhash
+import time
+import csv
+import numpy as np
 
-
-render_overlay_plot = True
-
+render_overlay_plot = False
+bother_showing_results = False
 def generate_vhash_graph(nodes):
     locs = {}
     revlocs = {}
@@ -72,7 +74,7 @@ def generate_optimized_vhash_graph(nodes,real,gens):
                 ideal_length = latency*unit_distance_per_hop
                 delta_vec = map(lambda x,y: min([y-x,vhash.space_size-(y-x)]), locs[p], locs[n])
                 delta_dist = vhash.dist([0.0,0.0],delta_vec)
-                error_dist = ideal_length-delta_dist
+                error_dist = 1.0+ideal_length-delta_dist
                 error_delta = map(lambda x: error_dist*x/delta_dist,delta_vec)
                 error_vector = vhash.vec_sum(error_vector, error_delta)
             del revlocs[locs[n]]
@@ -110,11 +112,15 @@ def get_real_hops(real_graph,overlay,A,B):
 #networkx.draw_circular(chord_overlay)
 #plt.show()
 
-if __name__ == "__main__":
-    hoplist = []
-    real_graph = underlay.generate_underlay(1000)
-    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),200), real_graph, 20)
+def runTrail(num, real_graph):
 
+    hoplist = []
+
+
+    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, 20)
+
+
+    now = time.time()
     for i in range(0,1000):
         x = random.choice(chord_overlay.nodes())
         y = random.choice(chord_overlay.nodes())
@@ -123,9 +129,23 @@ if __name__ == "__main__":
             y = random.choice(chord_overlay.nodes())
 
         hoplist.append(get_real_hops(real_graph,chord_overlay,x,y))
+    print time.time()-now
+    if bother_showing_results:
+        plt.hist(hoplist,bins=range(1,21))
+        plt.title("Latency Distribution")
+        plt.xlabel("Hops")
+        plt.ylabel("Frequency")
+        plt.show()
+    mean = np.mean(hoplist)
+    varience = np.std(hoplist)
+    return [mean,varience]
 
-    plt.hist(hoplist,bins=range(1,21))
-    plt.title("Latency Distribution")
-    plt.xlabel("Hops")
-    plt.ylabel("Frequency")
-    plt.show()
+
+
+if __name__ == "__main__":
+
+    real_graph = underlay.generate_underlay(2000)
+    with open("underlay_trail.csv","w+") as fp:
+        writer = csv.writer(fp)
+        for n in [100,500,1000,2000]:
+            writer.writerow([n]+runTrail(n, real_graph))

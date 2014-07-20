@@ -30,7 +30,35 @@ def simulate_routing(nodes):
         end = start.lookup(p)
         right = min(nodes,key=lambda x: dist(x.loc,p))
         if end == right:
-                correct+=1.0
+            correct+=1.0
+    return correct/float(samples)
+
+def plot_and_simulate_routing(nodes):
+    correct = 0.0
+    samples = 2000
+    node_xs = [x.loc[0] for x in nodes]
+    node_ys = [x.loc[1] for x in nodes]
+    hit_xs = []
+    hit_ys = []
+    miss_xs = []
+    miss_ys = []
+    for i in range(0,samples):
+        p = randPoint()
+        start = random.choice(nodes)
+        end = start.lookup(p)
+        right = min(nodes,key=lambda x: dist(x.loc,p))
+        if end == right:
+            correct+=1.0
+            hit_xs.append(p[0])
+            hit_ys.append(p[1])
+        else:
+            miss_xs.append(p[0])
+            miss_ys.append(p[1])
+    plt.cla()
+    plt.scatter(node_xs,node_ys,c="g",s=40)
+    #plt.scatter(hit_xs,hit_ys,c="b")
+    plt.scatter(miss_xs,miss_ys,c="r")
+    plt.show()
     return correct/float(samples)
 
 def get_avg_degree(nodes):
@@ -174,9 +202,11 @@ def run_trial(num, dim, filename):
                 total_short += tmp
                 total_long += tmp_long
 
+            accuracy = 0.0
+            accuracy = plot_and_simulate_routing(nodes)
 
-            accuracy = simulate_routing(nodes)
             writer.writerow([i, accuracy, saddest, total_short/float(NETWORK_SIZE), centerist, saddest_long, total_long/float(NETWORK_SIZE), centerist_long])
+            print [i, accuracy, saddest, total_short/float(NETWORK_SIZE), centerist, saddest_long, total_long/float(NETWORK_SIZE), centerist_long]
             accuracy_list.append(accuracy)
         plt.plot(range(0,100), accuracy_list)
         plt.savefig(filename+".png")
@@ -184,7 +214,9 @@ def run_trial(num, dim, filename):
         #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
 
-for n in [500,1000,2000,5000,10000]:
-    for d in [2,3,4,5,6]:
-        print "working on:", n, d
-        run_trial(n,d,"n_"+str(n)+"_d_"+str(d))
+n = 100
+d = 2
+TABLE_SIZE = 2*int(log(float(n))/log(log(float(n))))+getd()
+print TABLE_SIZE
+print "working on:", n, d
+run_trial(n,d,"n_"+str(n)+"_d_"+str(d))
