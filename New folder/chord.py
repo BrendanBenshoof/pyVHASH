@@ -62,7 +62,7 @@ def get_real_hops(real_graph,overlay,A,B):
 
 if __name__ == "__main__":
     real_graph = underlay.generate_underlay(2000)
-    with open("underlay_trail.csv","w+") as fp:
+    with open("underlay_chord_trial.csv","w+") as fp:
         writer = csv.writer(fp)
         for n in [100,500,1000,2000]:
             hoplist = []
