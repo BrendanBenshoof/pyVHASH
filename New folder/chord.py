@@ -69,7 +69,7 @@ if __name__ == "__main__":
     real_graph = underlay.generate_underlay(10000)
     with open("underlay_chord_trial.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [1000]:
+        for n in [100]:
             hoplist = []
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
