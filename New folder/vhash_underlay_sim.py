@@ -7,7 +7,7 @@ import csv
 import numpy as np
 
 render_overlay_plot = False
-bother_showing_results = False
+bother_showing_results = True
 def generate_vhash_graph(nodes):
     n = float(len(nodes))
     TABLE_SIZE = 2*int(log(n)/log(log(n)))+2
@@ -140,7 +140,7 @@ def runTrail(num, real_graph):
         hoplist.append(get_real_hops(real_graph,chord_overlay,x,y))
     print time.time()-now
     if bother_showing_results:
-        plt.hist(hoplist,bins=range(1,21))
+        plt.hist(hoplist,bins=range(1,41))
         plt.title("Latency Distribution")
         plt.xlabel("Hops")
         plt.ylabel("Frequency")
@@ -153,8 +153,8 @@ def runTrail(num, real_graph):
 
 if __name__ == "__main__":
     print "generating underlay"
-    real_graph = underlay.generate_underlay(5000)
+    real_graph = underlay.generate_underlay(10000)
     with open("underlay_trail.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100,250,500,750,1000]:
+        for n in [1000]:
             writer.writerow([n]+runTrail(n, real_graph))

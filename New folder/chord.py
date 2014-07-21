@@ -62,10 +62,10 @@ def get_real_hops(real_graph,overlay,A,B):
 #plt.show()
 
 if __name__ == "__main__":
-    real_graph = underlay.generate_underlay(5000)
+    real_graph = underlay.generate_underlay(10000)
     with open("underlay_chord_trial.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100,250,500,750,1000]:
+        for n in [1000]:
             hoplist = []
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
@@ -81,12 +81,11 @@ if __name__ == "__main__":
             mean = np.mean(hoplist)
             std = np.std(hoplist)
             writer.writerow([n,mean,std])
-"""
-    plt.hist(hoplist,bins=range(1,21))
-    plt.title("Latency Distribution")
-    plt.xlabel("Hops")
-    plt.ylabel("Frequency")
-    plt.show()
-"""
-
+            plt.clf()
+            plt.cla()
+            plt.hist(hoplist,bins=range(1,41))
+            plt.title("Latency Distribution")
+            plt.xlabel("Hops")
+            plt.ylabel("Frequency")
+            plt.show()
 
