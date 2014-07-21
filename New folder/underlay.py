@@ -1,3 +1,5 @@
+import numpy as np
+import csv
 import networkx, random
 import matplotlib.pyplot as plt
 import datetime
@@ -13,19 +15,26 @@ def hops(G,A,B):
 
 if __name__ == "__main__":
     start = timeit.default_timer()
-    hoplist = []
-    underlay = generate_underlay(1000)
-    test_subset = random.sample(underlay.nodes(),200)
+    underlay = generate_underlay(10000)
+    with open("underlay_perfect_trial.csv","w+") as fp:
+        writer = csv.writer(fp)
+        for n in [100,250,500,750,1000]:
+            hoplist = []
+            subset = random.sample(underlay.nodes(),n)
+            for i in range(0,100000):
+                x = random.choice(subset)
+                y = random.choice(subset)
+                while(x==y):
+                    x = random.choice(subset)
+                    y = random.choice(subset)
 
-    for i in range(0,1000):
-        x = random.choice(test_subset)
-        y = random.choice(test_subset)
-        while(x==y):
-            x = random.choice(test_subset)
-            y = random.choice(test_subset)
+                hoplist.append(hops(underlay,x,y))
+            mean = np.mean(hoplist)
+            std = np.std(hoplist)
+            writer.writerow([n,mean,std])
 
-        hoplist.append(hops(underlay,x,y))
 
+"""
     plt.hist(hoplist,bins=range(1,21))
     plt.title("Latency Distribution")
     plt.xlabel("Hops")
@@ -33,5 +42,5 @@ if __name__ == "__main__":
     stop = timeit.default_timer()
     print stop - start 
     plt.show()
-
+"""
 
