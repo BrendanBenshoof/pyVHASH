@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 hash_space = 64
 maxhash = 2**hash_space
 
+count_overlay_only = True
+
 def hash_dist(a,b):
     delta = b-a
     if delta < 0:
@@ -45,6 +47,8 @@ def create_chord_graph(nodes):
 
 def get_real_hops(real_graph,overlay,A,B):
     path = networkx.shortest_path(overlay,A,B)
+    if count_overlay_only:
+        return len(path)
     steps = []
     total = 0
     for i in range(1,len(path)):

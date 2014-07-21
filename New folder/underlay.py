@@ -15,13 +15,14 @@ if __name__ == "__main__":
     start = timeit.default_timer()
     hoplist = []
     underlay = generate_underlay(1000)
+    test_subset = random.sample(underlay.nodes(),200)
 
     for i in range(0,1000):
-        x = random.choice(underlay.nodes())
-        y = random.choice(underlay.nodes())
+        x = random.choice(test_subset)
+        y = random.choice(test_subset)
         while(x==y):
-            x = random.choice(underlay.nodes())
-            y = random.choice(underlay.nodes())
+            x = random.choice(test_subset)
+            y = random.choice(test_subset)
 
         hoplist.append(hops(underlay,x,y))
 
