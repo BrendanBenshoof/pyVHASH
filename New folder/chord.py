@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 
-hash_space = 32
+hash_space = 160
 maxhash = 2**hash_space
 
 def hash_dist(a,b):
@@ -41,7 +41,7 @@ def create_chord_graph(nodes):
         for i in range(0,hash_space):
             ideal_finger = (myhash + 2**i) % maxhash
             finger = min(nodes,key=lambda x: hash_dist(ideal_finger,hashids[x]))
-            print finger,hashids[finger]
+            #print finger,hashids[finger]
             overlay.add_edge(n,finger)
     return overlay, hashids
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
             print "done generating topology: now sampling"
-            for i in range(0,1000):
+            for i in range(0,10000):
                 x = random.choice(chord_overlay.nodes())
                 y = random.choice(chord_overlay.nodes())
                 while(x==y):
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             writer.writerow([n,mean,std])
             plt.clf()
             plt.cla()
-            plt.hist(hoplist,bins=range(1,31))
+            plt.hist(hoplist,bins=range(1,41))
             plt.title("Latency Distribution")
             plt.xlabel("Hops")
             plt.ylabel("Frequency")
