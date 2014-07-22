@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 
-hash_space = 64
+hash_space = 32
 maxhash = 2**hash_space
 
 def hash_dist(a,b):
@@ -63,9 +63,9 @@ def get_real_hops(real_graph,overlay,A,B):
 
 if __name__ == "__main__":
     real_graph = underlay.generate_underlay(10000)
-    with open("underlay_chord_trial.csv","w+") as fp:
+    with open("underlay_chord_trial_32.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100]:
+        for n in [1000]:
             hoplist = []
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             writer.writerow([n,mean,std])
             plt.clf()
             plt.cla()
-            plt.hist(hoplist,bins=range(1,41))
+            plt.hist(hoplist,bins=range(1,31))
             plt.title("Latency Distribution")
             plt.xlabel("Hops")
             plt.ylabel("Frequency")
