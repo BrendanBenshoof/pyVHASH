@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 
-hash_space = 64
+hash_space = 160
 maxhash = 2**hash_space
 
 count_overlay_only = True
@@ -43,7 +43,7 @@ def create_chord_graph(nodes):
         for i in range(0,hash_space):
             ideal_finger = (myhash + 2**i) % maxhash
             finger = min(nodes,key=lambda x: hash_dist(ideal_finger,hashids[x]))
-            print finger,hashids[finger]
+            #print finger,hashids[finger]
             overlay.add_edge(n,finger)
     return overlay, hashids
 
@@ -67,14 +67,14 @@ def get_real_hops(real_graph,overlay,A,B):
 
 if __name__ == "__main__":
     real_graph = underlay.generate_underlay(10000)
-    with open("underlay_chord_trial.csv","w+") as fp:
+    with open("underlay_chord_trial_32.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100]:
+        for n in [1000]:
             hoplist = []
             print "starting to generate overlay topology", n
             chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
             print "done generating topology: now sampling"
-            for i in range(0,1000):
+            for i in range(0,10000):
                 x = random.choice(chord_overlay.nodes())
                 y = random.choice(chord_overlay.nodes())
                 while(x==y):

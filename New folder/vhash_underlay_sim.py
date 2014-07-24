@@ -130,7 +130,7 @@ def runTrail(num, real_graph):
     print "done generating overlay. Sampling"
 
     now = time.time()
-    for i in range(0,1000):
+    for i in range(0,10000):
         x = random.choice(chord_overlay.nodes())
         y = random.choice(chord_overlay.nodes())
         while(x==y):
@@ -154,7 +154,8 @@ def runTrail(num, real_graph):
 if __name__ == "__main__":
     print "generating underlay"
     real_graph = underlay.generate_underlay(10000)
-    with open("underlay_trail.csv","w+") as fp:
+    print "done a"
+    with open("underlay_VHash_trial_10ku1ko10kss.csv","w+") as fp:
         writer = csv.writer(fp)
-        for n in [100]:
+        for n in [1000]:
             writer.writerow([n]+runTrail(n, real_graph))
