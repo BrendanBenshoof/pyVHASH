@@ -76,35 +76,33 @@ A Distributed Hash Table is used provide an overlay network for many P2P applica
 %keep?
 %This provides the network with load balancing properties.  Since files are assigned keys in a similar manner to nodes, the node are distributed evenly ac.  The distribution also provides fault tolerance;  if all the nodes located in a real geographic region were suddenly taken offline, the damage to the network would be spread uniformly throughout the network and maintenance would repair the damage.%
 Each node in the overlay network maintains a routing table of a subset of other nodes in the overlay.  
-The configuration and rules of the routing table vary from one protocol and another;  the entries of the table might be serperated by powers of 2 \cite{Chord}, be determined by shared prefixes \cite{pastry}, or be chosen according to a probablistic distribution \cite{kleinberg2000navigation}, but the goal is to  minimize the number of overlay hops the distributed lookup needs to make.
+The configuration and rules of the routing table vary from one protocol and another;  the entries of the table might be separated by powers of 2 \cite{Chord}, be determined by shared prefixes \cite{pastry}, or be chosen according to a probabilistic distribution \cite{kleinberg2000navigation}, but the goal is to minimize the number of overlay hops the distributed lookup needs to make. 
 
 
-`distant 
-
-Was there some way to encode latency data as part of the overlay's topology? We can't do that without jeopardizing the load balance and fault tolerance properties if we try to modify or replace the hash function.  If we could generate more than one coordinate for each object in the onverlay, with each coordiate corresponding to some key or network metric, then we can used a distance functuon to optimize over that overlay.
-
-We don't assign latency we embded it.
-%What if we added additional axises to the traditional  DHT 
-
-%These topologies, while sufficient in reasonably local networks, do not take embed the lengths or latencies of routes defined by the topology and assume that every hop has similar latency and throughput. For a global network, a more intelligent means of generating a dynamic overlay network with efficient routing, storage, and backups is needed for future P2P applications.
+%The ``problem''
+%This is the correct choice make if there is no other information to act on during lookup or routing. 
+A routing table created to minimize overlay hops does exactly that; it does not necessarily create routes with minimized latency.  However, what if more information about the nodes could be encoded as part of the overlay, such as the node's latency or energy?  We wanted to design an overlay where network metrics, such as inter-node latency, node energy levels, or non-euclidean metrics like trust could be embedded in the network.  The most straightforward way is to assign each network metric to a node as a coordinate in a space with the hashed key treated as an additional coordinate.   If each node is defined as object in this space, we can then use a distance function to choose the shortest path over these metrics.
 
 
-We present VHash as a DHT designed to take inter-node latency information into account when generating an overlay on a massive scale.  VHash creates an approximation of a Voronoi network to define the routing tables and dictate where content is stored in the network.  We accomplish this by assigning each node $d$ coordinates, rather than than a single key.  The naive method of doing so is to assign coordinates to servers based on the geographic location of nodes. More complex approaches approximate a minimum latency space based on internode latency.
+This opens up two problems:  how do we generate an multidimensional overlay that incorporates network metrics as part of routing and how do we generate the coordinates that correspond to the network metrics?
+We present VHash as our solution to these problems.
 
-Abstraction of the DHT concept.
 
+VHash is a DHT designed to take inter-node latency information into account when generating an overlay, although other network metrics could easily be applied.  VHash creates an approximation of a Voronoi network and Delaunay Triangulation to define the routing tables and dictate where content is stored in the network.  We accomplish this by assigning each node $d$ coordinates, rather than than a single key.  We use an basic spring model to embed inter-node latency graph in the overlay. A result of this is that nodes in VHash  can \emph{move} along an axis;  their position is not nessarily fixed.
 Our paper presents the following:
 \begin{itemize}
-	\item We describe the VHash protocol and the underlying approximation algorithm for quick and efficient Voronoi region approximations.   Our approximation is simple, distributed, and greedy and accurately approximates the Voronoi region of objects in a space with an arbitrary number of dimensions, something than would require a great deal of computation.  This provides us with an overlay for embedding network metrics.
-	\item We created a simulation to prove that the overlays created by VHash are accurate enough for routing messages from arbitrary source nodes to random destination locations.  We also show that by embedding the underlay 
+	\item We describe the VHash protocol (Section II) and the underlying approximation algorithm of overlay's Delaunay Trinangulation and the corresponding Voronoi diagrams.   Our approximation is distributed, greedy, efficient, and accurate in arbitrary number of dimensions and creates an overlay with edges that minimize distance over network metrics while maintaining robustness, scalablilty, and polylogarithmic lookup time in overlay hops.
+	\item We use VHash to provide us with an overlay for embedding network metrics, our other innovation.  We present our basic spring model for embedding nodes in the overlay with latency information and discuss other network metrics that can be used with VHash (Section III).
+	\item We created simulations (Section IV) to prove that the overlays created by VHash are accurate enough for routing messages from arbitrary source nodes to random destination locations.  We also show that by embedding the latency graph, our routing dramatically outperforms Chord (and by extension, other overlays with $\lg(n)$-sized routing tables) in terms of latency.
 	\item We compare the VHash protocol to the other protocols that are based off of Voronoi region approximation.  We also contrast the properties of VHash with well known extant protocols.
-	\item We present the related work and discuss what plans we  have for embedding different problems in VHash.
+	\item We discuss future work that follows from our what plans we have for embedding different problems using VHash.
 \end{itemize}
 
 
 \section{VHash}
+The process of generating the keys/coordinates is covered in the next section.
 
-
+\section{Network Metric Embedding}
 
 \section{Simulations}
 Scale free networks are internet shaped\cite{cohen2000resilience}
