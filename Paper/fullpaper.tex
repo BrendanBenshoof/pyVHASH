@@ -100,7 +100,78 @@ Our paper presents the following:
 
 
 \section{VHash}
-The process of generating the keys/coordinates is covered in the next section.
+Nodes in the VHash network periodically gossip with other nodes, exchanging information about theirs peers and use the approximation algorithm to refine its list of neighbors.
+These neighbors approximate the node's Voronoi region and it's corresponding responsibilities.
+This approximation algorithm is fast and can be used for spaces with an arbitrary number of dimensions.
+
+\subsection{Voronoi Regions in DHTs}
+A Voronoi diagram is the division of a $d$-dimensional space into cells or regions along a set of objects $O$ such that all the points in a particular region are closer to one object than any the object.  
+We refer to the region owned by an object as that object's Voronoi region.
+The Delaunay Trangulation of this same space along the same set of objects is defined by the edges such that no object is inside the circumcircle of any triangle formed by the edges\cite{geoalg}.  
+The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists iff those object's Voronoi region border each other.  
+This means that solving either problem will yield the solution to both. 
+
+In our network, the nodes are the objects of the Voronoi diagram and their regions define the keyspace they are responsible for.  The edges created by the Deluanay Triangulation correspond to the connections between neighboring nodes.  However, computing Voronoi diagrams is expensive, but a greedy approximation of the Voronoi regions is sufficient for the protocol.  We created a new greedy, online algorithm that approximates and maintains the set of peers defining the node's Voronoi region and Delaunay Triangulation.
+
+A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
+
+Arguably all DHTs are built on the concept of Vornoi regions. In all DHT's currently contrived, a node is responsible for all points in it's hash space to which it is the ``closest'' node. These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate. For example Chord and similar ring based DHTs utilize a unidirectional one dimensional ring as thier metric space, such that the region for which a node is responsible is the region between it and it's predecessor. Similar transformations of DHT mechanisms into metric spaces can be preformed for other DHTs. VHash generalizes these behavoirs such that by choosing a particular metric space VHash approximates other DHTs. The toroidal metric space utilized in this paper is an extension of the ring topology into additional dimensions. 
+
+The cost of generalizing VHash to utilize any metric space is the efficency of calculating vornoi regions. It is prohbitively expensive to generate an exact calculation of the delunay peers and vornoi regions of a metric space in a distributed fashion\cite{raynet}%\footnote{They cite Geometric Algorithms by Boissonat}. 
+This caculation becomes more prohibitvely expense as the number of dimensions increases. Previous explorations into distributed approximations of node's voronoi regions (ray-net) offer constant time approximations. However the monte-carlo techniques applied hide cost of calculation in large sampling sizes. We utilize a greedy heuristic that requires a similar computation cost of a single sample from ray-net's monte-carlo approximation. As a heuristic, there exist edge cases where it is incorrect. We mitigate this issue in our peer selection however it is imporant to note that the hit-rate of VHash approaches 1.0 asymtotically over time. We show in the experimental section that this loss in accuracy has negligable impact on use and is likely to be smaller than the impact of churn upon the hit-rate.
+
+\subsection{Distributed Greedy Voronoi Heuristic}
+The Distributed Greedy Voronoi Heuristic is a fast method for nodes to select peers from thier Delunay Triangulation. It is predicated on the assumption that the midpoint between two nodes falls on the line segment that they share on the edges of thier voronoi regions. Which holds true in the vast majority of cases.
+
+Each cycle, nodes exchange their peerlists with their current neighbors and then recalculate their neighbors.  
+The calculation is straightforward.
+After a node receives it's neighbor's peerlists, it combines their peerlists and its own into a list of candidate neighbors, sorted the nodes by distance from closest to furthest.
+A new peerlist is then created starting with the first candidate from the list of candidates.
+The node then looks at each of the remaining candidates and calculates the midpoint between the node and the candidate.
+If any of the nodes in the new peerlist are closer to the midpoint than the canidate, the candidate is set aside.  Otherwise the candidate is added to the new peerlist.
+
+This heuristic has the benefit of being fast and scalable into any metric space where a distance function and midpoint can be defined.
+The distance metric used for this paper is the minimum distance in a multidimensional toroidal space. %reference a formula 
+
+As mentioned in earlier discussion, this heuristic can fail. Should an ``occluding'' node be positioned such that the midpoint between two nodes does not fall upon the shared face of thier voronoi regions then this heustic will not link the occluded peers. %picture
+This is mitigated by our method of peer managment.
+
+\subsection{Peer Management}
+VHash maintains two peer lists: Short Peers and Long Peers.
+This is motivated by mitigating the error induced by the Distributed Greedy Voronoi Heuristic and providing robustness during churn.
+
+Short Peers are the subset of the Delunay Peers generated by the Distributed Greedy Voronoi Heuristic. 
+The number of short peers has no upper bound and in contrived cases it can grow quite high. However in uncontrived networks the expected number of short peers is $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected}. 
+We found through experimentation that the expression $2 \cdot \frac{\log N}{\log \log N} + d$ was effective as  minimum length of the short peer list.
+An approximation of the number of nodes in the network is sufficient to generate an accurate expected number of short peers.  
+This expected number of short peers is used as the lower bound for the size of short peer list.
+Should the number of short peers generated by the Distributed Greedy Voronoi Heuristic be less than the lower bound for that set's size, the nearest peers not already included in the short peer list are added to the short peer list until it is of sufficient size.
+Short peers are analogous to the predecessors/successors in other DHTs.
+
+Long Peers correspond to the two hop peers of the node.
+When a node learns about potential neighbors, but are not included in the short peer list, they may be included in the long peer list.  
+The long peer list has a maximum size of the base length of the short peer list squared.  
+For example, if the short peer list has a minimum size of 8, the long peer list has a maximum size of 64 entries.  
+Long peers are not actively probed during maintenence and the cost of managing them is minimal.
+ 
+We discuss how nodes learn about short and long peers in the Gossiping subsection.
+
+
+\subsection{Maintenance via Gossiping}
+Each node in the network performs maintenance periodically by `gossiping' with a randomly chosen neighbor.
+When two nodes gossip with each other, they exchange their short peers with each other.
+The node combines the lists of short peers and uses the  Distributed Greedy Voronoi Heuristic to determine which of these candidates correspond to its neighbors along the Delaunay Triangulation.
+The candidates determined not to be short peers become long peers.  
+If resulting number of long peers exceeds the maximum size of the long peer list, a random subset of the maximum size is kept.
+
+The formal algorithm for this process is described by Algorithms \ref{maint} and \ref{handlemaint}
+
+
+\subsection{Handling Churn}
+Joing the network is a straightforward process.  A prospective node must be able to communicate with at least one existing member of the DHT
+
+There is no mechanism for polite 
+
 
 \section{Network Metric Embedding}
 
