@@ -1,0 +1,17 @@
+\begin{thebibliography}{1}
+
+\bibitem{Chord}
+I.~Stoica, R.~Morris, D.~Karger, M.~F. Kaashoek, and H.~Balakrishnan, ``Chord:
+  A scalable peer-to-peer lookup service for internet applications,'' in {\em
+  ACM SIGCOMM Computer Communication Review}, vol.~31, pp.~149--160, ACM, 2001.
+
+\bibitem{pastry}
+A.~Rowstron and P.~Druschel, ``Pastry: Scalable, decentralized object location,
+  and routing for large-scale peer-to-peer systems,'' in {\em Middleware 2001},
+  pp.~329--350, Springer, 2001.
+
+\bibitem{kleinberg2000navigation}
+J.~M. Kleinberg, ``Navigation in a small world,'' {\em Nature}, vol.~406,
+  no.~6798, pp.~845--845, 2000.
+
+\end{thebibliography}
