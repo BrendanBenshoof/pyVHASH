@@ -76,13 +76,13 @@ def generate_optimized_vhash_graph(nodes,real,gens):
         for n in nodes:
             unit_distance_per_hop = sum([vhash.dist(locs[n], locs[x]) for x in close_peers[n]])
             unit_distance_per_hop /=sum([ float(underlay.hops(real,n,x)) for x in close_peers[n]])
-
-            error_vector = [0.0,0.0]
+            zero = [0.0]*len(locs[n])
+            error_vector = zero[:]
             for p in close_peers[n]:
                 latency = float(underlay.hops(real,n,p))
                 ideal_length = latency*unit_distance_per_hop
                 delta_vec = map(lambda x,y: min([y-x,vhash.space_size-(y-x)]), locs[p], locs[n])
-                delta_dist = vhash.dist([0.0,0.0],delta_vec)
+                delta_dist = vhash.dist(zero,delta_vec)
                 error_dist = 1.0+ideal_length-delta_dist
                 error_delta = map(lambda x: error_dist*x/delta_dist,delta_vec)
                 error_vector = vhash.vec_sum(error_vector, error_delta)
@@ -155,7 +155,8 @@ if __name__ == "__main__":
     print "generating underlay"
     real_graph = underlay.generate_underlay(10000)
     print "done a"
-    with open("underlay_VHash_trial_10ku1ko10kss.csv","w+") as fp:
+    with open("mad_test.csv","w+") as fp:
+        vhash.setd(3)
         writer = csv.writer(fp)
         for n in [1000]:
             writer.writerow([n]+runTrail(n, real_graph))

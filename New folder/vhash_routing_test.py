@@ -54,11 +54,11 @@ def plot_and_simulate_routing(nodes):
         else:
             miss_xs.append(p[0])
             miss_ys.append(p[1])
-    plt.cla()
-    plt.scatter(node_xs,node_ys,c="g",s=40)
+    #plt.cla()
+    #plt.scatter(node_xs,node_ys,c="g",s=40)
     #plt.scatter(hit_xs,hit_ys,c="b")
-    plt.scatter(miss_xs,miss_ys,c="r")
-    plt.show()
+    #plt.scatter(miss_xs,miss_ys,c="r")
+    #plt.show()
     return correct/float(samples)
 
 def get_avg_degree(nodes):
@@ -213,10 +213,9 @@ def run_trial(num, dim, filename):
         #print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
         #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
-
-n = 100
-d = 2
-TABLE_SIZE = 2*int(log(float(n))/log(log(float(n))))+getd()
-print TABLE_SIZE
-print "working on:", n, d
-run_trial(n,d,"n_"+str(n)+"_d_"+str(d))
+for n in [500,1000,2000,5000]:
+    d = 2
+    TABLE_SIZE = 2*int(log(float(n))/log(log(float(n))))+getd()
+    print TABLE_SIZE
+    print "working on:", n, d
+    run_trial(n,d,"n_"+str(n)+"_d_"+str(d))
