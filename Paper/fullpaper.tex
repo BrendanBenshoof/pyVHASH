@@ -136,6 +136,15 @@ The distance metric used for this paper is the minimum distance in a multidimens
 As mentioned in earlier discussion, this heuristic can fail. Should an ``occluding'' node be positioned such that the midpoint between two nodes does not fall upon the shared face of thier voronoi regions then this heustic will not link the occluded peers. %picture
 This is mitigated by our method of peer managment.
 
+\subsection{Fast Vornoi Classifier}
+VHash never actually calculates the polytopes that describe a node's vornoi region.
+This is unnecessary and expensive.
+Rather VHash only ever assigns a given point to a vornoi region.
+It does this by calculating the distance from that point to all canidate nodes.
+The point falls into a node's voronoi region if it is the node to which it has the shortest distance.
+Thus a node defines it's voronoi region by keeping a list of the peers that bound it.
+The cost of this calculation is identical to the cost of testing if a point is within a polytope, without the inital cost of generating that polytope.
+
 \subsection{Peer Management}
 VHash maintains two peer lists: Short Peers and Long Peers.
 This is motivated by mitigating the error induced by the Distributed Greedy Voronoi Heuristic and providing robustness during churn.
@@ -159,18 +168,37 @@ We discuss how nodes learn about short and long peers in the Gossiping subsectio
 
 \subsection{Maintenance via Gossiping}
 Each node in the network performs maintenance periodically by `gossiping' with a randomly chosen neighbor.
-When two nodes gossip with each other, they exchange their short peers with each other.
-The node combines the lists of short peers and uses the  Distributed Greedy Voronoi Heuristic to determine which of these candidates correspond to its neighbors along the Delaunay Triangulation.
+When two nodes gossip with each other, they exchange their short peer lists with each other.
+The node combines the lists of short peers\footnote{Naturally, nodes remove themselves and repitions from the candidates.} and uses the  Distributed Greedy Voronoi Heuristic to determine which of these candidates correspond to its neighbors along the Delaunay Triangulation.
 The candidates determined not to be short peers become long peers.  
 If resulting number of long peers exceeds the maximum size of the long peer list, a random subset of the maximum size is kept.
 
-The formal algorithm for this process is described by Algorithms \ref{maint} and \ref{handlemaint}
+The formal algorithm for this process is described by Algorithms \ref{maint} and \ref{handlemaint}. This maintenance through gossip process is very similar to the gossip protocol used in \cite{raynet}.
 
 
 \subsection{Handling Churn}
-Joing the network is a straightforward process.  A prospective node must be able to communicate with at least one existing member of the DHT
+Churn is effects of the continous joining and exiting of nodes in the overlay.
+DHTs must have some mechanisms to handle this process to maintain fault tolerance and routing.
 
-There is no mechanism for polite 
+Joining the network is a straightforward process.  
+A prospective node must be able to communicate with at least one patron member of the DHT.  
+The prospective node is assigned a location using one of the methods described in Section III and uses the patron it knows to find node responsible for its assigned location, which we call the parent.
+The prospective node sets the parent node as the lone member of the short peers and immediately gossips with the parent.  Subsequent gossips will refine the peer lists of the nodes affected by the join.
+
+There is no ``polite'' exit from the network. VHash assumes nodes will fail and the difference between an intended failure and unintended failure is unnecessary. 
+Suppose a node $f$ fails or leaves the network; we assume it does so abruptly and without warning.
+When one of $f$'s neighbors attempts to contact $f$ for gossiping or routing, failure to communicate with $f$ will prompt the neighbor to remove $f$ from its peers.  
+The node the selects a different neighbor to gossip with or recomputes the peer closest to the location it was looking for, in the case of routing. 
+Should a short peer fail, routing around its failure is trivial due to knowledge about the long peers.  The failure of a long peers is of no consequence because of the existance of the short peers, which provide for routing in that direction.
+
+\subsection{Routing}
+The proper forwarding peer for routing a message extends from the voronoi regions of the short peers and long peers.
+Rather than attempt to know the true voronoi region of those peers we approximate the voronoi regions of those peers as if there where no other nodes in the network.
+The resulting voronoi regions describe both the subset of the network for which that peer is responsible and the subset of the network for which it is the most efficent forwarding node.
+The routing node determines the vornoi region into which the message's destination falls.
+If this is itself, it handles the message accordingly; otherwise the routing node forwards the message to the responsible node.
+This process is equivalent to a pre-computed and cached efficient routing algorithm.
+Even if our approximation for the Voronoi region of a peer is incorrect due to incomplete knowledge of the network, our approximation describes the most efficient forwarding path of a message  destined for that space availible.
 
 
 \section{Network Metric Embedding}
