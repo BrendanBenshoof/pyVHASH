@@ -240,13 +240,26 @@ Any routing scheme that can be described in a metric space where the ideal path 
 
 
 Two types of information encoding are immediately apparent for use in VHashs: The usage of scalar values as indiviual axies and the embedding of a graph topology into an arbitrary number of dimensions.
-While encoding latitude and logitude as locations and using distance across the earth's surface as the distance metric may provide an approximation of a minmum latency overlay topology, this method cannot be used in more general network sinarios and may not describe the actual lowest latency path.
 
-We approximate and the embedding of the node's inter-node 
+As there has been no need for a distributed algorithim for graph embedding where each node represents a node in the graph we propose an inital naive approximation method based on Force-directed graph drawing \cite{Spring}.
+The algorithim utilizes VHash's maintence and join bevhavoirs.
 
-Our experiments with VHash have been in Graph embedding, the most difficult.
+As a node joins the VHash network for the first time it is assigned a random location in the toroidal metric space.
+It joins the network and discovers an inital set of peers.
+The node sends ping messages to each of it's peers to approximate latency.
+The node calculates an ideal distance to each peer based on latency.
+For each peer the node generates an error vector that would place the node at the idea distance.
+These error vectors added to the node's current cordiantes and the node uses the result as a new location.
+The node attempts to rejoin the network at this new location. Should the node's joining parent be it'self then the node changes the location it advertises to it's peers.
+After a sufficent number of cycles nodes will find stable locations.
+The approximation is an online algorithim and should be periodically re-applied to account for changes due to churn and congestion.
 
 
+
+
+%While encoding latitude and logitude as locations and using distance across the earth's surface as the distance metric may provide an approximation of a minmum latency overlay topology, this method cannot be used in more general network sinarios and may not describe the actual lowest latency path.
+
+In the experimental section we preform an online distributed approximation of embedding the inter-node latency graph onto a two dimensional toroidal plane and use the resulting cordiantes in VHash to generate an approximate minimum latency overlay network. 
 
 
 \section{Simulations}
@@ -305,7 +318,7 @@ Convergence rate varies with network size and number of dimensions of the VHash 
 Utilizing the current latency-embedding technique VHash is usefull for building DHT networks of reasonable size.
 
 \section{Related Work}
-
+While previous work has been done on applying Voronoi regions to DHTs and P2P applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
 
 Backhaus et. al's  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videogame.  
 Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
@@ -313,7 +326,17 @@ VAST demonstrated that Voronoi diagrams could be used as the backbone  large-sca
 VHash approximates the Voronoi region rather than solving it, as higher dimension Voronoi regions are computationally expensive to solve.
 In addition, VHash is designed to exploit network metrics.
 
-The two protocols developed by Beumont et al., Voronet \cite{voronet} and RayNet \cite{raynet} are the closest comparisions to VHash.
+The two DHT protocols developed by Beumont et al., VoroNet \cite{voronet} and RayNet \cite{raynet} are the closest comparisons to VHash.
+VoroNet is based off Kleinberg's small world model \cite{kleinberg2000navigation} and achieves polylogarithmic lookup time.  
+Each node in Voronet solves its Voronoi region to determine its neighbors and also maintains a link to a randomly chosen distant node.
+Voronet focused specifically on the two-dimensional Vornoi computations and the techniques used would be too expensive in higher dimensions and were not resiliant to churn  \cite{raynet}.
+
+RayNet \cite{raynet} was based on the work done on Voronet and is by far the most similar to VHash.  
+Like VHash, RayNet does not solve for Voronoi regions, as that is prohibitively expensive.  
+Whereas VHash uses a Distributed Greedy Voronoi Heuristic to find the neighbors that correspond with a node's Delaunay Triangulation,  RayNet uses a Monte-Carlo method to approximate the volume of a node's Voronoi region.  
+While effective and estimating the Voronoi region,  the volume-based Monte-Carlo approximation is expensive and requires multiple samples. 
+RayNet does mention the idea of mapping attributes to each axis, but how this can be exploited is left as future work.
+
 
 
  
