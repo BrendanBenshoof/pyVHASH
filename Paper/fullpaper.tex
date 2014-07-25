@@ -226,6 +226,25 @@ Our algorithm can be adjusted to run in constant time if the size of the short p
 
 \section{Network Metric Embedding}
 
+The VHash Space's flexible metric allows application of the network to solving routing issues.
+Rather than be limited to the current ring-based metric, we intend to apply VHash to generating efficent routing and storage to a variety of applications.
+Becuase information about a node can be encoded into a cordinate system we can encode an efficent routing scheme into the topological nowledge of the nodes in the network combined with the destination address.
+
+By utilizing specific metric spaces we can design a generalized and fast model for a routing scheme in multiple sinarios.
+For example, if VHash is used on a terrestrial Radio based network, recording latitude, logitude, altitude, and power levels allow distance between radios to be interpreted in terms of an approximation of signal strength rather than attempting to use eclidian distance as the distance metric.
+
+Any metric space where inter-node distance and the midpoint between two nodes can be calculated efficently can utilize VHash's Distributed Greedy Voronoi Heuristic or ray-net's volume approximation heuristic should the preformance versus accuracy tradeoff be worthwhile.
+
+VHash's interchangeable metric space is intended to allow applications of DHTs to areas of networking where DHT's preformance limitations previously prevented application.
+Any routing scheme that can be described in a metric space where the ideal path on the network is approximated by a direct path in the metric space can be utilized by VHash.
+
+
+Two types of information encoding are immediately apparent for use in VHashs: The usage of scalar values as indiviual axies and the embedding of a graph topology into an arbitrary number of dimensions.
+While encoding latitude and logitude as locations and using distance across the earth's surface as the distance metric may provide an approximation of a minmum latency overlay topology, this method cannot be used in more general network sinarios and may not describe the actual lowest latency path.
+
+We approximate and the embedding of the node's inter-node 
+
+Our experiments with VHash have been in Graph embedding, the most difficult.
 
 
 
@@ -286,6 +305,18 @@ Convergence rate varies with network size and number of dimensions of the VHash 
 Utilizing the current latency-embedding technique VHash is usefull for building DHT networks of reasonable size.
 
 \section{Related Work}
+
+
+Backhaus et. al's  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videogame.  
+Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
+VAST demonstrated that Voronoi diagrams could be used as the backbone  large-scale, although their work focused specifically on using 2-dimensional Voronoi diagrams.  
+VHash approximates the Voronoi region rather than solving it, as higher dimension Voronoi regions are computationally expensive to solve.
+In addition, VHash is designed to exploit network metrics.
+
+The two protocols developed by Beumont et al., Voronet \cite{voronet} and RayNet \cite{raynet} are the closest comparisions to VHash.
+
+
+ 
 
 \section{Future Work}
 
