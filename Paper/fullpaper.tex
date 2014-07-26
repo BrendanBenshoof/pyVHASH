@@ -206,8 +206,17 @@ Where $\vec{a}$ and $\vec{b}$ are locations in a $d$-dimensional toroidal space:
 
 
 This heuristic may fail.
-Should a node be positioned between two other nodes such that the midpoint between those two nodes does not fall upon the shared face of their Voronoi regions then this heuristic will not link the blocked peers. %picture
-This is mitigated by our method of peer management described in section D.
+Should a node be positioned between two other nodes such that the midpoint between those two nodes does not fall upon the shared face of their Voronoi regions then this heuristic will not link the blocked peers  (Figure \ref{occ-ex}). %picture
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{blocking-example}
+	\caption{An example of where the Distributed Greedy Voronoi Heuristic can fail to find an edge without peer management preventing this case.}
+	\label{occ-ex}
+\end{figure}
+
+
+This is mitigated by our method of peer management described in subsection D and already present in Algorithm \ref{DGVH}.
 
 
 \subsection{Fast Vornoi Classifier}
