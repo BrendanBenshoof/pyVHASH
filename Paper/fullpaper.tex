@@ -411,7 +411,7 @@ We wanted to demonstrate the benefits from optimizing the network topology for m
 \subsection{Convergence Simulation}
 Our first simulation demonstrates that VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
 We do this by showing that rate of successful lookups converges to 1.0.
-We compare these results to RayNet \cite{raynet}, which proposed that a random k-connected graph would be a good demonstration of convergance for a DHT.
+We compare these results to RayNet \cite{raynet}, which proposed that a random k-connected graph would be a good demonstration of convergence for a DHT.
 
 During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes. 
 In all the cycles, the nodes perform a gossip with a random node from their short peers to recomute both their peer lists.
@@ -435,14 +435,25 @@ The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of s
 In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
 %\subsection{Convergence Simulation Results}
-We present our results in Figs ABCDEFG and Table \ref{tab:convtable}.
+We present our results in Figures \ref and Table \ref{tab:convtable}.
 Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle $x$, regardless of dimension.
 VHash consistently converged close to a hitrate of 1.0 by cycle $y$. 
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions increase, convergence slows, but not to a significant degree.
 
 
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{conv_d2}
+	\label{conv2}
+\end{figure}
 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{conv_d3}
+	\label{conv3}
+\end{figure}
 
 %pictures here
 
@@ -480,7 +491,7 @@ Network Size & Dimensions & avg degree & max degree\\ \hline
 
 % Hop distance test
 \subsection{Latency Distribution Test}
-The goal of our second set of experiments is to demostrate VHash's ability ot optimize a selected network metric: latency in this case.  
+The goal of our second set of experiments is to demonstrate VHash's ability to optimize a selected network metric: latency in this case.  
 We compared VHash's performance to that of a more traditional DHT, Chord \cite{chord}.
 Chord is a well established DHT with an $O(log(n)$ sized routing table and $O(log(n)$ lookup time measured in overlay hops.  
 Rather than examine the number of hops on the overlay network as our primary metric like previous works, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
@@ -507,7 +518,7 @@ As the size of the network increases, the accuracy of the graph embedding falls 
 \subsection{Conclusions}
 In general, in similar circumstances, VHash converges faster than RayNet.
 Convergence rate varies with network size and number of dimensions of the VHash space.
-Utilizing the current latency-embedding technique VHash is usefull for building DHT networks of reasonable size.
+Utilizing the current latency-embedding technique VHash is useful for building DHT networks of reasonable size.
 
 \section{Related Work}
 %check table size consistancy 
@@ -537,7 +548,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 \section{Future Work}
 \begin{itemize}
 \item Explore applications of metric spaces.
-\item Explore file managemet and backup method.
+\item Explore file management and backup method.
 \item Explore caching and replication strategies.
 \end{itemize}
 
