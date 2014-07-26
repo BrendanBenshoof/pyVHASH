@@ -76,24 +76,39 @@ A Distributed Hash Table is used provide an overlay network for many P2P applica
 %keep?
 %This provides the network with load balancing properties.  Since files are assigned keys in a similar manner to nodes, the node are distributed evenly ac.  The distribution also provides fault tolerance;  if all the nodes located in a real geographic region were suddenly taken offline, the damage to the network would be spread uniformly throughout the network and maintenance would repair the damage.%
 Each node in the overlay network maintains a routing table of a subset of other nodes in the overlay.  
-The configuration and rules of the routing table vary from one protocol and another;  the entries of the table might be separated by powers of 2 \cite{Chord}, be determined by shared prefixes \cite{pastry}, or be chosen according to a probabilistic distribution \cite{kleinberg2000navigation}, but the goal is to minimize the number of overlay hops the distributed lookup needs to make. 
+The configuration and rules of the routing table vary from one protocol to another.
+In a DHT the entries of the routing tables may be separated by powers of 2 \cite{chord}, be determined by shared prefixes \cite{pastry}, or be chosen according to a probabilistic distribution \cite{kleinberg2000navigation}, but the goal is to minimize the number of overlay hops the distributed lookup needs to make. 
 
 
 %The ``problem''
 %This is the correct choice make if there is no other information to act on during lookup or routing. 
-A routing table created to minimize overlay hops does exactly that; it does not necessarily create routes with minimized latency.  However, what if more information about the nodes could be encoded as part of the overlay, such as the node's latency or energy?  We wanted to design an overlay where network metrics, such as inter-node latency, node energy levels, or non-euclidean metrics like trust could be embedded in the network.  The most straightforward way is to assign each network metric to a node as a coordinate in a space with the hashed key treated as an additional coordinate.   If each node is defined as object in this space, we can then use a distance function to choose the shortest path over these metrics.
+A routing table created to minimize overlay hops does not necessarily create routes with minimized latency.
+What if more information about the nodes could be encoded as part of the overlay, such as the node's latency or energy?
+We wanted to design an overlay where network metrics, such as inter-node latency, node energy levels, or radio range could be embedded in the network to alter the DHTs behavoir accordingly.
+The most straightforward way is to assign each network metric to a node as a coordinate in a space with the hashed key treated as an additional coordinate.
+Problems like latency require embedding a graph into cordinates in the metric space.
+If each node is defined as object in this space we can then use a distance function to choose the shortest path over these metrics and approximate a desired behavoir.
 
 
-This opens up two problems:  how do we generate an multidimensional overlay that incorporates network metrics as part of routing and how do we generate the coordinates that correspond to the network metrics?
-We present VHash as our solution to these problems.
+This opens up two problems:
+How to de create and maintain a DHT based on an arbitrary, modifiable metric space?
+How do we usefully embed inter-node latency and other important rounting information into that metric space's coordiante system?
 
-
-VHash is a DHT designed to take inter-node latency information into account when generating an overlay, although other network metrics could easily be applied.  VHash creates an approximation of a Voronoi network and Delaunay Triangulation to define the routing tables and dictate where content is stored in the network.  We accomplish this by assigning each node $d$ coordinates, rather than than a single key.  We use a basic spring model to embed inter-node latency graph in the overlay. A result of this is that nodes in VHash  can \emph{move} along an axis;  their position is not nessarily fixed.
+VHash is a DHT designed to take inter-node latency information into account when generating an overlay.
+Other network metrics could easily be applied to VHash.
+VHash creates an approximation of a Voronoi network and Delaunay Triangulation to define the routing tables and dictate where content is stored in the network.
+We accomplish this by assigning each node $d$ coordinates, rather than than a single key.
+We use a basic spring model to embed inter-node latency graph in the overlay.
+A result of this is that nodes in VHash  can \emph{move} through the metric space over the lifetime of the node;  their position is not nessarily fixed.
 Our paper presents the following:
+
 \begin{itemize}
-	\item We describe the VHash protocol (Section II) and the underlying approximation algorithm of overlay's Delaunay Trinangulation and the corresponding Voronoi diagrams.   Our approximation is distributed, greedy, efficient, and accurate in arbitrary number of dimensions and creates an overlay with edges that minimize distance over network metrics while maintaining robustness, scalablilty, and polylogarithmic lookup time in overlay hops.
-	\item We use VHash to provide us with an overlay for embedding network metrics, our other innovation.  We present our basic spring model for embedding nodes in the overlay with latency information and discuss other network metrics that can be used with VHash (Section III).
-	\item We created simulations (Section IV) to prove that the overlays created by VHash are accurate enough for routing messages from arbitrary source nodes to random destination locations.  We also show that by embedding the latency graph, our routing dramatically outperforms Chord (and by extension, other overlays with $\lg(n)$-sized routing tables) in terms of latency.
+	\item We describe the VHash protocol (Section II) and the underlying approximation algorithm of overlay's Delaunay Trinangulation and the corresponding Voronoi diagrams.
+    Our approximation is distributed, greedy, efficient, and accurate in arbitrary number of dimensions and creates an overlay with edges that minimize distance over network metrics while maintaining robustness, scalablilty, and polylogarithmic lookup time in overlay hops.
+	\item We use VHash to provide us with an overlay for embedding network metrics.
+    We present our basic spring model for embedding nodes in the overlay with latency information and discuss other network metrics that can be used with VHash (Section III).
+	\item We created simulations (Section IV) to prove that the overlays created by VHash are accurate enough for routing messages from arbitrary source nodes to random destination locations.
+    We also show that by embedding the latency graph, our routing dramatically outperforms Chord (and by extension, other overlays with $\lg(n)$-sized routing tables) in terms of latency.
 	\item We compare the VHash protocol to the other protocols that are based off of Voronoi region approximation.  We also contrast the properties of VHash with well known extant protocols.
 	\item We discuss future work that follows from our what plans we have for embedding different problems using VHash.
 \end{itemize}
@@ -111,33 +126,79 @@ The Delaunay Trangulation of this same space along the same set of objects is de
 The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists iff those object's Voronoi region border each other.  
 This means that solving either problem will yield the solution to both. 
 
-In our network, the nodes are the objects of the Voronoi diagram and their regions define the keyspace they are responsible for.  The edges created by the Deluanay Triangulation correspond to the connections between neighboring nodes.  However, computing Voronoi diagrams is expensive, but a greedy approximation of the Voronoi regions is sufficient for the protocol.  We created a new greedy, online algorithm that approximates and maintains the set of peers defining the node's Voronoi region and Delaunay Triangulation.
+In our network, the nodes are the objects of the Voronoi diagram and their regions define the regions they are responsible for.  The edges created by the Deluanay Triangulation correspond to the connections between neighboring nodes.  Computing Voronoi diagrams in a distributed and genralized fashion is prohbitively time expensive.
+A greedy approximation of the Voronoi regions is sufficient for the VHash protocol.
+We created a new greedy, online algorithm that approximates and maintains the set of peers defining the node's Voronoi region and Delaunay Triangulation.
 
 A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
 
-Arguably all DHTs are built on the concept of Vornoi regions. In all DHT's currently contrived, a node is responsible for all points in it's hash space to which it is the ``closest'' node. These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate. For example Chord and similar ring based DHTs utilize a unidirectional one dimensional ring as thier metric space, such that the region for which a node is responsible is the region between it and it's predecessor. Similar transformations of DHT mechanisms into metric spaces can be preformed for other DHTs. VHash generalizes these behavoirs such that by choosing a particular metric space VHash approximates other DHTs. The toroidal metric space utilized in this paper is an extension of the ring topology into additional dimensions. 
+Arguably all DHTs are built on the concept of Vornoi regions.
+In all DHT's currently contrived, a node is responsible for all points in it's hash space to which it is the ``closest'' node.
+These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
+For example Chord and similar ring based DHTs utilize a unidirectional one dimensional ring as thier metric space, such that the region for which a node is responsible is the region between it and it's predecessor.
+VHash generalizes these behavoirs.
+By choosing a particular metric space VHash can approximate other DHTs.
+The toroidal metric space utilized in this paper is an extension of the ring topology to additional dimensions. 
 
 The cost of generalizing VHash to utilize any metric space is the efficency of calculating vornoi regions. It is prohbitively expensive to generate an exact calculation of the delunay peers and vornoi regions of a metric space in a distributed fashion\cite{raynet}%\footnote{They cite Geometric Algorithms by Boissonat}. 
-This caculation becomes more prohibitvely expense as the number of dimensions increases. Previous explorations into distributed approximations of node's voronoi regions (ray-net) offer constant time approximations. However the monte-carlo techniques applied hide cost of calculation in large sampling sizes. We utilize a greedy heuristic that requires a similar computation cost of a single sample from ray-net's monte-carlo approximation. As a heuristic, there exist edge cases where it is incorrect. We mitigate this issue in our peer selection however it is imporant to note that the hit-rate of VHash approaches 1.0 asymtotically over time. We show in the experimental section that this loss in accuracy has negligable impact on use and is likely to be smaller than the impact of churn upon the hit-rate.
+Previous explorations into distributed approximations of node's voronoi regions (ray-net) offer constant time approximations.
+We utilize a greedy heuristic that requires a similar computation cost of a single sample from ray-net's monte-carlo approximation.
+As a heuristic, there exist edge cases where it is incorrect.
+We show in the experimental section that this loss in accuracy has negligable impact on use.
 
 \subsection{Distributed Greedy Voronoi Heuristic}
-The Distributed Greedy Voronoi Heuristic (ALGORITHM XYZ) is a fast method for nodes to select peers from thier Delunay Triangulation. It is predicated on the assumption that the midpoint between two nodes falls on the line segment that they share on the edges of thier voronoi regions. Which holds true in the vast majority of cases.
+The Distributed Greedy Voronoi Heuristic (Algorithm \ref{DGVH}) is a fast method for nodes to select peers from thier Delunay Triangulation.
+It is predicated on the assumption that the midpoint between two nodes falls on the line segment that they share on the edges of thier voronoi regions.
+This holds true in the vast majority of cases.
 
-Each cycle, nodes exchange their peerlists with their current neighbors and then recalculate their neighbors.  
-The calculation is straightforward.
-After a node receives it's neighbor's peerlists, it combines their peerlists and its own into a list of candidate neighbors, sorted the nodes by distance from closest to furthest.
-A new peerlist is then created starting with the first candidate from the list of candidates.
-The node then looks at each of the remaining candidates and calculates the midpoint between the node and the candidate.
+
+\begin{algorithm}
+\caption{Distributed Greedy Voronoi Heuristic}
+\label{DGVH}
+\begin{algorithmic}[1]  % the numberis how many lines
+	\STATE $candiates$ is the set of candidate peers obtained from gossiping.
+    \STATE $short\_peers$ is the set of this node's one-hop peers
+    \STATE $table\_size$ is the minimum size of $short\_peers$
+    \STATE $canidates$ is sorted  ascending by each node's distance to this node
+    \STATE The closest member of $Canidates$ is popped and added to $short\_peers$
+    \FORALL{$n$ in $Canidates$}
+    	\STATE $c$ is the midpoint between this node and $n$
+        \IF{Any node in $Peers$ is closer to $c$ than this node}
+        	\STATE reject $n$ as a peer
+        \ELSE
+        	\STATE Add $n$ to $short\_peers$
+        \ENDIF
+    \ENDFOR
+    \WHILE{$|candidates| >$ 0}
+    	\FORALL{$candidates$}
+    		\STATE add $candidates$ to the set of $long\_peers$
+        	\IF{$|long\_peers| > table\_size^2$}
+        		\STATE $long\_peers \leftarrow$ random subset of $long\_peers$ of size $table\_size^2$
+        	\ENDIF
+    	\ENDFOR
+    \ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+
+Each cycle, nodes exchange their peerlists with a current neighbors and then recalculate their neighbors.  
+A node combines the neighbor's peerlists and its own into a list of candidate neighbors.
+This combined list is sorted from closest to furthest.
+A new peerlist is then created starting with the first candidate from the list of candidates (which must allways be included).
+The node then examines each of the remaining candidates in the sorted list and calculates the midpoint between the node and the candidate.
 If any of the nodes in the new peerlist are closer to the midpoint than the canidate, the candidate is set aside.  Otherwise the candidate is added to the new peerlist.
 
 This heuristic has the benefit of being fast and scalable into any metric space where a distance function and midpoint can be defined.
-The distance metric used for this paper is the minimum distance in a multidimensional toroidal space, where iven two vector locations $\vec{a}$ and $\vec{b}$ on a $d$ dimensional unit toroidal hypercube, the distance between them is: %reference a formula 
-\[  \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1.0-|\vec{a}_i-\vec{b}_i|))^2}\]
+The distance metric used for this paper is the minimum distance in a multidimensional toroidal space.
+Where $\vec{a}$ and $\vec{b}$ are locations:
+\[ Distance = \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1.0-|\vec{a}_i-\vec{b}_i|))^2}\]
 
 
 
-As mentioned in earlier discussion, this heuristic can fail. Should an ``occluding'' node be positioned such that the midpoint between two nodes does not fall upon the shared face of thier voronoi regions then this heustic will not link the occluded peers. %picture
-This is mitigated by our method of peer managment.
+
+As mentioned in earlier, this heuristic may fail.
+Should a node be positioned between two other nodes such that the midpoint between those two nodes does not fall upon the shared face of thier voronoi regions then this heustic will not link the blocked peers. %picture
+This is mitigated by our method of peer managment described in section D.
 
 
 \subsection{Fast Vornoi Classifier}
@@ -147,7 +208,6 @@ Rather VHash only ever assigns a given point to a vornoi region.
 It does this by calculating the distance from that point to all canidate nodes.
 The point falls into a node's voronoi region if it is the node to which it has the shortest distance.
 Thus a node defines it's voronoi region by keeping a list of the peers that bound it.
-The cost of this calculation is identical to the cost of testing if a point is within a polytope, without the inital cost of generating that polytope.
 
 \subsection{Peer Management}
 VHash maintains two peer lists: Short Peers and Long Peers.
@@ -155,7 +215,8 @@ This is motivated by mitigating the error induced by the Distributed Greedy Voro
 
 Short Peers are the subset of the Delunay Peers generated by the Distributed Greedy Voronoi Heuristic. 
 The number of short peers has no upper bound and in contrived cases it can grow quite high. However in uncontrived networks the expected maximum number of short peers is $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected}.
-We found through experimentation that the expression $2 \cdot \frac{\log N}{\log \log N} + d$ was effective as  minimum length of the short peer list.
+We found experimentally that the expression $2 \cdot \frac{\log N}{\log \log N} + d$ was effective as  minimum length of the short peer list.
+Using a lower bound on the length of the short peer list corrects for errors in the approximation processes by including peers that otherwise would not be. 
 An approximation of the number of nodes in the network is sufficient to generate an accurate expected number of short peers.  
 This expected number of short peers is used as the lower bound for the size of short peer list.
 Should the number of short peers generated by the Distributed Greedy Voronoi Heuristic be less than the lower bound for that set's size, the nearest peers not already included in the short peer list are added to the short peer list until it is of sufficient size.
@@ -177,7 +238,22 @@ The node combines the lists of short peers\footnote{Naturally, nodes remove them
 The candidates determined not to be short peers become long peers.  
 If resulting number of long peers exceeds the maximum size of the long peer list, a random subset of the maximum size is kept.
 
-The formal algorithm for this process is described by Algorithms \ref{maint} and \ref{handlemaint}. This maintenance through gossip process is very similar to the gossip protocol used in \cite{raynet}.
+The formal algorithm for this process is described by Algorithms \ref{gossip}.
+THIS OCCURS HOW OFTERN\footnote{HOW OFTEN INDEED?}
+This maintenance through gossip process is very similar to the gossip protocol used in \cite{raynet}.
+
+
+\begin{algorithm}
+\caption{Gossip Process}
+\label{gossip}
+\begin{algorithmic}[1]  % the number is how many 
+	\STATE Node $n$ initiates the gossip.
+	\STATE $yenta \leftarrow$ random node from $n.short\_peers$
+    \STATE $candidates \leftarrow n.short\_peers \cup yenta.short\_peers$.
+    \STATE $n$ and $yenta$ each run Distributed Greedy Voronoi Heuristic using their own copy of $candidates$
+\end{algorithmic} 
+\end{algorithm}
+
 
 
 \subsection{Handling Churn}
@@ -193,7 +269,7 @@ There is no ``polite'' exit from the network. VHash assumes nodes will fail and 
 Suppose a node $f$ fails or leaves the network; we assume it does so abruptly and without warning.
 When one of $f$'s neighbors attempts to contact $f$ for gossiping or routing, failure to communicate with $f$ will prompt the neighbor to remove $f$ from its peers.  
 The node the selects a different neighbor to gossip with or recomputes the peer closest to the location it was looking for, in the case of routing. 
-Should a short peer fail, routing around its failure is trivial due to knowledge about the long peers.  The failure of a long peers is of no consequence because of the existance of the short peers, which provide for routing in that direction.
+Should a short peer fail, routing around its failure is trivial due to knowledge about the long peers.
 
 \subsection{Routing}
 The proper forwarding peer for routing a message extends from the voronoi regions of the short peers and long peers.
@@ -201,9 +277,25 @@ Rather than attempt to know the true voronoi region of those peers we approximat
 The resulting voronoi regions describe both the subset of the network for which that peer is responsible and the subset of the network for which it is the most efficent forwarding node.
 The routing node determines the vornoi region into which the message's destination falls.
 If this is itself, it handles the message accordingly; otherwise the routing node forwards the message to the responsible node.
-This process is equivalent to a pre-computed and cached efficient routing algorithm.
+This process is equivalent to a pre-computed and cached efficient routing algorithm (Algorrihm \ref{lookup}).
 Even if our approximation for the Voronoi region of a peer is incorrect due to incomplete knowledge of the network, our approximation describes the most efficient forwarding path of a message  destined for that space availible.
 
+\begin{algorithm}
+\caption{Vhash Lookup}
+\label{lookup}
+\begin{algorithmic}[1] 
+	\STATE $n$ is this node
+	\STATE $m$ is a message addressed for $loc$
+    \STATE $potential\_dests \leftarrow n \cup n.short\_peers$
+    \STATE $c \leftarrow $ node in $ potential\_dests$ with shortest distance to $loc$
+    \IF{$c$ == $n$}
+    	\RETURN $n$
+    \ELSE
+    	\STATE done
+        \STATE or do we say c.lookup(
+    \ENDIF
+\end{algorithmic}
+\end{algorithm}
 
 
 
@@ -218,9 +310,7 @@ Since  $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$  (the maximum nu
 \[\Theta(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
 While previous work \cite{raynet} claims constant time approximation, the reality is that Raynet's leading constant is in the order of thousands of Monte-Carlo samples.  
-The number of Monte-Carlo samples used by Raynet will need to be increased as the number of dimensions and nodes in the Raynet's overlay increases.  The Distributed Greedy Voronoi Heuristic doesn't need to take samples and it's full cost is expressed in the above equations.  
-
-Our algorithm can be adjusted to run in constant time if the size of the short peer list is arbitrarily bounded at a constant based off the dimension, but this comes with the cost of convergence to reliable lookups as the size of the overlay increases.
+While our algorithim has a greater asymtotic cost, for all current realistic network sizes it will be more time efficent then raynet's approximation.
 
 
 
@@ -278,15 +368,34 @@ We compare these results to RayNet, which preformed similar experiements to demo
 RayNet proposed that a random k-connected graph would be a good demonstration of convergance for a DHT.
 To generate this graph Raynet, for the first two generations, added 10 randomly selected nodes to the peerlist of each node.
 Then the network's hit rate is sampled and recorded.
-Hit rate of the network is calculated by taking taking 2000 samples as follows:
-\begin{enumerate}
-            \item{Choose a node N at random as a starting point.}
-            \item{Choose a destination point P at random from the VHash space.}
-            \item{Use VHash routing to recursively seek the responsbile node R for p starting from N}
-            \item{Calculate the closest node C to P.}
-            \item{If C == R then register a hit}
-            \item{Otherwise register a miss}
-\end{enumerate}
+Hit rate of the network is calculated by taking taking 2000 samples as follows Alogirithm \ref{routesim}:
+%\begin{enumerate}
+%            \item{Choose a node N at random as a starting point.}
+%            \item{Choose a destination point P at random from the VHash space.}
+%            \item{Use VHash routing to recursively seek the responsbile node R for p starting from N}
+%            \item{Calculate the closest node C to P.}
+%            \item{If C == R then register a hit}
+%            \item{Otherwise register a miss}
+%\end{enumerate}
+
+
+
+\begin{algorithm}
+\caption{Routing Simulation Sample}
+\label{routesim}
+\begin{algorithmic}[1]  % the number is how many 
+	\STATE $start \leftarrow$ random node
+	\STATE $dest \leftarrow$ random set of coordinates
+    \STATE $ans \leftarrow$ node closest to $dest$
+    \IF{$ans == start.lookup(dest)$}
+    	\STATE increment $hits$
+    \ELSE
+    	\STATE increment $miss$
+    \ENDIF
+    
+    
+\end{algorithmic} 
+\end{algorithm}
 
 \subsubsection{Experimental Results}
 Results describe a curve of fast growth in hit-rate then convergance a a hitrate of 1.0.
