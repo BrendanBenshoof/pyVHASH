@@ -9,6 +9,7 @@ import chord
 
 render_overlay_plot = False
 bother_showing_results = False
+"""
 def generate_vhash_graph(nodes):
     n = float(len(nodes))
     TABLE_SIZE = 2*int(log(n)/log(log(n)))+2
@@ -36,20 +37,20 @@ def generate_vhash_graph(nodes):
         far_peers[n] = []
     for n in nodes:
         for p in close_peers[n]:
-            for p2 in close_peers[n]:
-                if p2 not in far_peers[p] and p2 != p:
+            for p2 in close_peers[p]:
+                if p2 not in far_peers[n] and p2 != p:
                     far_peers[n].append(p2)
-        if len(far_peers[n]) > TABLE_SIZE*TABLE_SIZE:
-            far_peers[n] = random.sample(far_peers[n],TABLE_SIZE*TABLE_SIZE)
+        #if len(far_peers[n]) > TABLE_SIZE*TABLE_SIZE:
+            #far_peers[n] = random.sample(far_peers[n],TABLE_SIZE*TABLE_SIZE)
     for n in nodes:
         for p in close_peers[n]:
             overlay.add_edge(n,p)
         for p in far_peers[n]:
             overlay.add_edge(n,p)
     return overlay
-
+"""
 def generate_optimized_vhash_graph(nodes,real,gens):
-    min_short_peers = 17
+    min_short_peers = 3*4+1
     max_long_peers = min_short_peers*min_short_peers
 
     locs = {}
@@ -70,6 +71,7 @@ def generate_optimized_vhash_graph(nodes,real,gens):
             close_peers[n] = []
             for ploc in vhash.getShell(locs[n],map(lambda x: locs[x],others)):
                 close_peers[n].append(revlocs[ploc])
+
             if len(close_peers[n]) < min_short_peers:
                 for p in sorted(others,key = lambda x: vhash.dist(locs[n],locs[x])):
                     if p in close_peers[n]:
@@ -77,15 +79,17 @@ def generate_optimized_vhash_graph(nodes,real,gens):
                     close_peers[n].append(p)
                     if len(close_peers[n]) >= min_short_peers:
                         break
+
         for n in nodes:
             far_peers[n] = []
         for n in nodes:
             for p in close_peers[n]:
-                for p2 in close_peers[n]:
-                    if p2 not in far_peers[n] and p2 != p:
+                for p2 in close_peers[p]:
+                    if p2 not in far_peers[n] and p2 != n:
                         far_peers[n].append(p2)
             if len(far_peers[n]) > max_long_peers:
                 far_peers[n] = random.sample(far_peers[n],max_long_peers)
+
         for n in nodes:
             unit_distance_per_hop = sum([vhash.dist(locs[n], locs[x]) for x in close_peers[n]])
             unit_distance_per_hop /=sum([ float(underlay.hops(real,n,x)) for x in close_peers[n]])
@@ -166,13 +170,14 @@ def runTrial(num, real_graph):
 
 if __name__ == "__main__":
     print "generating underlay"
-    real_graph = underlay.generate_underlay(1000)
+    real_graph = underlay.generate_underlay(10000)
     print "done a"
     with open("CHORD_VHASH_HIST_RAW.csv","w+") as fp:
         vhash.setd(4) #if you change, change in peerlist code too
         writer = csv.writer(fp)
-        for n in [100,1000]:
-            print "starting VHASH"
-            writer.writerow([n,"VHASH"]+runTrial(n, real_graph))
+        for n in [100,500,1000]:
             print "starting CHORD"
             writer.writerow([n,"CHORD"]+chord.runTrial(n, real_graph))
+            print "starting VHASH"
+            writer.writerow([n,"VHASH"]+runTrial(n, real_graph))
+

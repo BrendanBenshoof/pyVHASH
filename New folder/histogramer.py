@@ -15,7 +15,7 @@ def get_raw(filename):
                 results = {}
                 results[size] = {}
             results[size][method] = samples
-    print results['100'].keys()
+            print size,method,samples[0]
     return results
 
 
@@ -25,14 +25,21 @@ for s in results.keys():
     plt.cla()
     labels = []
     data = []
+    binmin = 1
+    binmax = 1
     for m in results[s].keys():
         raw = results[s][m]
         labels.append(m)
         data.append(raw)
+        tmpmax = max(raw)
+        #tmpmin = min(raw)
+        if tmpmax > binmax:
+            binmax = tmpmax
     print len(data)
-    plt.hist(data,normed=1, label=labels,color=["red","blue"])
+
+    plt.hist(data,normed=1, bins = range(1,binmax+1),label=results[s].keys(),color=["red","blue"])
     plt.xlabel('Underlay Hops')
     plt.ylabel('Frequency')
-    plt.title('Overlay Network size' + str(s))
+    plt.title('Latency distribution with Overlay Network size: ' + str(s))
     plt.legend()
     plt.show()

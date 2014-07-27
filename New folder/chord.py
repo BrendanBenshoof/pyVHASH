@@ -7,7 +7,7 @@ import csv
 hash_space = 160
 maxhash = 2**hash_space
 
-count_overlay_only = True
+count_overlay_only = False
 
 def hash_dist(a,b):
     delta = b-a
