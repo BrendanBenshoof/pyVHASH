@@ -12,7 +12,6 @@ def get_raw(filename):
             size = row[0]
             samples = map(int,row[2:])
             if size not in results.keys():
-                results = {}
                 results[size] = {}
             results[size][method] = samples
             print size,method,samples[0]
@@ -21,6 +20,7 @@ def get_raw(filename):
 
 #plt.xkcd()
 results = get_raw("CHORD_VHASH_HIST_RAW.csv")
+print results.keys()
 for s in results.keys():
     plt.cla()
     labels = []
