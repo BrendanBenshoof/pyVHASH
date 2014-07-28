@@ -384,23 +384,21 @@ If a node has high latency with it's current peers the high latency connection c
 
 \section{Simulations}
 We implemented two simulations to prove that VHash acts as as a stable DHT and is able to minimize the latency on lookup time.
-While we have implemented functional software versions of the protocol, it was more economical to simulate VHash behavior.
-
 Our first simulation was of successful lookup rates (hitrate) over time as a VHash overlay converged on the proper topology from a random graph.  
 This simulated a large network bootstrapping itself from a series of essentially random connections and into an ordered DHT.
   
-Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine. 
+Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine VHash's capability to minimize latency. 
 We wanted to demonstrate the benefits to latency that followed from optimizing VHash's overlay topology for minimum latency according to our spring model (Algorithm \ref{springalg}).
 
 % Routing convergence tests
 \subsection{Convergence Simulation}
-Our first simulation demonstrates that the VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
+This simulation demonstrates that the VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
 We do this by showing that rate of successful lookups converges to 1.0.
-We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good demonstration of convergence for a DHT.
+We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good, challenging starting configuration for demonstrating convergence of a DHT to a stable network topology.
 
-During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes. 
+During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes.
 In all the cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer lists.
-We then calculate the hitrate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Alogirithm \ref{routesim}.
+We then calculate the hitrate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Algorithm \ref{routesim}.
 
 Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
 We tested network sizes of 500, 1000, 2000, 5000, and 10000 nodes each in 2, 3, 4, and 5 dimensions.
