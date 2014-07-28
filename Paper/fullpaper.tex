@@ -24,6 +24,7 @@
 \usepackage{algorithmic}
 \usepackage{amsmath}
 \usepackage[font=small]{caption}
+\usepackage{afterpage}
 
 
 
@@ -431,7 +432,7 @@ VHash consistently converged to a hitrate of 1.0 by cycle 30.
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
  
-
+\afterpage{
 
 \begin{figure}
 	\centering
@@ -464,7 +465,7 @@ As the network size and number of dimensions each increase, convergence slows, b
 \end{figure}
 
 
-
+}
 
 
 %\begin{table}
@@ -524,6 +525,8 @@ VHash generates an embedding of the latency graph utilizing the distributed spri
 Our simulation created 100, 500, and 1000 node overlays for both VHash and Chord.
 We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 160 bits for keys and identifiers is standard for Chord.}.
 
+\afterpage{
+
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_100}
@@ -545,6 +548,15 @@ We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 
 	\label{hist1000}
 \end{figure}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{hist_overlay_4d}
+	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
+	\label{histover}
+\end{figure}
+
+
+}
 
 Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the distribution of path lengths measured in underlay hops in both Chord and VHash.   
 In all three network sizes, VHash dramatically outperformed Chord and minimized the underlay path lengths.  Besides having a much lower average path length, the variance was also significantly lower.
@@ -554,14 +566,11 @@ For comparison, we also sampled the lookup length in overlay hops for a 1000 siz
 
 
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\linewidth]{hist_overlay_4d}
-	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
-	\label{histover}
-\end{figure}
 
-From these results we can conclude that not only does VHash have fewer overlay hops, but those hops are better leveraged than overlay hops in Chord.
+
+
+In comparing the overlay and underlay hops, we find that for each overlay hop in Chord the lookup must travel 2.719 underlay hops on average; in VHash, lookups must travel 2.291 underlay hops on average for every overlay hop traversed. 
+This shows that the latency embedding process has seem some measurable benefit.
 
 
 
@@ -590,15 +599,21 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
  
 
-\section{Conclusions and or Future Work}
+\section{Future Work}
 
+%\item Explore applications of metric spaces.
 Our experiments show that VHash can significantly reduce latency in a network compared to traditional DHTs by using the latency spring model.
-VHash and its spring model can be applied to not just latency, but other network metrics as well.
+VHash can be applied to not just latency, but other network metrics as well.
 Much of our future work will look at applying VHash to network metrics such as energy or transmission range.
 We also plan on making adjustments to the spring model itself; the model is a basic prototype to demonstrate that latency minimization works.
-%\begin{itemize}
-%\item Explore applications of metric spaces.
+Other work has demonstrated that it may be possible to embed scale free networks into hyperbolic planes \cite{papadopoulos2010greedy}.
+This would allow for construction of optimally minimal latency networks in VHash.
+
 %\item Explore file management and backup method.
+Another venue for exploration is application of caching and replication strategies to a functional distributed file system running on top of VHash.
+
+
+%\begin{itemize}
 %\item Explore caching and replication strategies.
 %\item Find better table sizes?  We kinda just chose ours on an ad-hoc basis
 %\end{itemize}
