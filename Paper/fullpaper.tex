@@ -426,10 +426,10 @@ The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of s
 %\subsection{Convergence Simulation Results}
 Our results are shown in Figures \ref{conv2} \ref{conv3} \ref{conv4}.
 Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle 20, regardless of dimension.
-VHash consistently converged close to a hitrate of 1.0 by cycle 30. 
+VHash consistently converged to a hitrate of 1.0 by cycle 30. 
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
-VHash performs extremely well in under this simulation, which were very unfavorable starting conditions.  
+ 
 
 
 \begin{figure}
@@ -504,14 +504,13 @@ Rather than examine the number of hops on the overlay network as our primary met
 For this experiment we constructed a 10000 node random scale free network (which has an approximate diameter of 3 hops) to act as an underlay \cite{cohen2000resilience} \cite{pastor2001epidemic} \cite{hagberg2004}.
 We used a scale-free network as the underlay as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
 From this underlay, we chose a random subset to be members of the overlay network.
-We then measured the distance in underlay hops between 2000 random source-destination nodes from the overlay. 
-VHash generates an embedding of the latency graph utilizing the distributed spring model algorithm described in Algorithm \ref{springalg}, with the latency function is defined as the number of underlay hops.
+We then measured the distance in underlay hops between 10000 random source-destination nodes from the overlay. 
+VHash generates an embedding of the latency graph utilizing the distributed spring model algorithm described in Algorithm \ref{springalg}, with the latency function is defined as the number of underlay hops between it and its peers.
 %we should elaborate more as to why underlay hops are a good measure of latency
+Overlay hops are used in most DHT papers as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
+This rationale is only valid where it's assumption of massive and diverse networks is held.
+For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
 
-
-The overlay VHash has significantly shorter lookup latency than the Chord graph with smaller variation in latency.
-Both are generally worse than the real network diameter of 3.
-As the size of the network increases, the accuracy of the graph embedding falls (as scale free graphs difficult to embed.)
 %pictures here
 
 
@@ -577,20 +576,12 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
  
 
 \section{Conlusions and or Future Work}
-
-%\item Explore applications of metric spaces.
-Our experiments show that VHash can significantly reduce latency in a network compared to traditional DHTs by using the latency spring model.  
-VHash and its spring model can be applied to not just latency, but other network metrics as well.
-Much of our future work will look at applying VHash to network metrics such as energy or transmission range.
-We also plan on making adjustments to the spring model itself; the model is a basic prototype to demonstrate that latency minimization works.
-
-
-
-% \item Explore file management and backup method.
-
-
-%\item Explore caching and replication strategies.
-
+\begin{itemize}
+\item Explore applications of metric spaces.
+\item Explore file management and backup method.
+\item Explore caching and replication strategies.
+%\item Find better table sizes?  We kinda just chose ours on an ad-hoc basis
+\end{itemize}
 
 
 
