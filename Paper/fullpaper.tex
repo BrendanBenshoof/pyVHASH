@@ -193,9 +193,9 @@ This holds true in the vast majority of cases.
 Each cycle, nodes exchange their peerlists with a current neighbors and then recalculate their neighbors.  
 A node combines the neighbor's peerlists and its own into a list of candidate neighbors.
 This combined list is sorted from closest to furthest.
-A new peerlist is then created starting with the first candidate from the list of candidates (which must allways be included).
+A new peerlist is then created starting with the first candidate from the list of candidates (which must always be included).
 The node then examines each of the remaining candidates in the sorted list and calculates the midpoint between the node and the candidate.
-If any of the nodes in the new peerlist are closer to the midpoint than the canidate, the candidate is set aside.  Otherwise the candidate is added to the new peerlist.
+If any of the nodes in the new peerlist are closer to the midpoint than the candidate, the candidate is set aside.  Otherwise the candidate is added to the new peerlist.
 
 This heuristic has the benefit of being fast and scalable into any metric space where a distance function and midpoint can be defined.
 The distance metric used for this paper is the minimum distance in a multidimensional toroidal space.
@@ -334,7 +334,7 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 
 
 \section{Network Metric Embedding}
-During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavoir under churn.
+During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavior under churn.
 We came to the unexpected conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
 The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
 We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the servers.
@@ -386,7 +386,7 @@ If a node has high latency with it's current peers the high latency connection c
 We implemented two simulations to prove that VHash acts as as a stable DHT and is able to minimize the latency on lookup time.
 While we have implemented functional software versions of the protocol, it was more economical to simulate VHash behavior.
 
-Our first simulation was of successful lookup rates (hitrate) over time as a VHash network converenged on the proper topology from a random graph.  
+Our first simulation was of successful lookup rates (hitrate) over time as a VHash overlay converged on the proper topology from a random graph.  
 This simulated a large network bootstrapping itself from a series of essentially random connections and into an ordered DHT.
   
 Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine. 
@@ -399,7 +399,7 @@ We do this by showing that rate of successful lookups converges to 1.0.
 We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good demonstration of convergence for a DHT.
 
 During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes. 
-In all the cycles, the nodes perform a gossip with a random node from their short peers to recomute both their peer lists.
+In all the cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer lists.
 We then calculate the hitrate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Alogirithm \ref{routesim}.
 
 Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
