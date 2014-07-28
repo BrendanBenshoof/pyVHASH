@@ -33,9 +33,25 @@ M.~Bern, D.~Eppstein, and F.~Yao, ``The expected extremes in a delaunay
   triangulation,'' {\em International Journal of Computational Geometry \&
   Applications}, vol.~1, no.~01, pp.~79--91, 1991.
 
+\bibitem{papadopoulos2010greedy}
+F.~Papadopoulos, D.~Krioukov, M.~Bogua, and A.~Vahdat, ``Greedy forwarding in
+  dynamic scale-free networks embedded in hyperbolic metric spaces,'' in {\em
+  INFOCOM, 2010 Proceedings IEEE}, pp.~1--9, IEEE, 2010.
+
 \bibitem{Spring}
 S.~G. Kobourov, ``Spring embedders and force directed graph drawing
   algorithms,'' {\em CoRR}, vol.~abs/1201.3011, 2012.
+
+\bibitem{kademlia}
+P.~Maymounkov and D.~Mazieres, ``Kademlia: A peer-to-peer information system
+  based on the xor metric,'' in {\em Peer-to-Peer Systems}, pp.~53--65,
+  Springer, 2002.
+
+\bibitem{voronet}
+O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
+  scalable object network based on voronoi tessellations,'' in {\em Parallel
+  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
+  pp.~1--10, IEEE, 2007.
 
 \bibitem{cohen2000resilience}
 R.~Cohen, K.~Erez, D.~Ben-Avraham, and S.~Havlin, ``Resilience of the internet
@@ -61,11 +77,5 @@ H.~Backhaus and S.~Krause, ``Voronoi-based adaptive scalable transfer
 \bibitem{fortune1987sweepline}
 S.~Fortune, ``A sweepline algorithm for voronoi diagrams,'' {\em Algorithmica},
   vol.~2, no.~1-4, pp.~153--174, 1987.
-
-\bibitem{voronet}
-O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
-  scalable object network based on voronoi tessellations,'' in {\em Parallel
-  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
-  pp.~1--10, IEEE, 2007.
 
 \end{thebibliography}
