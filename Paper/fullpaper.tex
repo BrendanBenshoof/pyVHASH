@@ -107,8 +107,8 @@ Our paper presents the following:
     We present our basic spring model for embedding nodes in the overlay with latency information and discuss other network metrics that can be used with VHash (Section III).
 	\item We created simulations (Section IV) to prove that the overlays created by VHash are accurate enough for routing messages from arbitrary source nodes to random destination locations.
     We also show that by embedding the latency graph, our routing dramatically outperforms Chord (and by extension, other overlays with $\lg(n)$-sized routing tables) in terms of latency.
-	\item We compare the VHash protocol to the other protocols that are based off of Voronoi region approximation.  We also contrast the properties of VHash with well known extant protocols.
-	\item We discuss future work that follows from our what plans we have for embedding different problems using VHash.
+	\item We compare the VHash protocol to the other protocols that are based off of Voronoi region approximation (Section V).
+	\item We discuss future work that follows from our what plans we have for embedding different problems using VHash (Section VI).
 \end{itemize}
 
 
@@ -335,24 +335,24 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 
 \section{Network Metric Embedding}
 During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavoir under churn.
-We came to the unexpected conclusion that high levels of churn  improved the performance of the system rather than being detrimental, under the right circumstances.
-The built in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
-We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to map data efficiently over the servers.
+We came to the unexpected conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
+The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
+We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the servers.
 VHash is designed to leverage this discovery and allow a server's location in the network to provide meaningful information about the server and to allow servers to change location in the network to suit the networks needs.
-In this paper we propose a method that peers can use to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than otherwise possible in a DHT.
+In this paper we propose a method that peers can use to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.\footnote{Is this better suited for Section I?}
 
-We preform a distributed graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
+We utilize a distributed graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
 Once inter-node latency is effectively represented as distance in the coordinate space, routing for shortest distance across this space also routes along the shortest latency path on the overlay network.
 
-For our simulations we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlaying network.
-We simulate a small fraction of these nodes acting as members of a DHT and simulate VHash's and Chord's distributions of latency for recursive lookups.
+For our simulations we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlying network.
+We simulate a small fraction of these nodes to act as members of a DHT and simulate VHash's and Chord's distributions of latency for recursive lookups.
 Each node in the VHash DHT preforms a periodic update step to it's location to accurately represent inter-node latency on the coordinate system.
 We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
-Other research shows we have potential for even more effective results on a hyperbolic plane  based coordinate system \cite{papadopoulos2010greedy}.
+Other research shows we have potential for even more effective results on a hyperbolic plane based coordinate system \cite{papadopoulos2010greedy}.
 
 To preform the embedding we designed an algorithm based on force-directed graph drawing \cite{Spring} for servers to utilize and periodically update their locations to lower the latency with their peers.
 The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
-This algorithm is described in algorithm \ref{springalg}. Each node periodically measures the latencies to it's peers and generates a change in position that minimizes the error in distance to it's peers.
+This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to it's peers and generates a change in position that minimizes the error in distance to it's peers.
 Once a node finds peers of low latency with it, these error approximations become small and the network configuration becomes stable.
 If a node has high latency with it's current peers the high latency connection causes the nodes to repel each other and move to new peers.
 
@@ -569,7 +569,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
  
 
-\section{Future Work}
+\section{Conlusions and or Future Work}
 \begin{itemize}
 \item Explore applications of metric spaces.
 \item Explore file management and backup method.
