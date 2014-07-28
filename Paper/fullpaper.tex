@@ -141,7 +141,7 @@ We created a new greedy, online algorithm that approximates and maintains the se
 A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
 
 Arguably all DHTs are built on the concept of Vornoi regions.
-In all DHT's currently contrived, a node is responsible for all points in it's hash space to which it is the ``closest'' node.
+In all DHT's currently a node is responsible for all points in it's hash space to which it is the ``closest'' node.
 These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
 For example Chord and similar ring based DHTs utilize a unidirectional one dimensional ring as their metric space, such that the region for which a node is responsible is the region between it and it's predecessor.
 VHash generalizes these behaviors:
@@ -334,34 +334,27 @@ While our algorithim has a greater asymtotic worst case cost, for all current re
 
 
 \section{Network Metric Embedding}
-The VHash space's flexible metric allows application of the network to solving routing issues.
-Rather than be limited to the current ring-based metric, we intend to apply VHash to generating efficent routing and storage to a variety of applications.
-Becuase information about a node can be encoded into a cordinate system we can encode an efficent routing scheme into the topological knowledge of the nodes in the network combined with the destination address.
+During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavoir under churn.
+We came to the unexpected conclusion that high levels of churn  improved the performance of the system rather than being detrimental, under the right circumstances.
+The built in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
+We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to map data efficiently over the servers.
+VHash is designed to leverage this discovery and allow a server's location in the network to provide meaningful information about the server and to allow servers to change location in the network to suit the networks needs.
+In this paper we propose a method that peers can use to periodically change thier location in the network such that routes taken on the resulting overlay network have lower latency than otherwise possible in a DHT.
 
-By utilizing specific metric spaces we can design a generalized and fast model for a routing scheme in multiple sinarios.
-For example, if VHash is used on a terrestrial Radio based network, recording latitude, longitude, altitude, and power levels allow distance between radios to be interpreted in terms of an approximation of signal strength rather than attempting to use euclidean distance as the distance metric.
+We preform a distributed graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
+Once inter-node latency is effectively represented as distance in the coordinate space, routing for shortest distance across this space also routes along the shortest latency path on the overlay network.
 
-Any metric space where inter-node distance and the midpoint between two nodes can be calculated efficiently can utilize VHash's Distributed Greedy Voronoi Heuristic or ray-net's volume approximation heuristic should the performance versus accuracy tradeoff be worthwhile.
+For our simulations we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlaying network.
+We simulate a small fraction of these nodes acting as members of a DHT and simulate VHash's and Chord's distributions of latency for recursive lookups.
+Each node in the VHash DHT preforms a periodic update step to it's location to accurately represent inter-node latency on the coordinate system.
+We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
+Other research shows we have potential for even more effective results on a hyperbolic plane  based coordinate system \cite{papadopoulos2010greedy}.
 
-VHash's interchangeable metric space is intended to allow applications of DHTs to areas of networking where DHT's performance limitations previously prevented application.
-Any routing scheme that can be described in a metric space where the ideal path on the network is approximated by a direct path in the metric space can be utilized by VHash.
-
-
-Two types of information encoding are immediately apparent for use in VHashs: The usage of scalar values as individual axes and the embedding of a graph topology into an arbitrary number of dimensions.
-
-As there has been no need for a distributed algorithm for graph embedding where each node represents a node in the graph we propose an initial naive approximation method based on Force-directed graph drawing \cite{Spring}.
+To preform the embedding we designed an algorithm based on force-directed graph drawing \cite{Spring} for servers to utilize and periodically update their locations to lower the latency with their peers.
 The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
-
-As a node joins the VHash network for the first time it is assigned a random location in the toroidal metric space.
-It joins the network and discovers an initial set of peers.
-The node sends ping messages to each of it's peers to approximate latency.
-The node calculates an ideal distance to each peer based on latency.
-For each peer the node generates an error vector that would place the node at the idea distance.
-These error vectors added to the node's current coordinates and the node uses the result as a new location.
-The node attempts to rejoin the network at this new location. Should the node's joining parent be itself then the node changes the location it advertises to it's peers.
-After a sufficient number of cycles nodes will find stable locations.
-The approximation is an online algorithm and should be periodically re-applied to account for changes due to churn and congestion.
-
+This algorithm is described in algorithm \ref{springalg}. Each node periodically measures the latencies to it's peers and generates a change in position that minimizes the error in distance to it's peers.
+Once a node finds peers of low latency with it, these error approximations become small and the network configuration becomes stable.
+If a node has high latency with it's current peers the high latency connection causes the nodes to repel each other and move to new peers.
 
 \begin{algorithm}
 \caption{Decentralized Peer-to-Peer Spring Model}
@@ -384,18 +377,9 @@ The approximation is an online algorithm and should be periodically re-applied t
 %Unit latency per distance is approximately $total_distance$/$total_latency$
 
 
-For each node in $P$ calculate an ideal distance $Ideal_n$ = $latency_n / UnitLatency$
-Calculate a location error vector of:
-	For each node in peers, the vector that displaces N to the ideal distance.
-Update $L_N$ as $L_N$ + $Error$
-Rejoin the network at location $L_N$
-Repeat Periodically.
-
-
 
 %While encoding latitude and logitude as locations and using distance across the earth's surface as the distance metric may provide an approximation of a minmum latency overlay topology, this method cannot be used in more general network sinarios and may not describe the actual lowest latency path.
 
-In the experimental section we preform an online distributed approximation of embedding the inter-node latency graph onto a two dimensional toroidal plane and use the resulting coordinates in VHash to generate an approximate minimum latency overlay network. 
 
 
 \section{Simulations}
