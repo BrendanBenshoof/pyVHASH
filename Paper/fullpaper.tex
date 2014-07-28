@@ -23,6 +23,7 @@
 \usepackage{algorithm} 
 \usepackage{algorithmic}
 \usepackage{amsmath}
+\usepackage[font=small]{caption}
 
 
 
@@ -40,7 +41,7 @@
 %%% The "real" document content comes below...
 
 \title{VHash: An Optimized Voronoi-Based Distributed Hash Table }
-\author{Double Blind}
+%\author{Double Blind}
 %\author{Brendan Benshoof \qquad Andrew Rosen  \\Department of Computer Science, Georgia State University\\  bbenshoof@cs.gsu.edu \qquad rosen@cs.gsu.edu }
 \date{} % Activate to display a given date or no date (if empty),
          % otherwise the current date is printed 
@@ -424,7 +425,7 @@ The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of s
 %In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
 %\subsection{Convergence Simulation Results}
-Our results are shown in Figures \ref{conv2} \ref{conv3} \ref{conv4}.
+Our results are shown in Figures \ref{conv2}, \ref{conv3}, \ref{conv4}, and \ref{conv5}.
 Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle 20, regardless of dimension.
 VHash consistently converged to a hitrate of 1.0 by cycle 30. 
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
@@ -454,6 +455,13 @@ As the network size and number of dimensions each increase, convergence slows, b
 	\label{conv4}
 \end{figure}
 
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{conv_d4}
+	\caption{}
+	\label{conv5}
+\end{figure}
 
 
 
@@ -501,36 +509,48 @@ We compared VHash's performance to that of a more traditional DHT, Chord \cite{c
 Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(log(n))$ lookup time measured in overlay hops.  
 Rather than examine the number of hops on the overlay network as our primary metric as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
+Overlay hops are used in most DHT papers as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
+This rationale is only valid where it's assumption of massive and diverse networks is held.
+For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
+
+
+
 For this experiment we constructed a 10000 node random scale free network (which has an approximate diameter of 3 hops) to act as an underlay \cite{cohen2000resilience} \cite{pastor2001epidemic} \cite{hagberg2004}.
 We used a scale-free network as the underlay as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
 From this underlay, we chose a random subset to be members of the overlay network.
 We then measured the distance in underlay hops between 10000 random source-destination nodes from the overlay. 
 VHash generates an embedding of the latency graph utilizing the distributed spring model algorithm described in Algorithm \ref{springalg}, with the latency function is defined as the number of underlay hops between it and its peers.
-%we should elaborate more as to why underlay hops are a good measure of latency
-Overlay hops are used in most DHT papers as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
-This rationale is only valid where it's assumption of massive and diverse networks is held.
-For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
 
-%pictures here
-
+Our simulation created 100, 500, and 1000 node overlays for both VHash and Chord.
+We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 160 bits for keys and identifiers is standard for Chord.}.
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_100}
+	\caption{Distribution of path lengths for Chord and VHash in a size 100 overlay.}	
 	\label{hist100}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_500}
+	\caption{Distribution of path lengths for Chord and VHash in a size 500 overlay.}
 	\label{hist500}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_1000}
+	\caption{Distribution of path lengths for Chord and VHash in a size 1000 overlay.}
 	\label{hist1000}
 \end{figure}
+
+
+Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the distribution of path lengths measured in underlay hops in both Chord and VHash.   
+In all three network sizes, VHash dramatically outperformed Chord and minimized the underlay path lengths.  Besides having a much lower average path length, the variance was also significantly lower.
+
+For comparison, we also sampled the lookup length in overlay hops for a 1000 sized Chord and VHash network.  As seen in Figure \ref{histover}, the paths in VHash's overlay were significantly shorter than those in Chord. 
+
 
 
 
@@ -538,17 +558,12 @@ For most realistic network sizes and structures, there is dramatic room for late
 	\centering
 	\includegraphics[width=\linewidth]{hist_overlay_4d}
 	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
-	\label{hist1000}
+	\label{histover}
 \end{figure}
 
+From these results we can conclude that not only does VHash have fewer overlay hops, but those hops are better leveraged than overlay hops in Chord.
 
-VHash performs better in both minimum underlay and overlay hops
 
-
-\subsection{Conclusions}
-In general, in similar circumstances, VHash converges faster than RayNet.
-Convergence rate varies with network size and number of dimensions of the VHash space.
-Utilizing the current latency-embedding technique VHash is useful for building DHT networks of reasonable size.
 
 \section{Related Work}
 %check table size consistancy 
@@ -575,7 +590,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
  
 
-\section{Conlusions and or Future Work}
+\section{Conclusions and or Future Work}
 \begin{itemize}
 \item Explore applications of metric spaces.
 \item Explore file management and backup method.
