@@ -426,7 +426,7 @@ The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of s
 %In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
 %\subsection{Convergence Simulation Results}
-Our results are shown in Figures \ref{conv2} \ref{conv3}.
+Our results are shown in Figures \ref{conv2} \ref{conv3} \ref{conv4}.
 Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle 20, regardless of dimension.
 VHash consistently converged close to a hitrate of 1.0 by cycle 30. 
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
@@ -449,7 +449,14 @@ VHash performs extremely well in under this simulation, which were very unfavora
 	\label{conv3}
 \end{figure}
 
-%pictures here
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{conv_d4}
+	\caption{}
+	\label{conv4}
+\end{figure}
+
+
 
 
 
