@@ -210,7 +210,7 @@ Should a node be positioned between two other nodes such that the midpoint betwe
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.5\linewidth]{blocking-example2}
+	\includegraphics[width=0.3\linewidth]{blocking-example2}
 	\caption{The white edge is an example of where the Distributed Greedy Voronoi Heuristic can fail to find an edge without peer management preventing this case.}
 	\label{occ-ex}
 \end{figure}
@@ -399,24 +399,31 @@ In the experimental section we preform an online distributed approximation of em
 
 
 \section{Simulations}
-
-We implemented two experimental tests to prove that VHash acts as as a stable DHT and is able to minimize the latency on lookup time.
+We implemented two simulations to prove that VHash acts as as a stable DHT and is able to minimize the latency on lookup time.
 While we have implemented functional software versions of the protocol, it was more economical to simulate VHash behavior.
-Our simulation was of hit-rate over time as a VHash network was established from a random graph.  
-This simulated a large network bootstrapping itself from a series of essentially random connections and into an ordered DHT.  
+
+Our first simulation was of successful lookup rates (hitrate) over time as a VHash network converenged on the proper topology from a random graph.  
+This simulated a large network bootstrapping itself from a series of essentially random connections and into an ordered DHT.
+  
 Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine. 
-We wanted to demonstrate the benefits from optimizing the network topology for minimum latency.
+We wanted to demonstrate the benefits to latency that followed from optimizing VHash's overlay topology for minimum latency according to our spring model (Algorithm \ref{springalg}).
 
 % Routing convergence tests
 \subsection{Convergence Simulation}
-Our first simulation demonstrates that VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
+Our first simulation demonstrates that the VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
 We do this by showing that rate of successful lookups converges to 1.0.
-We compare these results to RayNet \cite{raynet}, which proposed that a random k-connected graph would be a good demonstration of convergence for a DHT.
+We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good demonstration of convergence for a DHT.
 
 During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes. 
 In all the cycles, the nodes perform a gossip with a random node from their short peers to recomute both their peer lists.
 We then calculate the hitrate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Alogirithm \ref{routesim}.
+
+Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
+We tested network sizes of 500, 1000, 2000, 5000, and 10000 nodes each in 2, 3, 4, and 5 dimensions.
 The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of successful lookups.
+
+ 
+
 
 \begin{algorithm}
 \caption{Routing Simulation Sample}
@@ -432,19 +439,20 @@ The hitrate at each cycle is $\frac{hits}{2000}$, where hits are the number of s
 \end{algorithm}
 
 
-In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
+%In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
-%\subsection{Convergence Simulation Results}
-We present our results in Figures \ref and Table \ref{tab:convtable}.
-Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle $x$, regardless of dimension.
+\subsection{Convergence Simulation Results}
+We present our results in Figures \ref{conv2} \ref{conv3}.
+Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hitrate approached 90\% by cycle 20, regardless of dimension.
 VHash consistently converged close to a hitrate of 1.0 by cycle $y$. 
 In comparison, Raynet's routing converged to a perfect hitrate at around cycle 30 to 35 \cite{raynet} 
-As the network size and number of dimensions increase, convergence slows, but not to a significant degree.
+As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{conv_d2}
+	\caption{}
 	\label{conv2}
 \end{figure}
 
@@ -452,6 +460,7 @@ As the network size and number of dimensions increase, convergence slows, but no
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{conv_d3}
+	\caption{}
 	\label{conv3}
 \end{figure}
 
@@ -462,35 +471,35 @@ The average size of the short peer list is consistently close to the set lower b
 The long peer tables typically are completely filled to capacity (and thus are not shown)
 
 
-\begin{table}
-\centering
-\begin{tabular}{|r|r|r|r|}
-\hline
-Network Size & Dimensions & avg degree & max degree\\ \hline
-500   & 2 & 7.004 & 8 \\ \hline
-1000  & 2 & 7.001 & 8 \\ \hline
-2000  & 2 & 7.0015 & 8 \\ \hline
-5000  & 2 & 7.0364 & 66 \\ \hline
-10000 & 2 & 8.0151 & 81\\ \hline  % the heck?
-500   & 3 & 10.364 & 16 \\ \hline
-1000  & 3 & 10.321 & 15 \\ \hline
-2000  & 3 & 10.272 & 16 \\ \hline
-5000  & 3 & 10.3264 & 18 \\ \hline
-10000 & 3 & 9.1233 & 19 \\ \hline
-500   & 4 & x & x \\ \hline
-1000  & 4 & x & x \\ \hline
-2000  & 4 & x & x \\ \hline
-5000  & 4 & x & x \\ \hline
-10000 & 4 & x & x \\ \hline
-500   & 5 & x & x \\ \hline
-1000  & 5 & x & x \\ \hline
-2000  & 5 & x & x \\ \hline
-5000  & 5 & x & x \\ \hline
-10000 & 5 & x & x \\ \hline
-\end{tabular}
-\caption{Information about the size short peer lists, denoted degree here, at the last cycle of the convergence simulation.  For each pair of network size and dimension, we report the average degree in the network, as well as the largest.}
-\label{tab:convtable}
-\end{table}
+%\begin{table}
+%\centering
+%\begin{tabular}{|r|r|r|r|}
+%\hline
+%Network Size & Dimensions & avg degree & max degree\\ \hline
+%500   & 2 & 7.004 & 8 \\ \hline
+%1000  & 2 & 7.001 & 8 \\ \hline
+%2000  & 2 & 7.0015 & 8 \\ \hline
+%5000  & 2 & 7.0364 & 66 \\ \hline
+%10000 & 2 & 8.0151 & 81\\ \hline  % the heck?
+%500   & 3 & 10.364 & 16 \\ \hline
+%1000  & 3 & 10.321 & 15 \\ \hline
+%2000  & 3 & 10.272 & 16 \\ \hline
+%5000  & 3 & 10.3264 & 18 \\ \hline
+%10000 & 3 & 9.1233 & 19 \\ \hline
+%500   & 4 & x & x \\ \hline
+%1000  & 4 & x & x \\ \hline
+%2000  & 4 & x & x \\ \hline
+%5000  & 4 & x & x \\ \hline
+%10000 & 4 & x & x \\ \hline
+%500   & 5 & x & x \\ \hline
+%1000  & 5 & x & x \\ \hline
+%2000  & 5 & x & x \\ \hline
+%5000  & 5 & x & x \\ \hline
+%10000 & 5 & x & x \\ \hline
+%\end{tabular}
+%\caption{Information about the size short peer lists, denoted degree here, at the last cycle of the convergence simulation.  For each pair of network size and dimension, we report the average degree in the network, as well as the largest.}
+%\label{tab:convtable}
+%\end{table}
 
 
 
@@ -501,8 +510,8 @@ Network Size & Dimensions & avg degree & max degree\\ \hline
 \subsection{Latency Distribution Test}
 The goal of our second set of experiments is to demonstrate VHash's ability to optimize a selected network metric: latency in this case.  
 We compared VHash's performance to that of a more traditional DHT, Chord \cite{chord}.
-Chord is a well established DHT with an $O(log(n)$ sized routing table and $O(log(n)$ lookup time measured in overlay hops.  
-Rather than examine the number of hops on the overlay network as our primary metric like previous works, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
+Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(log(n))$ lookup time measured in overlay hops.  
+Rather than examine the number of hops on the overlay network as our primary metric as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
 For this experiment we constructed a 10000 node random scale free network (which has an approximate diameter of 3 hops) to act as an underlay \cite{cohen2000resilience} \cite{pastor2001epidemic} \cite{hagberg2004}.
 We used a scale-free network as the underlay as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
@@ -537,6 +546,8 @@ As the size of the network increases, the accuracy of the graph embedding falls 
 \end{figure}
 
 
+VHash performs better in both minimum underlay and overlay hops
+
 
 \subsection{Conclusions}
 In general, in similar circumstances, VHash converges faster than RayNet.
@@ -545,7 +556,7 @@ Utilizing the current latency-embedding technique VHash is useful for building D
 
 \section{Related Work}
 %check table size consistancy 
-While previous work has been done on applying Voronoi regions to DHTs and P2P applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
+While there has been previous work on applying Voronoi regions to DHTs and P2P applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
 
 Backhaus et. al's  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videogame.  
 Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
@@ -573,6 +584,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 \item Explore applications of metric spaces.
 \item Explore file management and backup method.
 \item Explore caching and replication strategies.
+%\item Find better table sizes?  We kinda just chose ours on an ad-hoc basis
 \end{itemize}
 
 
