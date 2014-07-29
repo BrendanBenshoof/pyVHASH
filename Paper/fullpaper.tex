@@ -346,7 +346,11 @@ In the case that our approximation of the Voronoi region of a peer is incorrect 
 
 
 \subsection{Algorithm Analysis}
-The Distributed Greedy Voronoi Heuristic is very efficient in both terms of space and time.  Suppose a node is creating its short peer list from $k$ candidates.  The candidates must be sorted, which takes $O(k\cdot\lg(k))$ operations.  Then for each candidate, that the node must compute the midpoint between itself and the current candidate and then compare distances to that point between itself and all of the peers it has found so far.  This comes down to a cost of 
+DVGH is very efficient in both terms of space and time.  
+Suppose a node is creating its short peer list from $k$ candidates. 
+The candidates must be sorted, which takes $O(k\cdot\lg(k))$ operations.  
+Then for each candidate, that the node must compute the midpoint between itself and the current candidate and then compare distances to that point between itself and all of the peers it has found so far.  
+This comes down to a cost of 
 
 \[ k\cdot\lg(k) + k \text{ midpoint computations}  + k^{2} \text{ distance computations} \]
 
@@ -355,10 +359,10 @@ Since  $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991ex
 
 \[O(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
-Because in the vast majority of cases, the number of peers is equal to the constant minimum table size, which gives $k=O(1)$ in the expected case, the lower bound and expected complexities  are $\Omega{}(1)$.
+Because in the vast majority of cases, the number of peers is equal to the constant minimum table size, which gives $k=(3d+1)^2+3d+1$ in the expected case, the lower bound and expected complexities are $\Omega(1)$.
 
 While previous work \cite{raynet} claims constant time approximation, the reality is that Raynet's leading constant is in the order of thousands as Monte-Carlo samples.  
-While our algorithm has a greater asymptotic worst case cost, for all current realistic network sizes it will be more time efficent then raynet's approximation.
+While our algorithm has a greater asymptotic worst case cost, for all current realistic network sizes it will be more time efficient then RayNet's approximation.
 
 
 
@@ -367,21 +371,22 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 \label{networkEmbedding}
 During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavior under churn.
 We came to the unexpected conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
-The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
-We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the servers.
-VHash is designed to leverage this discovery and allow a server's location in the network to provide meaningful information about the server and to allow servers to change location in the network to suit the networks needs.
-In this paper we propose a method that peers can use to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
+The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
+In this previous work, we found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
+VHash is designed to leverage this discovery and allow a nodes's location in the network to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
+In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
 
 We utilize a distributed graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
 Once inter-node latency is effectively represented as distance in the coordinate space, routing for shortest distance across this space also routes along the shortest latency path on the overlay network.
+Each node is given a random initial location and, over time, migrates to location which optimizes latency.
 
-For our simulations we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlying network.
+For our simulations, we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlying network.
 We simulate a small fraction of these nodes to act as members of a DHT and simulate VHash's and Chord's distributions of latency for recursive lookups.
-Each node in the VHash DHT preforms a periodic update step to its location to accurately represent inter-node latency on the coordinate system.
+Each node in the network performs a periodic update step to its location to accurately represent inter-node latency on the coordinate system.
 We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
 Other research shows we have potential for even more effective results on a hyperbolic plane based coordinate system \cite{papadopoulos2010greedy}.
 
-To preform the embedding we designed an algorithm based on force-directed graph drawing \cite{Spring} for servers to utilize and periodically update their locations to lower the latency with their peers.
+To perform the embedding, we designed an algorithm based on force-directed graph drawing \cite{Spring} for nodes to utilize, which periodically update their locations to lower the latency with their peers.
 The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
 This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to its peers and generates a change in position that minimizes the error in distance to its peers.
 Once a node finds peers of low latency with it, these error approximations become small and the network configuration becomes stable.
