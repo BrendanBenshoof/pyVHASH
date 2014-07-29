@@ -15,10 +15,6 @@ A.~Rowstron and P.~Druschel, ``Pastry: Scalable, decentralized object location,
   and routing for large-scale peer-to-peer systems,'' in {\em Middleware 2001},
   pp.~329--350, Springer, 2001.
 
-\bibitem{geoalg}
-``Geometric algorithms.''
-  \url{http://www.cs.princeton.edu/~rs/AlgsDS07/16Geometric.pdf}.
-
 \bibitem{aurenhammer1991voronoi}
 F.~Aurenhammer, ``Voronoi diagrams—a survey of a fundamental geometric data
   structure,'' {\em ACM Computing Surveys (CSUR)}, vol.~23, no.~3,
