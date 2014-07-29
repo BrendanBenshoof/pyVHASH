@@ -117,24 +117,24 @@ Our paper presents the following:
 	\item We discuss future work, including how VHash is capable of optimizing other network metrics beyond latency (Section \ref{conclusions}).
 \end{itemize}
 
-\section{Background}
-\label{background}
-\subsection{Distributed Hash Tables}
-\subsection{Voronoi Regions and Delunay Triangulation}
-A Voronoi diagram is the partition of a space into cells or regions along a set of objects $O$ such that all the points in a particular region are closer to one object than any other object.  
-We refer to the region owned by an object as that object's Voronoi region.
+%\section{Background}
+%\label{background}
+%\subsection{Distributed Hash Tables}
+%\subsection{Voronoi Regions and Delunay Triangulation}
+%A Voronoi diagram is the partition of a space into cells or regions along a set of objects $O$ such that all the points in a particular region are closer to one object than any other object.  
+%We refer to the region owned by an object as that object's Voronoi region.
 %The Delaunay Triangulation of this same space along the same set of objects is defined by the edges such that no object is inside the circumcircle of any triangle formed by the edges \cite{geoalg}.  
-The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists if and only if those object's Voronoi regions border each other.  
-This means that solving either problem will yield the solution to both.   An example Voronoi diagram is shown in Figure \ref{voro-ex}.
+%The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists if and only if those object's Voronoi regions border each other.  
+%This means that solving either problem will yield the solution to both.   An example Voronoi diagram is shown in Figure \ref{voro-ex}.
 
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{voronoi-example}
-	\caption{An example Voronoi diagram for objects on a 2-dimensional toroidal space.  The black lines correspond to the edges of the Delaunay Triangulation}.
-	\label{voro-ex}
-\end{figure}
+%\begin{figure}
+%	\includegraphics[width=\linewidth]{voronoi-example}
+%	\caption{An example Voronoi diagram for objects on a 2-dimensional toroidal space.  The black lines correspond to the edges of the Delaunay Triangulation}.
+%	\label{voro-ex}
+%\end{figure}
 
-A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
+%A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
 
 
 \section{VHash}
@@ -147,6 +147,22 @@ A node is responsible for all data that is assigned to locations within its Voro
 This approximation algorithm (Algorithm \ref{DGVH}) is fast and can be used in spaces with an arbitrary number of dimensions.
 
 \subsection{Voronoi Regions in DHTs}
+A Voronoi diagram is the partition of a space into cells or regions along a set of objects $O$ such that all the points in a particular region are closer to one object than any other object.  
+We refer to the region owned by an object as that object's Voronoi region.
+%This cleanly maps to the concept of ownership in DHTs, where nodes are responsible for n
+%The Delaunay Triangulation of this same space along the same set of objects is defined by the edges such that no object is inside the circumcircle of any triangle formed by the edges \cite{geoalg}.  
+The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists if and only if those object's Voronoi regions border each other.  
+This means that solving either problem will yield the solution to both.   An example Voronoi diagram is shown in Figure \ref{voro-ex}.
+A formal and thorough description of Voronoi diagrams as well as their applications can be found in \cite{aurenhammer1991voronoi}.
+
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{voronoi-example}
+	\caption{An example Voronoi diagram for objects on a 2-dimensional toroidal space.  The black lines correspond to the edges of the Delaunay Triangulation}.
+	\label{voro-ex}
+\end{figure}
+
+
 In our network, the nodes are the objects of the Voronoi diagram and are responsible for keys that fall in their region.
 The edges created by the Deluanay Triangulation correspond to the connections between neighboring nodes. 
 Computing Voronoi diagrams in a distributed and generalized fashion is prohibitively time expensive and previous work \cite{raynet} shows that an approximation is sufficient for peer selection and routing.
@@ -157,7 +173,7 @@ In all DHTs a node is responsible for all points in its hash space to which it i
 These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
 For example, Chord and similar ring-based DHTs utilize a unidirectional, one-dimensional ring as their metric space, such that the region for which a node is responsible is the region between itself and its predecessor.
 VHash generalizes these same behaviors: by choosing a particular metric space, VHash can approximate other DHTs.
-The toroidal metric space utilized in this paper is an extension of the ring topology used by Chord \cite{chord}, Symphony \cite{symphony}, and others into additional dimensions. 
+The toroidal metric space utilized in this paper is an extension of the ring topology used by Chord \cite{chord}, Symphony \cite{manku2003symphony}, and others into additional dimensions. 
 
 The cost of generalizing VHash to utilize any geometric space is the efficiency of calculating Voronoi regions. 
 It is prohibitively expensive to generate an exact calculation of the Deluanay peers and Voronoi regions of a geometric space in a distributed fashion \cite{raynet}.  %\footnote{They cite Geometric Algorithms by Boissonat}. 
@@ -168,9 +184,7 @@ We show in the experimental section that this loss in accuracy has no practical 
 
 \subsection{Distributed Greedy Voronoi Heuristic}
 The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
-It is predicated on the assumption that the midpoint between two nodes falls on the line segment that they share on the borders of their Voronoi regions. %find citation for degerat
-This holds true in all non-degenerate cases \cite{degenerate}.
-
+The rationale for this heuristic is that, in the majority of cases, the midpoint between to nodes falls on the common boundary of their Voronoi regions.
 
 \begin{algorithm} % make smaller
 \caption{Distributed Greedy Voronoi Heuristic}
@@ -271,7 +285,7 @@ This maintenance through gossip process is very similar to the gossip protocol u
 \begin{algorithmic}[1]  % the number is how many 
 	\STATE Node $n$ initiates the gossip.
 	\STATE $neighbor \leftarrow$ random node from $n.short\_peers$
-   \STATE $n\_candidates \leftarrow n.short\_peers \cup n.long\_peers \cup neighbor.short\_peers$
+   \STATE $n\_candidates \leftarrow n.short\_peers \cup neighbor.short\_peers$
    \STATE $neighbor\_candidates \leftarrow neighbor.short\_peers \cup neighbor.long\_peers \cup n.short\_peers$.  
    \STATE $n$ and $neighbor$ each run Distributed Greedy Voronoi Heuristic using their respective $candidates$
 \end{algorithmic} 
@@ -285,7 +299,7 @@ DHTs must have some mechanisms to handle this process to maintain fault toleranc
 
 Joining the network is a straightforward process.  
 A prospective node must be able to communicate with at least one patron member of the DHT.  
-The prospective node is assigned a location using the method described in Section III and uses the patron it knows to find the node responsible for it's assigned location, which we call the parent.
+The prospective node is assigned a location using the method described in Section III and uses the patron it knows to find the node responsible for its assigned location, which we call the parent.
 The prospective node sets the parent node as the lone member of the short peers and immediately gossips with the parent.
 Subsequent gossips will refine the peer lists of the nodes affected by the join.
 
@@ -354,15 +368,15 @@ Once inter-node latency is effectively represented as distance in the coordinate
 
 For our simulations we measure latency in terms of hops on a large scale free graph (10,000 nodes) that acts as an underlying network.
 We simulate a small fraction of these nodes to act as members of a DHT and simulate VHash's and Chord's distributions of latency for recursive lookups.
-Each node in the VHash DHT preforms a periodic update step to it's location to accurately represent inter-node latency on the coordinate system.
+Each node in the VHash DHT preforms a periodic update step to its location to accurately represent inter-node latency on the coordinate system.
 We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
 Other research shows we have potential for even more effective results on a hyperbolic plane based coordinate system \cite{papadopoulos2010greedy}.
 
 To preform the embedding we designed an algorithm based on force-directed graph drawing \cite{Spring} for servers to utilize and periodically update their locations to lower the latency with their peers.
 The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
-This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to it's peers and generates a change in position that minimizes the error in distance to it's peers.
+This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to its peers and generates a change in position that minimizes the error in distance to its peers.
 Once a node finds peers of low latency with it, these error approximations become small and the network configuration becomes stable.
-If a node has high latency with it's current peers the high latency connection causes the nodes to repel each other and move to new peers.
+If a node has high latency with its current peers the high latency connection causes the nodes to repel each other and move to new peers.
 
 \begin{algorithm}
 \caption{Decentralized Peer-to-Peer Spring Model}
@@ -518,7 +532,7 @@ Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(l
 Rather than examine the number of hops on the overlay network as our primary metric as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
 Overlay hops are used in most DHT papers as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
-This rationale is only valid where it's assumption of massive and diverse networks is held.
+This rationale is only valid where its assumption of massive and diverse networks is held.
 For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
 
 

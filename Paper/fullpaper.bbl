@@ -25,6 +25,11 @@ O.~Beaumont, A.-M. Kermarrec, and {\'E}.~Rivi{\`e}re, ``Peer to peer
   multidimensional overlays: Approximating complex structures,'' in {\em
   Principles of Distributed Systems}, pp.~315--328, Springer, 2007.
 
+\bibitem{manku2003symphony}
+G.~S. Manku, M.~Bawa, P.~Raghavan, {\em et~al.}, ``Symphony: Distributed
+  hashing in a small world.,'' in {\em USENIX Symposium on Internet
+  Technologies and Systems}, p.~10, 2003.
+
 \bibitem{bern1991expected}
 M.~Bern, D.~Eppstein, and F.~Yao, ``The expected extremes in a delaunay
   triangulation,'' {\em International Journal of Computational Geometry \&
