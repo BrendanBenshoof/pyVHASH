@@ -75,7 +75,7 @@ VHash provides a robust, scalable, and efficient distributed lookup service.
 
 \section{Introduction}
 A Distributed Hash Table (DHT) protocol is used to provide an overlay network for many P2P applications. 
-A DHT protocol allows peers to self organize and allocate responsibility for file distribution between each other \cite{bittorent} \cite{kademlia} \cite{chord} \cite{pastry}.
+A DHT protocol allows peers to self organize and allocate responsibility for file distribution between each other \cite{bittorrent} \cite{kademlia} \cite{chord} \cite{pastry}.
 Each peer in the network maintains a routing table of other peers in the overlay.
 The configuration and rules of the routing table vary from one protocol to another.
 However, they all have the common goal to minimize the number of overlay hops that a distributed lookup requires.
@@ -294,30 +294,38 @@ This maintenance through gossip process is very similar to the gossip protocol u
 
 
 \subsection{Handling Churn}
-Churn is the effects of the continuous joining and exiting of nodes in the overlay.
-DHTs must have some mechanisms to handle this process to maintain fault tolerance and routing.
+Churn refers to the effects caused by the continuous joining and exiting of nodes to and from the overlay.
+DHTs must have some mechanisms to handle this process to maintain fault tolerance and accurate routing as their members change over time.
 
-Joining the network is a straightforward process.  
+Joining the VHash network is a straightforward process.  
 A prospective node must be able to communicate with at least one patron member of the DHT.  
-The prospective node is assigned a location using the method described in Section III and uses the patron it knows to find the node responsible for its assigned location, which we call the parent.
-The prospective node sets the parent node as the lone member of the short peers and immediately gossips with the parent.
+The prospective node is assigned a location using the method described in Section \ref{networkEmbedding} and uses the patron to find the node responsible for its assigned location, which we call the parent.
+The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
 Subsequent gossips will refine the peer lists of the nodes affected by the join.
 
-There is no ``polite'' exit from the network. VHash assumes nodes will fail and the distinction between an intended failure and unintended failure is unnecessary.
-Should a node wish to crease participating in the network, it need only to crease sending and receiving messages.
-Suppose a node $f$ fails or leaves the network; we assume it does so abruptly and without warning.
+There is no ``polite'' method of leaving the network. 
+VHash assumes nodes will fail often and abruptly and that the distinction between an intended failure and unintended failure is unnecessary.
+Should a node wish to crease participating in the network, it need only to cease sending and receiving messages.
+Suppose a node $f$ fails or leaves the network; we assume it does so without warning.
 When one of $f$'s neighbors attempts to contact $f$ for gossiping or routing, failure to communicate with $f$ will prompt the neighbor to remove $f$ from its peers.  
 The node the selects a different neighbor to gossip with or recomputes the peer closest to the location it was looking for. 
 Should a short peer fail, routing around its failure is trivial due to knowledge about the long peers.
 
 \subsection{Routing}
-The proper forwarding peer for routing a message extends from the voronoi regions of the short peers and long peers.
-Rather than attempt to know the true voronoi region of those peers we approximate the voronoi regions of those peers as if there where no other nodes in the network.
-The resulting voronoi regions describe both the subset of the network for which that peer is responsible and the subset of the network for which it is the most efficient forwarding node.
-The routing node determines the voronoi region into which the message's destination falls.
-If this is itself, it handles the message accordingly; otherwise the routing node forwards the message to the responsible node.
-This process is equivalent to a pre-computed and cached efficient routing algorithm (Algorrihm \ref{lookup}).
-Even if our approximation for the Voronoi region of a peer is incorrect due to incomplete knowledge of the network, our approximation describes the most efficient forwarding path of a message  destined for that space available.
+The proper forwarding peer for routing a message extends from the Voronoi regions of \textit{Short Peers}and \textit{Long Peers}.
+For the purposes of routing, each node assumes itself and its short and long peers are the only nodes that exist in the geometric space.  
+When a node receives a message destined for a particular location, that node determines whether or not it is closest to that location.
+This is the same as determining whether or not the specified location falls into the node's Voronoi region.
+If this is the case, the node handles the message accordingly.  
+Otherwise, one of its peers must be responsible for that location.
+It forwards the message to the peer it deems closest to the location, which repeats the same decision process, but with different knowledge.
+
+%Rather than attempt to know the true Voronoi region of those peers, we approximate the Voronoi regions of those peers as if there where no other nodes in the network.
+%The resulting voronoi regions describe both the subset of the network for which that peer is responsible and the subset of the network for which it is the most efficient forwarding node.
+%The routing node determines the voronoi region into which the message's destination falls.
+%If this is itself, it handles the message accordingly; otherwise the routing node forwards the message to the responsible node.
+This process is equivalent to a precomputed, cached, and efficient routing algorithm (Algorithm \ref{lookup}).
+In the case that our approximation of the Voronoi region of a peer is incorrect due to each nodes incomplete knowledge of the network, our approximation describes the most efficient forwarding path of a message to a particular location.
 
 \begin{algorithm}
 \caption{Vhash Lookup}
@@ -355,13 +363,14 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 
 
 \section{Network Metric Embedding}
+%Describe initial location assignment
 \label{networkEmbedding}
 During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavior under churn.
 We came to the unexpected conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
 The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling servers changing locations in the network.
 We found in this previous work that it was more effective to move the server to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the servers.
 VHash is designed to leverage this discovery and allow a server's location in the network to provide meaningful information about the server and to allow servers to change location in the network to suit the networks needs.
-In this paper we propose a method that peers can use to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.\footnote{Is this better suited for Section I?}
+In this paper we propose a method that peers can use to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
 
 We utilize a distributed graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
 Once inter-node latency is effectively represented as distance in the coordinate space, routing for shortest distance across this space also routes along the shortest latency path on the overlay network.

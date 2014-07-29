@@ -1,5 +1,8 @@
 \begin{thebibliography}{10}
 
+\bibitem{bittorrent}
+B.~Cohen, ``The bittorrent protocol specification,'' 2008.
+
 \bibitem{kademlia}
 P.~Maymounkov and D.~Mazieres, ``Kademlia: A peer-to-peer information system
   based on the xor metric,'' in {\em Peer-to-Peer Systems}, pp.~53--65,
