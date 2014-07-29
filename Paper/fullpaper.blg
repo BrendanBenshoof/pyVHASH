@@ -1,6 +1,10 @@
 This is BibTeX, Version 0.99dThe top-level auxiliary file: fullpaper.aux
 The style file: ieeetr.bst
 Database file #1: P3DNS.bib
-Warning--I didn't find a database entry for "cohen2000resilience"
-Warning--can't use both volume and number fields in Chord
-(There were 2 warnings)
+Repeated entry---line 238 of file P3DNS.bib
+ : @article{bern1991expected
+ :                          ,
+I'm skipping whatever remains of this entry
+Warning--I didn't find a database entry for "andrew-poster"
+Warning--there's a number but no series in chord
+(There was 1 error message)

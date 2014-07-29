@@ -9,6 +9,7 @@ import chord
 
 render_overlay_plot = False
 bother_showing_results = False
+count_overlay_only = True
 """
 def generate_vhash_graph(nodes):
     n = float(len(nodes))
@@ -49,8 +50,8 @@ def generate_vhash_graph(nodes):
             overlay.add_edge(n,p)
     return overlay
 """
-def generate_optimized_vhash_graph(nodes,real,gens):
-    min_short_peers = 3*4+1
+def generate_optimized_vhash_graph(nodes,real,gens,d):
+    min_short_peers = 3*d+1
     max_long_peers = min_short_peers*min_short_peers
 
     locs = {}
@@ -126,6 +127,8 @@ def get_real_hops(real_graph,overlay,A,B):
     path = networkx.shortest_path(overlay,A,B)
     steps = []
     total = 0
+    if count_overlay_only:
+        return len(path)
     for i in range(1,len(path)):
         steps.append((path[i-1],path[i]))
     for s in steps:
@@ -138,12 +141,12 @@ def get_real_hops(real_graph,overlay,A,B):
 #networkx.draw_circular(chord_overlay)
 #plt.show()
 
-def runTrial(num, real_graph):
+def runTrial(num, real_graph,d):
 
     hoplist = []
 
 
-    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, num/10)
+    chord_overlay = generate_optimized_vhash_graph(random.sample(real_graph.nodes(),num), real_graph, num/10,d)
     print "done generating overlay. Sampling"
 
     now = time.time()
@@ -172,12 +175,13 @@ if __name__ == "__main__":
     print "generating underlay"
     real_graph = underlay.generate_underlay(10000)
     print "done a"
-    with open("CHORD_VHASH_HIST_RAW.csv","w+") as fp:
-        vhash.setd(4) #if you change, change in peerlist code too
-        writer = csv.writer(fp)
-        for n in [100,500,1000]:
-            print "starting CHORD"
-            writer.writerow([n,"CHORD"]+chord.runTrial(n, real_graph))
-            print "starting VHASH"
-            writer.writerow([n,"VHASH"]+runTrial(n, real_graph))
+    with open("BAD_IDEA.csv","w+") as fp:
+        for d in [2,3,4,5]:
+            vhash.setd(d) #if you change, change in peerlist code too
+            writer = csv.writer(fp)
+            for n in [100,500,1000]:
+                print "starting CHORD"
+                writer.writerow([n,"CHORD"]+chord.runTrial(n, real_graph))
+                print "starting VHASH"
+                writer.writerow([n,"VHASH"]+runTrial(n, real_graph,d))
 
