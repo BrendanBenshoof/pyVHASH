@@ -324,7 +324,7 @@ It forwards the message to the peer it deems closest to the location, which repe
 %The resulting voronoi regions describe both the subset of the network for which that peer is responsible and the subset of the network for which it is the most efficient forwarding node.
 %The routing node determines the voronoi region into which the message's destination falls.
 %If this is itself, it handles the message accordingly; otherwise the routing node forwards the message to the responsible node.
-This process is equivalent to a precomputed, cached, and efficient routing algorithm (Algorithm \ref{lookup}).
+This process is equivalent to a precomputed, cached, and efficient routing algorithm (Algorithm \ref{lookup}), shown to be polylogarithmic by \cite{raynet} \cite{kleinberg2000navigation} \cite{voronet}.
 In the case that our approximation of the Voronoi region of a peer is incorrect due to each nodes incomplete knowledge of the network, our approximation describes the most efficient forwarding path of a message to a particular location.
 
 \begin{algorithm}
@@ -422,12 +422,12 @@ If a node has high latency with its current peers, the high latency connection c
 
 \section{Simulations and Results}
 \label{simSection}
-We implemented two simulations to prove that VHash acts as as a stable DHT and is able to minimize the latency on lookup time.
-Our first simulation was of successful lookup rates (hitrate) over time as a VHash overlay converged on the proper topology from a random graph.  
+We implemented two simulations to prove that VHash acts as as a stable DHT and is able to reduce the latency of lookup time.
+Our first simulation examined successful lookup rates (hit rate) over time as a VHash overlay converged on the proper topology from a random graph.  
 This simulated a large network bootstrapping itself from a series of essentially random connections and into an ordered DHT.
   
-Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine VHash's capability to minimize latency. 
-We wanted to demonstrate the benefits to latency that followed from optimizing VHash's overlay topology for minimum latency according to our spring model (Algorithm \ref{springalg}).
+Our other simulation compared the distributions of latency in both the VHash and Chord DHTs to examine VHash's capability to reduce latency. 
+We wanted to demonstrate the benefits to latency that followed from optimizing VHash's overlay topology for minimum latency according to our force directed model (Algorithm \ref{springalg}).
 
 % Routing convergence tests
 \subsection{Convergence Simulation}
@@ -436,7 +436,7 @@ We do this by showing that rate of successful lookups converges to 1.0.
 We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good, challenging starting configuration for demonstrating convergence of a DHT to a stable network topology.
 
 During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes.
-In all the cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer lists.
+In all the cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer list.
 We then calculate the hit rate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Algorithm \ref{routesim}.
 
 Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
@@ -466,7 +466,7 @@ The hit rate at each cycle is $\frac{hits}{2000}$, where hits are the number of 
 Our results are shown in Figures \ref{conv2}, \ref{conv3}, \ref{conv4}, and \ref{conv5}.
 Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hit rate approached 90\% by cycle 20, regardless of dimension.
 VHash consistently converged to a hit rate of 1.0 by cycle 30. 
-In comparison, Raynet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet} 
+In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
  
 \afterpage{
@@ -545,9 +545,9 @@ As the network size and number of dimensions each increase, convergence slows, b
 The goal of our second set of experiments is to demonstrate VHash's ability to optimize a selected network metric: latency in this case.  
 We compared VHash's performance to that of a more traditional DHT, Chord \cite{chord}.
 Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(log(n))$ lookup time measured in overlay hops.  
-Rather than examine the number of hops on the overlay network as our primary metric as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
+Rather than examine the number of hops on the overlay network as our primary metric, as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
-Overlay hops are used in most DHT papers as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
+Overlay hops are used in most DHT evaluations as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
 This rationale is only valid where its assumption of massive and diverse networks is held.
 For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
 
@@ -557,7 +557,7 @@ For this experiment we constructed a 10000 node random scale free network (which
 We used a scale-free network as the underlay as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
 From this underlay, we chose a random subset to be members of the overlay network.
 We then measured the distance in underlay hops between 10000 random source-destination nodes from the overlay. 
-VHash generates an embedding of the latency graph utilizing the distributed spring model algorithm described in Algorithm \ref{springalg}, with the latency function is defined as the number of underlay hops between it and its peers.
+VHash generates an embedding of the latency graph utilizing the distributed force directed model algorithm described in Algorithm \ref{springalg}, with the latency function defined as the number of underlay hops between it and its peers.
 
 Our simulation created 100, 500, and 1000 node overlays for both VHash and Chord.
 We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 160 bits for keys and identifiers is standard for Chord.}.
@@ -596,17 +596,11 @@ We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 
 }
 
 Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the distribution of path lengths measured in underlay hops in both Chord and VHash.   
-In all three network sizes, VHash dramatically outperformed Chord and minimized the underlay path lengths.  Besides having a much lower average path length, the variance was also significantly lower.
+In all three network sizes, VHash dramatically outperformed Chord and significantly reduced the underlay path lengths.  
+Besides having a much lower average path length, the variance was also considerably lower.
 
-For comparison, we also sampled the lookup length in overlay hops for a 1000 sized Chord and VHash network.  As seen in Figure \ref{histover}, the paths in VHash's overlay were significantly shorter than those in Chord. 
-
-
-
-
-
-
-
-In comparing the overlay and underlay hops, we find that for each overlay hop in Chord the lookup must travel 2.719 underlay hops on average; in VHash, lookups must travel 2.291 underlay hops on average for every overlay hop traversed. 
+For comparison, we also sampled the lookup length measured in overlay hops for a 1000 sized Chord and VHash network.  As seen in Figure \ref{histover}, the paths in VHash's overlay were significantly shorter than those in Chord. 
+In comparing the overlay and underlay hops, we find that for each overlay hop in Chord, the lookup must travel 2.719 underlay hops on average; in VHash, lookups must travel 2.291 underlay hops on average for every overlay hop traversed. 
 Recall that this work is based on scale free networks, where latency improvements are difficult.
 An improvement of 0.4 hops over a diameter of 3 hops is significant.
 VHash has on average less overlay hops per lookup than Chord, and for each of these overlay hops we consistently traverse more efficiently across the underlay network.
@@ -614,27 +608,23 @@ VHash has on average less overlay hops per lookup than Chord, and for each of th
 \section{Related Work}
 \label{related}
 %check table size consistancy 
-While there has been previous work on applying Voronoi regions to DHTs and P2P applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
+While there has been previous work on applying Voronoi regions to DHTs and peer-to-peer (P2P) applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
 
-Backhaus et. al's  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videogame.  
+Backhaus et al.'s  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videog ame.  
 Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
-VAST demonstrated that Voronoi diagrams could be used as the backbone  large-scale, although their work focused specifically on using 2-dimensional Voronoi diagrams.  
+VAST demonstrated that Voronoi diagrams could be used as the backbone to large-scale applications, although their work focused specifically on using 2-dimensional Voronoi diagrams.  
 VHash approximates the Voronoi region rather than solving it, as higher dimension Voronoi regions are computationally expensive to solve.
-In addition, VHash is designed to exploit network metrics.
 
 The two DHT protocols developed by Beumont et al., VoroNet \cite{voronet} and RayNet \cite{raynet} are the closest comparisons to VHash.
 VoroNet is based off Kleinberg's small world model \cite{kleinberg2000navigation} and achieves polylogarithmic lookup time.  
 Each node in Voronet solves its Voronoi region to determine its neighbors and also maintains a link to a randomly chosen distant node.
-Voronet focused specifically on the two-dimensional Vornoi computations and the techniques used would be too expensive in higher dimensions and were not resilient to churn  \cite{raynet}.
+Voronet focused specifically on the two-dimensional Voronoi computations and the techniques used would be too expensive in higher dimensions and were not resilient to churn  \cite{raynet}.
 
 RayNet \cite{raynet} was based on the work done on Voronet and is by far the most similar to VHash.  
 Like VHash, RayNet does not solve for Voronoi regions, as that is prohibitively expensive.  
-Unlike VHash, RayNet uses a Monte-Carlo method to approximate the volume of a node's Voronoi region.  
-While effective and estimating the Voronoi region,  the volume-based Monte-Carlo approximation is expensive and requires multiple samples. 
+RayNet uses a Monte-Carlo method to approximate the volume of a node's Voronoi region.  
+While effective at estimating the Voronoi region,  the volume-based Monte-Carlo approximation is expensive and requires multiple samples. 
 RayNet does mention the idea of mapping attributes to each axis, but how this can be exploited is left as future work.
-
-
-
  
 
 \section{Conclusions and Future Work}
@@ -644,7 +634,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 Our experiments show that VHash outperforms Chord in overlay-hop latency, underlay-hop latency, and traverses more of the underlying network with each overlay hop. 
 For each overlay hop in Chord, the lookup must travel an average of 2.719 underlay hops per overlay hop.
 For each overlay hop in VHash, the lookup instead travels only 2.291 underlay hops per overlay hop.
-In the context of scale free graph with a diameter of 3, a difference of 0.4 is a significant improvement. 
+In the context of a scale free graph with a diameter of 3, a difference of 0.4 is a significant improvement. 
 Further gains in overlay-hop efficiency can be expected from applying VHash with a hyperbolic plane geometric space \cite{papadopoulos2010greedy}.
 This would allow for construction of optimally minimal latency networks in VHash.
 
@@ -655,7 +645,7 @@ Much of our future work will look at applying VHash to network metrics such as e
 
 
 %\item Explore file management and backup method.
-Another venue for exploration is application of caching and replication strategies to a functional distributed file system running on top of VHash.
+Another venue for exploration is application of caching and replication strategies to a functional distributed file system running on top of VHash.  Such extensions seek to improve upon existing work done on file replication and caching schemes \cite{shen2010irm}.
 
 
 %\begin{itemize}

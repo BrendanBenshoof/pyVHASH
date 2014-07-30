@@ -33,6 +33,16 @@ G.~S. Manku, M.~Bawa, P.~Raghavan, {\em et~al.}, ``Symphony: Distributed
   hashing in a small world.,'' in {\em USENIX Symposium on Internet
   Technologies and Systems}, p.~10, 2003.
 
+\bibitem{kleinberg2000navigation}
+J.~M. Kleinberg, ``Navigation in a small world,'' {\em Nature}, vol.~406,
+  no.~6798, pp.~845--845, 2000.
+
+\bibitem{voronet}
+O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
+  scalable object network based on voronoi tessellations,'' in {\em Parallel
+  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
+  pp.~1--10, IEEE, 2007.
+
 \bibitem{bern1991expected}
 M.~Bern, D.~Eppstein, and F.~Yao, ``The expected extremes in a delaunay
   triangulation,'' {\em International Journal of Computational Geometry \&
@@ -50,12 +60,6 @@ F.~Papadopoulos, D.~Krioukov, M.~Bogua, and A.~Vahdat, ``Greedy forwarding in
 \bibitem{Spring}
 S.~G. Kobourov, ``Spring embedders and force directed graph drawing
   algorithms,'' {\em CoRR}, vol.~abs/1201.3011, 2012.
-
-\bibitem{voronet}
-O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
-  scalable object network based on voronoi tessellations,'' in {\em Parallel
-  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
-  pp.~1--10, IEEE, 2007.
 
 \bibitem{cohen2000resilience}
 R.~Cohen, K.~Erez, D.~Ben-Avraham, and S.~Havlin, ``Resilience of the internet
@@ -82,8 +86,9 @@ H.~Backhaus and S.~Krause, ``Voronoi-based adaptive scalable transfer
 S.~Fortune, ``A sweepline algorithm for voronoi diagrams,'' {\em Algorithmica},
   vol.~2, no.~1-4, pp.~153--174, 1987.
 
-\bibitem{kleinberg2000navigation}
-J.~M. Kleinberg, ``Navigation in a small world,'' {\em Nature}, vol.~406,
-  no.~6798, pp.~845--845, 2000.
+\bibitem{shen2010irm}
+H.~Shen, ``Irm: integrated file replication and consistency maintenance in p2p
+  systems,'' {\em Parallel and Distributed Systems, IEEE Transactions on},
+  vol.~21, no.~1, pp.~100--113, 2010.
 
 \end{thebibliography}
