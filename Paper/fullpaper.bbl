@@ -38,6 +38,10 @@ M.~Bern, D.~Eppstein, and F.~Yao, ``The expected extremes in a delaunay
   triangulation,'' {\em International Journal of Computational Geometry \&
   Applications}, vol.~1, no.~01, pp.~79--91, 1991.
 
+\bibitem{andrew-poster}
+A.~Rosen, B.~Benshoof, M.~Erwin, R.~W. Harrison, and A.~G. Bourgeois,
+  ``{Chronus: Organizing Mapreduce with Chord DHT}.''
+
 \bibitem{papadopoulos2010greedy}
 F.~Papadopoulos, D.~Krioukov, M.~Bogua, and A.~Vahdat, ``Greedy forwarding in
   dynamic scale-free networks embedded in hyperbolic metric spaces,'' in {\em

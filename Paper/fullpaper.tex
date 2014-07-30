@@ -1,5 +1,4 @@
-\documentclass{IEEEtran}
-
+\documentclass[10pt, conference, letterpaper]{IEEEtran}
 \usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
 %\usepackage{geometry}
 %\geometry{letterpaper}
@@ -286,7 +285,7 @@ This maintenance through gossip process is very similar to the gossip protocol u
 \begin{algorithmic}[1]  % the number is how many 
 	\STATE Node $n$ initiates the gossip.
 	\STATE $neighbor \leftarrow$ random node from $n.short\_peers$
-   \STATE $n\_candidates \leftarrow n.short\_peers \cup neighbor.short\_peers$
+   \STATE $n\_candidates \leftarrow n.short\_peers\cup neighbor.short\_peers$
    \STATE $neighbor\_candidates \leftarrow neighbor.short\_peers \cup neighbor.long\_peers \cup n.short\_peers$.  
    \STATE $n$ and $neighbor$ each run Distributed Greedy Voronoi Heuristic using their respective $candidates$
 \end{algorithmic} 
@@ -370,10 +369,11 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 \section{Network Metric Embedding}
 %Describe initial location assignment
 \label{networkEmbedding}
-During previous research in applications of DHTs to parallel processing \cite{andrew-poster} we tested our network's behavior under churn.
-We came to the unexpected conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
+During previous research in applications of DHTs \cite{andrew-poster} to parallel processing, Rosen et al.\ tested DHT network behavior under churn. 
+They came to the conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
 The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
-In this previous work, we found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
+In this work, Rosen et al.\ found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
+
 VHash is designed to leverage this discovery and allow a nodes's location in the network to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
 In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
 Each node is given a random initial location and, over time, migrates to location which optimizes latency.
