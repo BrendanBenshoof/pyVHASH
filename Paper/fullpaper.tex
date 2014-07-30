@@ -303,13 +303,15 @@ The prospective node is assigned a location using the method described in Sectio
 The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
 Subsequent gossips will refine the peer lists of the nodes affected by the join.
 
+
 There is no ``polite'' method of leaving the network. 
 VHash assumes nodes will fail often and abruptly and that the distinction between an intended failure and unintended failure is unnecessary.
-Should a node wish to crease participating in the network, it need only to cease sending and receiving messages.
+Should a node wish to leave the network, it only needs to cease sending and receiving messages.
 Suppose a node $f$ fails or leaves the network; we assume it does so without warning.
 When one of $f$'s neighbors attempts to contact $f$ for gossiping or routing, failure to communicate with $f$ will prompt the neighbor to remove $f$ from its peers.  
-The node the selects a different neighbor to gossip with or recomputes the peer closest to the location it was looking for. 
+The node then selects a different neighbor to gossip with or recomputes the peer closest to the location it was looking for. 
 Should a short peer fail, routing around its failure is trivial due to knowledge about the long peers.
+
 
 \subsection{Routing}
 The proper forwarding peer for routing a message extends from the Voronoi regions of \textit{Short Peers}and \textit{Long Peers}.
@@ -347,22 +349,26 @@ In the case that our approximation of the Voronoi region of a peer is incorrect 
 
 \subsection{Algorithm Analysis}
 DVGH is very efficient in both terms of space and time.  
-Suppose a node is creating its short peer list from $k$ candidates. 
+Suppose a node $n$ is creating its short peer list from $k$ candidates in an overlay network of $N$ nodes. 
 The candidates must be sorted, which takes $O(k\cdot\lg(k))$ operations.  
-Then for each candidate, that the node must compute the midpoint between itself and the current candidate and then compare distances to that point between itself and all of the peers it has found so far.  
-This comes down to a cost of 
+Node $n$ must then compute the midpoint between itself and each of the $k$ candidates.  
+Node $n$ then compares distances to the midpoints between itself and all the candidates.  
+This results in a cost of 
 
 \[ k\cdot\lg(k) + k \text{ midpoint computations}  + k^{2} \text{ distance computations} \]
 
 
-Since  $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected} (the maximum number of peers stored neighbors allowed between two neighbors), we can translate the above to
+Since  $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected} (the expected maximum number of peers stored between two neighbors), we can translate the above to
 
 \[O(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
-Because in the vast majority of cases, the number of peers is equal to the constant minimum table size, which gives $k=(3d+1)^2+3d+1$ in the expected case, the lower bound and expected complexities are $\Omega(1)$.
+In the vast majority of cases, the number of peers is equal to the constant minimum table size. This yields $k=(3d+1)^2+3d+1$ in the expected case, where the lower bound and expected complexities are $\Omega(1)$.
 
-While previous work \cite{raynet} claims constant time approximation, the reality is that Raynet's leading constant is in the order of thousands as Monte-Carlo samples.  
-While our algorithm has a greater asymptotic worst case cost, for all current realistic network sizes it will be more time efficient then RayNet's approximation.
+Previous work \cite{raynet} claims constant time approximation, the reality is that Raynet's leading constant is in the order of thousands as Monte-Carlo samples.  
+Our algorithm has a greater asymptotic worst case cost, for all current realistic network sizes it will be more time efficient then RayNet's approximation.
+
+
+
 
 
 
