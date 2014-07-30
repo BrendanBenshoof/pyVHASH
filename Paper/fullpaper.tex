@@ -481,7 +481,7 @@ As the network size and number of dimensions each increase, convergence slows, b
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{conv_d2}
-	\caption{}
+	\caption{This plot shows the accuracy rate of lookups on a 2-dimensional VHash network as it self-organizes.}
 	\label{conv2}
 \end{figure}
 
@@ -489,7 +489,7 @@ As the network size and number of dimensions each increase, convergence slows, b
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{conv_d3}
-	\caption{}
+	\caption{This plot shows the accuracy rate of lookups on a 3-dimensional VHash network as it self-organizes.}
 	\label{conv3}
 \end{figure}
 
@@ -497,17 +497,20 @@ As the network size and number of dimensions each increase, convergence slows, b
 	\centering
 	\includegraphics[width=\linewidth]{conv_d4}
 	\caption{}
-	\label{conv4}
+		\caption{This plot shows the accuracy rate of lookups on a 4-dimensional VHash network as it self-organizes.}
 \end{figure}
 
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{conv_d5}
-	\caption{}
+		\caption{This plot shows the accuracy rate of lookups on a 5-dimensional VHash network as it self-organizes.}
 	\label{conv5}
 \end{figure}
-
+%bigcaption
+These figures show that, starting from an randomized network, that VHash forms a stable and consistent network topology.
+The Y axis shows the sucess rate of message routing and the X axis show the number of maintenance intervals that have occurred.
+%bigcaption
 
 }
 
@@ -595,9 +598,9 @@ We used 4 dimensions in VHash and a standard 160 bit identifier for Chord.
 \end{figure}
 
 %Big caption
-Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 2000 routing samples on a 10,000 node underlay network. 
+Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network. 
 The Y axis shows the observed frequencies and X axis show the number of hops traversed on the underlay network.
-VHash consistently requires less hops for routing than chord.
+VHash consistently requires less hops for routing than Chord.
 %end Big caption
 
 
