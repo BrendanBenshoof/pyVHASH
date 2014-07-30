@@ -385,7 +385,7 @@ In this work, Rosen et al.\ found that it was more effective to move the node to
 
 VHash is designed to leverage this discovery and allow a nodes' location in the network to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
 In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
-Each node is given a random initial location and, over time, migrates to location which optimizes latency.
+Each node is given a random initial location and, over time, migrates to a location which optimizes latency.
 
 
 We utilize a distributed, online graph embedding algorithm to find locations in the coordinate system for each node such that the latency between nodes can be accurately represented.
@@ -573,37 +573,34 @@ VHash generates an embedding of the latency graph utilizing the distributed forc
 Our simulation created 100, 500, and 1000 node overlays for both VHash and Chord.
 We used 4 dimensions in VHash and a standard 160 bit identifier for Chord.
 
-\afterpage{
-
 \begin{figure}
-	\centering
+
+\begin{subfigure}{\columnwidth}
 	\includegraphics[width=\linewidth]{hist_100}
 	\caption{Frequency of path lengths on Chord and VHash in a 100 node overlay.}	
 	\label{hist100}
-\end{figure}
+\end{subfigure}
 
-\begin{figure}
+\begin{subfigure}{\columnwidth}
 	\centering
 	\includegraphics[width=\linewidth]{hist_500}
 	\caption{Frequency of path lengths on Chord and VHash in a 500 node overlay.}
 	\label{hist500}
-\end{figure}
+\end{subfigure}
 
-\begin{figure}
+\begin{subfigure}{\columnwidth}
 	\centering
 	\includegraphics[width=\linewidth]{hist_1000}
 	\caption{Frequency of path lengths on Chord and VHash in a 1000 node overlay.}
 	\label{hist1000}
-\end{figure}
+\end{subfigure}
 
-%Big caption
-Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network. 
+\caption{Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network for differently sized overlays. 
 The Y axis shows the observed frequencies and X axis show the number of hops traversed on the underlay network.
-VHash consistently requires less hops for routing than Chord.
-%end Big caption
+VHash consistently requires fewer hops for routing than Chord.}
 
 
-}
+\end{figure}
 
 
 
