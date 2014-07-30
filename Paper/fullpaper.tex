@@ -285,7 +285,7 @@ This maintenance through gossip process is very similar to the gossip protocol u
 \begin{algorithmic}[1]  % the number is how many 
 	\STATE Node $n$ initiates the gossip.
 	\STATE $neighbor \leftarrow$ random node from $n.short\_peers$
-   \STATE $n\_candidates \leftarrow n.short\_peers\cup neighbor.short\_peers$
+   \STATE $n\_candidates \leftarrow n.short\_peers \cup n.long\_peers \cup neighbor.short\_peers$
    \STATE $neighbor\_candidates \leftarrow neighbor.short\_peers \cup neighbor.long\_peers \cup n.short\_peers$.  
    \STATE $n$ and $neighbor$ each run Distributed Greedy Voronoi Heuristic using their respective $candidates$
 \end{algorithmic} 
