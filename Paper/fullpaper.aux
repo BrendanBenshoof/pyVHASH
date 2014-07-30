@@ -23,7 +23,7 @@
 \citation{raynet}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Distributed Greedy Voronoi Heuristic\relax }}{3}}
 \newlabel{DGVH}{{1}{3}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The edge between $A$ and $B$ is not detected by DGVH as node $C$ is closer to the midpoint than $B$ is. This is mitigated by VHash's peer management polices.\relax }}{3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is. This is mitigated by VHash's peer management polices.\relax }}{3}}
 \newlabel{occ-ex}{{2}{3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-C}}Peer Management}{3}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-D}}Maintenance via Gossiping}{3}}
@@ -47,12 +47,12 @@
 \citation{raynet}
 \citation{raynet}
 \citation{chord}
+\citation{kademlia}
 \citation{chord}
 \citation{pastry}
 \citation{raynet}
-\citation{kademlia}
 \citation{voronet}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Decentralized Peer-to-Peer Spring Model\relax }}{5}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Decentralized Peer-to-Peer Force-Directed Model\relax }}{5}}
 \newlabel{springalg}{{4}{5}}
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Simulations and Results}{5}}
 \newlabel{simSection}{{IV}{5}}
@@ -64,32 +64,32 @@
 \citation{hagberg2004}
 \citation{cohen2000resilience}
 \citation{pastor2001epidemic}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \relax }}{6}}
-\newlabel{conv2}{{3}{6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \relax }}{6}}
-\newlabel{conv3}{{4}{6}}
+\newlabel{conv2}{{3a}{6}}
+\newlabel{sub@conv2}{{a}{6}}
+\newlabel{conv3}{{3b}{6}}
+\newlabel{sub@conv3}{{b}{6}}
+\newlabel{conv4}{{3c}{6}}
+\newlabel{sub@conv4}{{c}{6}}
+\newlabel{conv5}{{3d}{6}}
+\newlabel{sub@conv5}{{d}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces These figures show that, starting from a randomized network, VHash forms a stable and consistent network topology. The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred. Each point shows the fraction of 2000 lookups that successfully found the correct destination.\relax }}{6}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-B}}Latency Distribution Test}{6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \relax }}{6}}
-\newlabel{conv4}{{5}{6}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces \relax }}{6}}
-\newlabel{conv5}{{6}{6}}
 \citation{Backhaus:2007:VAS:1326257.1326266}
 \citation{fortune1987sweepline}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Frequency of path lengths on Chord and VHash in a 100 node overlay.\relax }}{7}}
-\newlabel{hist100}{{7}{7}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Frequency of path lengths on Chord and VHash in a 500 node overlay.\relax }}{7}}
-\newlabel{hist500}{{8}{7}}
-\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Frequency of path lengths on Chord and VHash in a 1000 node overlay.\relax }}{7}}
-\newlabel{hist1000}{{9}{7}}
-\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Comparison of Chord and VHash in terms of overlay hops. Each overlay has 1000 nodes.\relax }}{7}}
-\newlabel{histover}{{10}{7}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Related Work}{7}}
-\newlabel{related}{{V}{7}}
 \citation{voronet}
 \citation{raynet}
 \citation{kleinberg2000navigation}
 \citation{raynet}
 \citation{raynet}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Related Work}{7}}
+\newlabel{related}{{V}{7}}
+\newlabel{hist100}{{4a}{7}}
+\newlabel{sub@hist100}{{a}{7}}
+\newlabel{hist500}{{4b}{7}}
+\newlabel{sub@hist500}{{b}{7}}
+\newlabel{hist1000}{{4c}{7}}
+\newlabel{sub@hist1000}{{c}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Figures 4a\hbox {}, 4b\hbox {}, and 4c\hbox {} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network for differently sized overlays. The Y axis shows the observed frequencies and the X axis shows the number of hops traversed on the underlay network. VHash consistently requires fewer hops for routing than Chord.\relax }}{7}}
 \citation{papadopoulos2010greedy}
 \citation{shen2010irm}
 \bibstyle{ieeetr}
@@ -113,6 +113,8 @@
 \bibcite{Backhaus:2007:VAS:1326257.1326266}{17}
 \bibcite{fortune1987sweepline}{18}
 \bibcite{shen2010irm}{19}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comparison of Chord and VHash in terms of overlay hops. Each overlay has 1000 nodes. The Y axis denotes the observed frequencies of overlay hops and the X axis corresponds to the path lengths in overlay hops.\relax }}{8}}
+\newlabel{histover}{{5}{8}}
 \@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusions and Future Work}{8}}
 \newlabel{conclusions}{{VI}{8}}
 \@writefile{toc}{\contentsline {section}{References}{8}}

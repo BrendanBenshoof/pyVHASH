@@ -240,7 +240,7 @@ Our algorithm handles these cases via our method of peer management.
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{occlusion}
-	\caption{The edge between $A$ and $B$ is not detected by DGVH as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
+	\caption{The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
 	\label{occ-ex}
 \end{figure}
 
@@ -397,14 +397,16 @@ Each node in the network performs a periodic update step to its location to accu
 We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
 Other research shows we have potential for even more effective results on a hyperbolic plane based coordinate system \cite{papadopoulos2010greedy}.
 
-To perform the embedding, we designed an algorithm based on force-directed graph drawing \cite{Spring} for nodes to utilize, which periodically updates their location to lower the latency with their peers.
-The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
-This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to its peers and generates a change in position that minimizes the error in distance to its peers.
+To perform the embedding, we designed an algorithm for nodes to utilize based on force-directed graph drawing \cite{Spring} 
+The algorithm periodically updates the node locations to lower the latency with their peers.
+The approximate distributed embedding algorithm employs VHash's maintenance and join behaviors.
+This algorithm is described in Algorithm \ref{springalg}. 
+Each node periodically measures the latencies to its peers and generates a change in position that minimizes the error in distance to its peers.
 Once a node finds peers with low latency to it, these error approximations become small and the network configuration becomes stable.
 If a node has high latency with its current peers, the high latency connection causes the nodes to repel each other and move to new peers.
 
 \begin{algorithm}
-\caption{Decentralized Peer-to-Peer Spring Model}
+\caption{Decentralized Peer-to-Peer Force-Directed Model}
 \label{springalg}
 \begin{algorithmic}[1] 
 	\STATE Given $n$ is a node at location $\overrightarrow{loc}$
@@ -440,12 +442,12 @@ We wanted to demonstrate the benefits to latency that followed from optimizing V
 
 % Routing convergence tests
 \subsection{Convergence Simulation}
-This simulation demonstrates that the VHash protocol converges to a stable overlay from an chaotic starting topology after a sufficient number of gossip cycles.  
-We do this by showing that rate of successful lookups converges to 1.0.
+This simulation demonstrates that the VHash protocol converges to a stable overlay from a chaotic starting topology after a sufficient number of gossip cycles.  
+We do this by showing that the rate of successful lookups approaches 1.0.
 We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good, challenging starting configuration for demonstrating convergence of a DHT to a stable network topology.
 
 During the first two cycles of the simulation, each node bootstraps its short peer list by appending 10 randomly selected nodes.
-In all the cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer list.
+In each cycles, the nodes perform a gossip with a random node from their short peers to recompute both their peer lists.
 We then calculate the hit rate of successful lookups by simulating 2000 lookups from random nodes to random locations, as described in Algorithm \ref{routesim}.
 
 Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
@@ -473,8 +475,8 @@ The hit rate at each cycle is $\frac{hits}{2000}$, where hits are the number of 
 
 %\subsection{Convergence Simulation Results}
 Our results are shown in Figures \ref{conv2}, \ref{conv3}, \ref{conv4}, and \ref{conv5}.
-Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hit rate approached 90\% by cycle 20, regardless of dimension.
-VHash consistently converged to a hit rate of 100\% by cycle 30. 
+Our graphs show that VHash's overlay quickly constructs itself from a random configuration and that our hit rate reached 90\% by cycle 20, regardless of dimension.
+VHash consistently approached a hit rate of 100\% by cycle 30. 
 In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
  
@@ -509,9 +511,9 @@ As the network size and number of dimensions each increase, convergence slows, b
 
 \end{tabular}
 
-\caption{These figures show that, starting from an randomized network, VHash forms a stable and consistent network topology.
-The Y axis shows the success rate of message routing and the X axis show the number of maintenance intervals that have occurred.
-Each point shows the fraction of 2000 lookups successfully found the correct destination.}
+\caption{These figures show that, starting from a randomized network, VHash forms a stable and consistent network topology.
+The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
+Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
 
 \end{figure*}
 %\begin{table}
@@ -596,7 +598,7 @@ We used 4 dimensions in VHash and a standard 160 bit identifier for Chord.
 \end{subfigure}
 
 \caption{Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network for differently sized overlays. 
-The Y axis shows the observed frequencies and X axis show the number of hops traversed on the underlay network.
+The Y axis shows the observed frequencies and the X axis shows the number of hops traversed on the underlay network.
 VHash consistently requires fewer hops for routing than Chord.}
 
 
@@ -616,7 +618,7 @@ VHash has on average less overlay hops per lookup than Chord, and for each of th
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=\linewidth]{hist_overlay_4d}
-	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
+	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.  The Y axis denotes the observed frequencies of overlay hops and the X axis corresponds to the path lengths in overlay hops.}
 	\label{histover}
 \end{figure}
 
