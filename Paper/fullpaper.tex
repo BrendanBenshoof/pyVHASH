@@ -397,7 +397,7 @@ Each node in the network performs a periodic update step to its location to accu
 We utilize a toroidal metric space for these experiments as generalization of Chord's ring topology.
 Other research shows we have potential for even more effective results on a hyperbolic plane based coordinate system \cite{papadopoulos2010greedy}.
 
-To perform the embedding, we designed an algorithm based on force-directed graph drawing \cite{Spring} for nodes to utilize, which periodically update their locations to lower the latency with their peers.
+To perform the embedding, we designed an algorithm based on force-directed graph drawing \cite{Spring} for nodes to utilize, which periodically updates their location to lower the latency with their peers.
 The approximate distributed embedding algorithm utilizes VHash's maintenance and join behaviors.
 This algorithm is described in Algorithm \ref{springalg}. Each node periodically measures the latencies to its peers and generates a change in position that minimizes the error in distance to its peers.
 Once a node finds peers with low latency to it, these error approximations become small and the network configuration becomes stable.
