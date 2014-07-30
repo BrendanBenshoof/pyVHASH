@@ -157,8 +157,9 @@ A formal and thorough description of Voronoi diagrams as well as their applicati
 
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{voronoi-example}
-	\caption{An example Voronoi diagram for objects on a 2-dimensional toroidal space.  The black lines correspond to the edges of the Delaunay Triangulation}.
+	\centering
+	\includegraphics[width=0.75\linewidth]{voronoi}
+	\caption{An example Voronoi diagram for objects on a 2-dimensional space.  The black lines correspond to the borders of the Voronoi region, while the dashed lines correspond to the edges of the Delaunay Triangulation}.
 	\label{voro-ex}
 \end{figure}
 
@@ -236,8 +237,8 @@ Our algorithm handles these cases via our method of peer management.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=0.3\linewidth]{blocking-example2}
-	\caption{The white edge is an example of where DGVH can fail to find an edge without peer management preventing this case.}  %Add labels a b c and reference the node labels in text
+	\includegraphics[width=\linewidth]{occlusion}
+	\caption{The edge between $A$ and $B$ is not detected by DGVH as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
 	\label{occ-ex}
 \end{figure}
 
