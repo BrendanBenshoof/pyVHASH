@@ -60,7 +60,7 @@ Being able to do so will allow for tighter control over the network behavior and
 
 %3. Say what your solution achieves
 This paper presents VHash, a DHT protocol to construct an overlay optimized for such metrics. 
-VHash exploits a fast and efficient Delaunay Triangulation heuristic in a geometric space. 
+VHash exploits a fast and efficient Delaunay Triangulation heuristic to approximate Voronoi regions in a geometric space. 
 %4. Say what follows from your solution
 We used VHash to generate an overlay with edges that minimize latency. 
 While we focused on latency in this paper, VHash optimizes on any defined metrics.
@@ -164,7 +164,7 @@ A formal and thorough description of Voronoi diagrams as well as their applicati
 
 
 In our network, the nodes are the objects of the Voronoi diagram and are responsible for keys that fall in their region.
-The edges created by the Deluanay Triangulation correspond to the connections between neighboring nodes. 
+The edges created by the Delaunay Triangulation correspond to the connections between neighboring nodes. 
 Computing Voronoi diagrams in a distributed and generalized fashion is prohibitively time expensive and previous work \cite{raynet} shows that an approximation is sufficient for peer selection and routing.
 With VHash, we have created a new greedy, online algorithm that approximates and maintains the set of peers defining the node's Voronoi region and Delaunay Triangulation.
 
@@ -370,11 +370,11 @@ While our algorithm has a greater asymptotic worst case cost, for all current re
 %Describe initial location assignment
 \label{networkEmbedding}
 During previous research in applications of DHTs \cite{andrew-poster} to parallel processing, Rosen et al.\ tested DHT network behavior under churn. 
-They came to the conclusion that high levels of churn improved the performance of the system rather than being detrimental under the right circumstances.
+They came to the conclusion that high levels of churn improved the performance of the system under certain circumstances.
 The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
 In this work, Rosen et al.\ found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
 
-VHash is designed to leverage this discovery and allow a nodes's location in the network to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
+VHash is designed to leverage this discovery and allow a nodes' location in the network to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
 In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
 Each node is given a random initial location and, over time, migrates to location which optimizes latency.
 
@@ -542,58 +542,61 @@ As the network size and number of dimensions each increase, convergence slows, b
 
 % Hop distance test
 \subsection{Latency Distribution Test}
-The goal of our second set of experiments is to demonstrate VHash's ability to optimize a selected network metric: latency in this case.  
+The goal of our second set of experiments is to demonstrate VHash's ability to optimize a selected network metric: latency in this case. 
+In our simulation, we use the number of hops on the underlying network as an approximation of latency.
 We compared VHash's performance to that of a more traditional DHT, Chord \cite{chord}.
 Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(log(n))$ lookup time measured in overlay hops.  
 Rather than examine the number of hops on the overlay network as our primary metric, as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
-Overlay hops are used in most DHT evaluations as the primary measure of latency under the rationale that as the number of nodes increases towards maximum network capacity, the majority of nodes will have average latency with the majority of other nodes because the nodes will be more uniformly distributed.
-This rationale is only valid where its assumption of massive and diverse networks is held.
+Overlay hops are used in most DHT evaluations as the primary measure of latency.
+It is the best approach available when there are no means of evaluating characteristics of the underlying network.
+VHash is designed with a capability to exploit the characteristics of the underlying network.
 For most realistic network sizes and structures, there is dramatic room for latency reduction in DHTs.
 
 
 
-For this experiment we constructed a 10000 node random scale free network (which has an approximate diameter of 3 hops) to act as an underlay \cite{cohen2000resilience} \cite{pastor2001epidemic} \cite{hagberg2004}.
-We used a scale-free network as the underlay as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
+For this experiment we constructed a 10000 node random scale free network (which has an approximate diameter of 3 hops) as an underlay network \cite{cohen2000resilience} \cite{pastor2001epidemic} \cite{hagberg2004}.
+We used a scale-free network as the underlay, as it is a simplified model of the Internet's topology \cite{cohen2000resilience} \cite{pastor2001epidemic}.
 From this underlay, we chose a random subset to be members of the overlay network.
 We then measured the distance in underlay hops between 10000 random source-destination nodes from the overlay. 
 VHash generates an embedding of the latency graph utilizing the distributed force directed model algorithm described in Algorithm \ref{springalg}, with the latency function defined as the number of underlay hops between it and its peers.
 
 Our simulation created 100, 500, and 1000 node overlays for both VHash and Chord.
-We used 4 dimensions in VHash and a 160 bit identifier for Chord\footnote{Using 160 bits for keys and identifiers is standard for Chord.}.
+We used 4 dimensions in VHash and a standard 160 bit identifier for Chord.
 
 \afterpage{
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_100}
-	\caption{Distribution of path lengths for Chord and VHash in a size 100 overlay.}	
+	\caption{Frequency of path lengths on Chord and VHash in a 100 node overlay.}	
 	\label{hist100}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_500}
-	\caption{Distribution of path lengths for Chord and VHash in a size 500 overlay.}
+	\caption{Frequency of path lengths on Chord and VHash in a 500 node overlay.}
 	\label{hist500}
 \end{figure}
 
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{hist_1000}
-	\caption{Distribution of path lengths for Chord and VHash in a size 1000 overlay.}
+	\caption{Frequency of path lengths on Chord and VHash in a 1000 node overlay.}
 	\label{hist1000}
 \end{figure}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=\linewidth]{hist_overlay_4d}
-	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
-	\label{histover}
-\end{figure}
+%Big caption
+Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the difference in the performance of Chord and VHash for 2000 routing samples on a 10,000 node underlay network. 
+The Y axis shows the observed frequencies and X axis show the number of hops traversed on the underlay network.
+VHash consistently requires less hops for routing than chord.
+%end Big caption
 
 
 }
+
+
 
 Figures \ref{hist100}, \ref{hist500}, and \ref{hist1000} show the distribution of path lengths measured in underlay hops in both Chord and VHash.   
 In all three network sizes, VHash dramatically outperformed Chord and significantly reduced the underlay path lengths.  
@@ -604,13 +607,19 @@ In comparing the overlay and underlay hops, we find that for each overlay hop in
 Recall that this work is based on scale free networks, where latency improvements are difficult.
 An improvement of 0.4 hops over a diameter of 3 hops is significant.
 VHash has on average less overlay hops per lookup than Chord, and for each of these overlay hops we consistently traverse more efficiently across the underlay network.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=\linewidth]{hist_overlay_4d}
+	\caption{Comparison of Chord and VHash in terms of overlay hops.  Each overlay has 1000 nodes.}
+	\label{histover}
+\end{figure}
 
 \section{Related Work}
 \label{related}
 %check table size consistancy 
 While there has been previous work on applying Voronoi regions to DHTs and peer-to-peer (P2P) applications, we have found no prior work on how to perform embedding of an inter-node latency graph.   
 
-Backhaus et al.'s  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online videog ame.  
+Backhaus et al.'s  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online video game.  
 Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
 VAST demonstrated that Voronoi diagrams could be used as the backbone to large-scale applications, although their work focused specifically on using 2-dimensional Voronoi diagrams.  
 VHash approximates the Voronoi region rather than solving it, as higher dimension Voronoi regions are computationally expensive to solve.
