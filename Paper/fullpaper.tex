@@ -18,7 +18,9 @@
 \usepackage{array} % for better arrays (eg matrices) in maths
 \usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
 \usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
-\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+
+\usepackage{subcaption}
+%\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
 \usepackage{algorithm} 
 \usepackage{algorithmic}
 \usepackage{amsmath}
@@ -476,45 +478,42 @@ VHash consistently converged to a hit rate of 100\% by cycle 30.
 In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet} 
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
  
-\afterpage{
+\begin{figure*}
+\centering 
+\begin{tabular}{cc}
 
-\begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{conv_d2}
+\begin{subfigure}{\columnwidth}
+        \includegraphics[width=\columnwidth]{conv_d2}
         \caption{This plot shows the accuracy rate of lookups on a 2-dimensional VHash network as it self-organizes.}
         \label{conv2}
-\end{figure}
+\end{subfigure} &
 
-
-\begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{conv_d3}
+\begin{subfigure}{\columnwidth}
+        \includegraphics[width=\columnwidth]{conv_d3}
         \caption{This plot shows the accuracy rate of lookups on a 3-dimensional VHash network as it self-organizes.}
         \label{conv3}
-\end{figure}
+\end{subfigure} \\
 
-\begin{figure}
-        \centering
+\begin{subfigure}{\columnwidth}
         \includegraphics[width=\linewidth]{conv_d4}
-        \caption{}
-                \caption{This plot shows the accuracy rate of lookups on a 4-dimensional VHash network as it self-organizes.}
-\end{figure}
+         \caption{This plot shows the accuracy rate of lookups on a 4-dimensional VHash network as it self-organizes.}
+         \label{conv4}
+\end{subfigure} &
 
 
-\begin{figure}
-        \centering
+\begin{subfigure}{\columnwidth}
         \includegraphics[width=\linewidth]{conv_d5}
                 \caption{This plot shows the accuracy rate of lookups on a 5-dimensional VHash network as it self-organizes.}
         \label{conv5}
-\end{figure}
+\end{subfigure}
 
-%bigcaption
-These figures show that, starting from an randomized network, that VHash forms a stable and consistent network topology.
-The Y axis shows the sucess rate of message routing and the X axis show the number of maintenance intervals that have occurred.
-%bigcaption
+\end{tabular}
 
-}
+\caption{These figures show that, starting from an randomized network, VHash forms a stable and consistent network topology.
+The Y axis shows the success rate of message routing and the X axis show the number of maintenance intervals that have occurred.
+Each point shows the fraction of 2000 lookups successfully found the correct destination.}
 
+\end{figure*}
 %\begin{table}
 %\centering
 %\begin{tabular}{|r|r|r|r|}
@@ -556,7 +555,7 @@ The goal of our second set of experiments is to demonstrate VHash's ability to o
 In our simulation, we use the number of hops on the underlying network as an approximation of latency.
 We compared VHash's performance to that of a more traditional DHT, Chord \cite{chord}.
 Chord is a well established DHT with an $O(log(n))$ sized routing table and $O(log(n))$ lookup time measured in overlay hops.  
-Rather than examine the number of hops on the overlay network as our primary metric, as done most other analyses of lookup time \cite{chord} \cite{pastry} \cite{raynet}  \cite{kademlia} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
+Rather than examine the number of hops on the overlay network as our primary metric, as done most other analyses of lookup time \cite{kademlia} \cite{chord} \cite{pastry} \cite{raynet} \cite{voronet}, we are concerned with the actual latency lookups experience traveling through the \emph{underlay} network, the network the overlay is built upon.
 
 Overlay hops are used in most DHT evaluations as the primary measure of latency.
 It is the best approach available when there are no means of evaluating characteristics of the underlying network.
