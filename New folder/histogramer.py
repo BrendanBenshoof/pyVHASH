@@ -37,7 +37,7 @@ for s in results.keys():
             binmax = tmpmax
     print len(data)
 
-    plt.hist(data,normed=1, bins = range(1,binmax+1),label=results[s].keys(),color=["red","blue"])
+    plt.hist(data,normed=1, bins = range(1,binmax+1),label=results[s].keys(),color=["white","black"])
     plt.xlabel('Underlay Hops')
     plt.ylabel('Frequency')
     plt.title('Latency distribution with Overlay Network size: ' + str(s))
