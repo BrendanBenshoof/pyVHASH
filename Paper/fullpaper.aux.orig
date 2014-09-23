@@ -1,0 +1,197 @@
+\relax 
+<<<<<<< HEAD
+\citation{chord}
+\citation{pastry}
+\citation{kleinberg2000navigation}
+\citation{geoalg}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}VHash}{1}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-A}}Voronoi Regions in DHTs}{1}}
+\citation{aurenhammer1991voronoi}
+\citation{raynet}
+\citation{raynet}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An example Voronoi diagram for objects on a 2-dimensional toroidal space. The black lines correspond to the edges of the Delaunay Triangulation\relax }}{2}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{voro-ex}{{1}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-B}}Distributed Greedy Voronoi Heuristic}{2}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Distributed Greedy Voronoi Heuristic\relax }}{2}}
+\newlabel{DGVH}{{1}{2}}
+\citation{raynet}
+\citation{raynet}
+\citation{raynet}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces An example of where the Distributed Greedy Voronoi Heuristic can fail to find an edge without peer management preventing this case.\relax }}{3}}
+\newlabel{occ-ex}{{2}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-C}}Fast Vornoi Classifier}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-D}}Peer Management}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-E}}Maintenance via Gossiping}{3}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Gossip Process\relax }}{3}}
+\newlabel{gossip}{{2}{3}}
+\citation{bern1991expected}
+\citation{raynet}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-F}}Handling Churn}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-G}}Routing}{4}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Vhash Lookup\relax }}{4}}
+\newlabel{lookup}{{3}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-H}}Algorithm Analysis}{4}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}Network Metric Embedding}{4}}
+=======
+\citation{bittorrent}
+\citation{kademlia}
+\citation{chord}
+\citation{pastry}
+\citation{chord}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}}
+\@writefile{toc}{\contentsline {section}{\numberline {II}VHash}{1}}
+\newlabel{vhash}{{II}{1}}
+\citation{aurenhammer1991voronoi}
+\citation{raynet}
+\citation{chord}
+\citation{manku2003symphony}
+\citation{raynet}
+\citation{raynet}
+\citation{raynet}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces An example Voronoi diagram for objects on a 2-dimensional space. The black lines correspond to the borders of the Voronoi region, while the dashed lines correspond to the edges of the Delaunay Triangulation\relax }}{2}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{voro-ex}{{1}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-A}}Voronoi Regions in DHTs}{2}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-B}}Distributed Greedy Voronoi Heuristic}{2}}
+\citation{raynet}
+\citation{raynet}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Distributed Greedy Voronoi Heuristic\relax }}{3}}
+\newlabel{DGVH}{{1}{3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is. This is mitigated by VHash's peer management polices.\relax }}{3}}
+\newlabel{occ-ex}{{2}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-C}}Peer Management}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-D}}Maintenance via Gossiping}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-E}}Handling Churn}{3}}
+\citation{raynet}
+\citation{kleinberg2000navigation}
+\citation{voronet}
+\citation{bern1991expected}
+\citation{raynet}
+\citation{andrew-poster}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces Gossiping\relax }}{4}}
+\newlabel{gossip}{{2}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-F}}Routing}{4}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces VHash Lookup\relax }}{4}}
+\newlabel{lookup}{{3}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {II-G}}Algorithm Analysis}{4}}
+\@writefile{toc}{\contentsline {section}{\numberline {III}Network Metric Embedding}{4}}
+\newlabel{networkEmbedding}{{III}{4}}
+\citation{papadopoulos2010greedy}
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+\citation{Spring}
+\citation{raynet}
+\citation{raynet}
+\citation{chord}
+<<<<<<< HEAD
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Decentralized Peer-to-Peer Spring Model\relax }}{5}}
+\newlabel{springalg}{{4}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Simulations}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-A}}Convergence Simulation}{5}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces Routing Simulation Sample\relax }}{5}}
+\newlabel{routesim}{{5}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-B}}Latency Distribution Test}{5}}
+=======
+\citation{kademlia}
+\citation{chord}
+\citation{pastry}
+\citation{raynet}
+\citation{voronet}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Decentralized Peer-to-Peer Force-Directed Model\relax }}{5}}
+\newlabel{springalg}{{4}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Simulations and Results}{5}}
+\newlabel{simSection}{{IV}{5}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-A}}Convergence Simulation}{5}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces Routing Simulation Sample\relax }}{5}}
+\newlabel{routesim}{{5}{5}}
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+\citation{cohen2000resilience}
+\citation{pastor2001epidemic}
+\citation{hagberg2004}
+\citation{cohen2000resilience}
+\citation{pastor2001epidemic}
+<<<<<<< HEAD
+=======
+\newlabel{conv2}{{3a}{6}}
+\newlabel{sub@conv2}{{a}{6}}
+\newlabel{conv3}{{3b}{6}}
+\newlabel{sub@conv3}{{b}{6}}
+\newlabel{conv4}{{3c}{6}}
+\newlabel{sub@conv4}{{c}{6}}
+\newlabel{conv5}{{3d}{6}}
+\newlabel{sub@conv5}{{d}{6}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces These figures show that, starting from a randomized network, VHash forms a stable and consistent network topology. The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred. Each point shows the fraction of 2000 lookups that successfully found the correct destination.\relax }}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-B}}Latency Distribution Test}{6}}
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+\citation{Backhaus:2007:VAS:1326257.1326266}
+\citation{fortune1987sweepline}
+\citation{voronet}
+\citation{raynet}
+\citation{kleinberg2000navigation}
+\citation{raynet}
+\citation{raynet}
+<<<<<<< HEAD
+\newlabel{conv2}{{\caption@xref {conv2}{ on input line 448}}{6}}
+\newlabel{conv3}{{\caption@xref {conv3}{ on input line 455}}{6}}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Information about the size short peer lists, denoted degree here, at the last cycle of the convergence simulation. For each pair of network size and dimension, we report the average degree in the network, as well as the largest.\relax }}{6}}
+\newlabel{tab:convtable}{{I}{6}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\unhbox \voidb@x \hbox {IV-C}}Conclusions}{6}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Related Work}{6}}
+\bibstyle{ieeetr}
+\bibdata{P3DNS}
+\bibcite{chord}{1}
+\bibcite{pastry}{2}
+\bibcite{kleinberg2000navigation}{3}
+\bibcite{geoalg}{4}
+\bibcite{aurenhammer1991voronoi}{5}
+\bibcite{raynet}{6}
+\bibcite{bern1991expected}{7}
+\bibcite{Spring}{8}
+\bibcite{cohen2000resilience}{9}
+\bibcite{pastor2001epidemic}{10}
+\bibcite{hagberg2004}{11}
+\bibcite{Backhaus:2007:VAS:1326257.1326266}{12}
+\bibcite{fortune1987sweepline}{13}
+\bibcite{voronet}{14}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Future Work}{7}}
+\@writefile{toc}{\contentsline {section}{References}{7}}
+=======
+\@writefile{toc}{\contentsline {section}{\numberline {V}Related Work}{7}}
+\newlabel{related}{{V}{7}}
+\newlabel{hist100}{{4a}{7}}
+\newlabel{sub@hist100}{{a}{7}}
+\newlabel{hist500}{{4b}{7}}
+\newlabel{sub@hist500}{{b}{7}}
+\newlabel{hist1000}{{4c}{7}}
+\newlabel{sub@hist1000}{{c}{7}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Figures 4a\hbox {}, 4b\hbox {}, and 4c\hbox {} show the difference in the performance of Chord and VHash for 10,000 routing samples on a 10,000 node underlay network for differently sized overlays. The Y axis shows the observed frequencies and the X axis shows the number of hops traversed on the underlay network. VHash consistently requires fewer hops for routing than Chord.\relax }}{7}}
+\citation{papadopoulos2010greedy}
+\citation{shen2010irm}
+\bibstyle{ieeetr}
+\bibdata{P3DNS}
+\bibcite{bittorrent}{1}
+\bibcite{kademlia}{2}
+\bibcite{chord}{3}
+\bibcite{pastry}{4}
+\bibcite{aurenhammer1991voronoi}{5}
+\bibcite{raynet}{6}
+\bibcite{manku2003symphony}{7}
+\bibcite{kleinberg2000navigation}{8}
+\bibcite{voronet}{9}
+\bibcite{bern1991expected}{10}
+\bibcite{andrew-poster}{11}
+\bibcite{papadopoulos2010greedy}{12}
+\bibcite{Spring}{13}
+\bibcite{cohen2000resilience}{14}
+\bibcite{pastor2001epidemic}{15}
+\bibcite{hagberg2004}{16}
+\bibcite{Backhaus:2007:VAS:1326257.1326266}{17}
+\bibcite{fortune1987sweepline}{18}
+\bibcite{shen2010irm}{19}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Comparison of Chord and VHash in terms of overlay hops. Each overlay has 1000 nodes. The Y axis denotes the observed frequencies of overlay hops and the X axis corresponds to the path lengths in overlay hops.\relax }}{8}}
+\newlabel{histover}{{5}{8}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusions and Future Work}{8}}
+\newlabel{conclusions}{{VI}{8}}
+\@writefile{toc}{\contentsline {section}{References}{8}}
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707

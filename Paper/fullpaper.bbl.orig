@@ -1,0 +1,124 @@
+\begin{thebibliography}{10}
+
+<<<<<<< HEAD
+=======
+\bibitem{bittorrent}
+B.~Cohen, ``The bittorrent protocol specification,'' 2008.
+
+\bibitem{kademlia}
+P.~Maymounkov and D.~Mazieres, ``Kademlia: A peer-to-peer information system
+  based on the xor metric,'' in {\em Peer-to-Peer Systems}, pp.~53--65,
+  Springer, 2002.
+
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+\bibitem{chord}
+I.~Stoica, R.~Morris, D.~Karger, M.~F. Kaashoek, and H.~Balakrishnan, ``Chord:
+  A scalable peer-to-peer lookup service for internet applications,'' in {\em
+  ACM SIGCO}, no.~4, pp.~149--160, ACM, 2001.
+
+\bibitem{pastry}
+A.~Rowstron and P.~Druschel, ``Pastry: Scalable, decentralized object location,
+  and routing for large-scale peer-to-peer systems,'' in {\em Middleware 2001},
+  pp.~329--350, Springer, 2001.
+
+\bibitem{aurenhammer1991voronoi}
+F.~Aurenhammer, ``Voronoi diagrams—a survey of a fundamental geometric data
+  structure,'' {\em ACM Computing Surveys (CSUR)}, vol.~23, no.~3,
+  pp.~345--405, 1991.
+
+\bibitem{raynet}
+O.~Beaumont, A.-M. Kermarrec, and {\'E}.~Rivi{\`e}re, ``Peer to peer
+  multidimensional overlays: Approximating complex structures,'' in {\em
+  Principles of Distributed Systems}, pp.~315--328, Springer, 2007.
+
+\bibitem{manku2003symphony}
+G.~S. Manku, M.~Bawa, P.~Raghavan, {\em et~al.}, ``Symphony: Distributed
+  hashing in a small world.,'' in {\em USENIX Symposium on Internet
+  Technologies and Systems}, p.~10, 2003.
+
+\bibitem{kleinberg2000navigation}
+J.~M. Kleinberg, ``Navigation in a small world,'' {\em Nature}, vol.~406,
+  no.~6798, pp.~845--845, 2000.
+
+<<<<<<< HEAD
+\bibitem{geoalg}
+``Geometric algorithms.''
+  \url{http://www.cs.princeton.edu/~rs/AlgsDS07/16Geometric.pdf}.
+
+\bibitem{aurenhammer1991voronoi}
+F.~Aurenhammer, ``Voronoi diagrams—a survey of a fundamental geometric data
+  structure,'' {\em ACM Computing Surveys (CSUR)}, vol.~23, no.~3,
+  pp.~345--405, 1991.
+
+\bibitem{raynet}
+O.~Beaumont, A.-M. Kermarrec, and {\'E}.~Rivi{\`e}re, ``Peer to peer
+  multidimensional overlays: Approximating complex structures,'' in {\em
+  Principles of Distributed Systems}, pp.~315--328, Springer, 2007.
+=======
+\bibitem{voronet}
+O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
+  scalable object network based on voronoi tessellations,'' in {\em Parallel
+  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
+  pp.~1--10, IEEE, 2007.
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+
+\bibitem{bern1991expected}
+M.~Bern, D.~Eppstein, and F.~Yao, ``The expected extremes in a delaunay
+  triangulation,'' {\em International Journal of Computational Geometry \&
+  Applications}, vol.~1, no.~01, pp.~79--91, 1991.
+
+<<<<<<< HEAD
+=======
+\bibitem{andrew-poster}
+A.~Rosen, B.~Benshoof, M.~Erwin, R.~W. Harrison, and A.~G. Bourgeois,
+  ``{Chronus: Organizing Mapreduce with Chord DHT}.''
+
+\bibitem{papadopoulos2010greedy}
+F.~Papadopoulos, D.~Krioukov, M.~Bogua, and A.~Vahdat, ``Greedy forwarding in
+  dynamic scale-free networks embedded in hyperbolic metric spaces,'' in {\em
+  INFOCOM, 2010 Proceedings IEEE}, pp.~1--9, IEEE, 2010.
+
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+\bibitem{Spring}
+S.~G. Kobourov, ``Spring embedders and force directed graph drawing
+  algorithms,'' {\em CoRR}, vol.~abs/1201.3011, 2012.
+
+\bibitem{cohen2000resilience}
+R.~Cohen, K.~Erez, D.~Ben-Avraham, and S.~Havlin, ``Resilience of the internet
+  to random breakdowns,'' {\em Physical review letters}, vol.~85, no.~21,
+  p.~4626, 2000.
+
+\bibitem{pastor2001epidemic}
+R.~Pastor-Satorras and A.~Vespignani, ``Epidemic spreading in scale-free
+  networks,'' {\em Physical review letters}, vol.~86, no.~14, p.~3200, 2001.
+
+\bibitem{hagberg2004}
+A.~Hagberg, D.~Schult, P.~Swart, D.~Conway, L.~S{\'e}guin-Charbonneau,
+  C.~Ellison, B.~Edwards, and J.~Torrents, ``Networkx. high productivity
+  software for complex networks,'' {\em Webov{\'a} str{\'a} nka
+  https://networkx. lanl. gov/wiki}, 2004.
+
+\bibitem{Backhaus:2007:VAS:1326257.1326266}
+H.~Backhaus and S.~Krause, ``Voronoi-based adaptive scalable transfer
+  revisited: Gain and loss of a voronoi-based peer-to-peer approach for mmog,''
+  in {\em Proceedings of the 6th ACM SIGCOMM Workshop on Network and System
+  Support for Games}, NetGames '07, (New York, NY, USA), pp.~49--54, ACM, 2007.
+
+\bibitem{fortune1987sweepline}
+S.~Fortune, ``A sweepline algorithm for voronoi diagrams,'' {\em Algorithmica},
+  vol.~2, no.~1-4, pp.~153--174, 1987.
+
+<<<<<<< HEAD
+\bibitem{voronet}
+O.~Beaumont, A.-M. Kermarrec, L.~Marchal, and E.~Rivi{\`e}re, ``Voronet: A
+  scalable object network based on voronoi tessellations,'' in {\em Parallel
+  and Distributed Processing Symposium, 2007. IPDPS 2007. IEEE International},
+  pp.~1--10, IEEE, 2007.
+=======
+\bibitem{shen2010irm}
+H.~Shen, ``Irm: integrated file replication and consistency maintenance in p2p
+  systems,'' {\em Parallel and Distributed Systems, IEEE Transactions on},
+  vol.~21, no.~1, pp.~100--113, 2010.
+>>>>>>> b061d7e84de1f26f531b156b4d9e5776320c8707
+
+\end{thebibliography}
