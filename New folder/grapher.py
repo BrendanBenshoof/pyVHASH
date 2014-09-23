@@ -1,7 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 import numpy as np
-d=4
+d=5
 
 def get_accuracy(filename):
     accuracy = []

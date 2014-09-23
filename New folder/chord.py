@@ -65,31 +65,20 @@ def get_real_hops(real_graph,overlay,A,B):
 #networkx.draw_circular(chord_overlay)
 #plt.show()
 
-if __name__ == "__main__":
-    real_graph = underlay.generate_underlay(10000)
-    with open("underlay_chord_trial_32.csv","w+") as fp:
-        writer = csv.writer(fp)
-        for n in [1000]:
-            hoplist = []
-            print "starting to generate overlay topology", n
-            chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
-            print "done generating topology: now sampling"
-            for i in range(0,10000):
-                x = random.choice(chord_overlay.nodes())
-                y = random.choice(chord_overlay.nodes())
-                while(x==y):
-                    x = random.choice(chord_overlay.nodes())
-                    y = random.choice(chord_overlay.nodes())
 
-                hoplist.append(get_real_hops(real_graph,chord_overlay,x,y))
-            mean = np.mean(hoplist)
-            std = np.std(hoplist)
-            writer.writerow([n,mean,std])
-            plt.clf()
-            plt.cla()
-            plt.hist(hoplist,bins=range(1,41))
-            plt.title("Latency Distribution")
-            plt.xlabel("Hops")
-            plt.ylabel("Frequency")
-            plt.show()
+def runTrial(n,real_graph):
+    hoplist = []
+    print "starting to generate overlay topology", n
+    chord_overlay, hashids = create_chord_graph(random.sample(real_graph.nodes(),n))
+    print "done generating topology: now sampling"
+    for i in range(0,10000):
+        x = random.choice(chord_overlay.nodes())
+        y = random.choice(chord_overlay.nodes())
+        while(x==y):
+            x = random.choice(chord_overlay.nodes())
+            y = random.choice(chord_overlay.nodes())
 
+        hoplist.append(get_real_hops(real_graph,chord_overlay,x,y))
+    mean = np.mean(hoplist)
+    std = np.std(hoplist)
+    return hoplist

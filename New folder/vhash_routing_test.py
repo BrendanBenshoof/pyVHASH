@@ -97,11 +97,13 @@ class Node(object):
 
         
     def update_peers(self,candidates):
-        self.peers = self.approx_region(candidates)
+        self.peers = self.approx_region(candidates+self.long_peers)
         if USING_LONG_PEERS:
             for c in candidates:
-                if c not in self.long_peers and c is not self:
+                if c not in self.long_peers and c not in self.peers and c is not self:
                     self.long_peers.append(c)
+                if c in self.peers and c in self.long_peers:
+                    self.long_peers.remove(c)
             if len(self.long_peers) > TABLE_SIZE*TABLE_SIZE:
                 self.long_peers = random.sample(self.long_peers,TABLE_SIZE*TABLE_SIZE )
             
@@ -213,8 +215,8 @@ def run_trial(num, dim, filename):
         #print [len(x.peers)  for x in sorted(nodes, key= lambda x: len(x.peers)) ]
         #print saddest.loc, [x.loc for x in saddest.peers]
         #print centerist.loc, [x.loc for x in centerist.peers]
-for d in [2,3,4,5]:
-    for n in [500,1000,2000,5000]:
+for d in [5]:
+    for n in [500]:
         TABLE_SIZE = 3*d + 1 #2*int(log(float(n))/log(log(float(n))))+getd()
         print TABLE_SIZE
         print "working on:", n, d
