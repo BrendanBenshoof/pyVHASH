@@ -1,4 +1,4 @@
-\documentclass[10pt, conference, letterpaper]{IEEEtran}
+\documentclass[11pt, conference, letterpaper]{IEEEtran}
 \usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
 %\usepackage{geometry}
 %\geometry{letterpaper}
@@ -73,6 +73,104 @@ VHash provides a robust, scalable, and efficient distributed lookup service.
 %  We could use a different config 
 % networks are only hpped
 % we can do non-euclidean metrics if we have a non-euclidean distance and midpoint definition
+
+
+\section{Introduction}
+
+
+Voronoi graphs \cite{voronoi} have been  a topic of interest for distributed and  peer-to-peer (P2P) applications for some time now.
+Voronoi graphs can be used as part of distributed hash tables\cite{virtvoro}
+
+
+
+Computing the Voronoi graph is a well known problem and has many algorithms to compute the Voronoi regions with complete, global knowledge.
+
+Network applications are distributed and need to have a distributed means of doing this computation
+
+Finally, we run into trouble when we get to >2 dimensions.
+$O(n^{\frac{2d-1}{d}}) $ \cite{watson1981computing}
+
+Distributed networks are designed to be fault0-tolerant and can accept a margin of error.  
+It makes sense to use heuristics instead
+
+
+We have a quick new heuristic.
+
+
+\section{Distributed Greedy Voronoi Heuristic}
+The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
+The rationale for this heuristic is that, in the majority of cases, the midpoint between to nodes falls on the common boundary of their Voronoi regions.
+
+\begin{algorithm} % make smaller
+\caption{Distributed Greedy Voronoi Heuristic}
+\label{DGVH}
+\begin{algorithmic}[1]  % the numberis how many lines
+	 \STATE Given node $n$ and its list of $candidates$.
+   	 \STATE Given the minimum $table\_size$
+    \STATE $short\_peers \leftarrow$ empty set of $n$'s one-hop peers
+	 \STATE $long\_peers \leftarrow$ empty set of $n$'s two-hop peers    
+    \STATE Sort $candidates$ in ascending order by each node's distance to $n$
+    \STATE Remove the first member of $candidates$ and add it to $short\_peers$
+    \FORALL{$c$ in $candidates$}
+    	\STATE $m$ is the midpoint between $n$ and $c$
+        \IF{Any node in $short\_peers$ is closer to $m$ than $n$}
+        	\STATE Reject $c$ as a peer
+        \ELSE
+        	\STATE Remove $c$ from $candidates$
+        	\STATE Add $c$ to $short\_peers$
+        \ENDIF
+    \ENDFOR
+    \WHILE{$|short\_peers| < table\_size$ \AND $|candidates| >0$}
+    	\STATE Remove the first entry $c$ from $candidates$
+    	\STATE Add $c$ to $short\_peers$
+    \ENDWHILE
+    	\STATE Add $candidates$ to the set of $long\_peers$	
+    	\IF{$|long\_peers| > table\_size^2$}
+        		\STATE $long\_peers \leftarrow$ random subset of $long\_peers$ of size $table\_size^2$
+      \ENDIF
+\end{algorithmic}
+\end{algorithm}
+
+
+Each cycle, nodes exchange their peer lists with a current neighbor and then recalculate their neighbors.  
+A node combines their neighbor's peer list with its own to create a list of candidate neighbors.
+This combined list is sorted from closest to furthest.
+A new peer list is then created starting with the closest candidate.
+The node then examines each of the remaining candidates in the sorted list and calculates the midpoint between the node and the candidate.
+If any of the nodes in the new peer list are closer to the midpoint than the candidate, the candidate is set aside.  
+Otherwise the candidate is added to the new peer list.
+
+This heuristic has the benefit of being fast and scalable into any geometric space where a distance function and midpoint can be defined.
+The distance metric used for this paper is the minimum distance in a multidimensional unit toroidal space.
+Where $\vec{a}$ and $\vec{b}$ are locations in a $d$-dimensional unit toroidal space:
+\[ distance = \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1-|\vec{a}_i-\vec{b}_i|))^2}\]
+
+
+If a node is located between two other nodes, such that their midpoint does not fall upon the shared face of their Voronoi regions, then this heuristic will not link the blocked peers  (Figure \ref{occ-ex}).
+Our algorithm handles these cases via our method of peer management.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\linewidth]{occlusion}
+	\caption{The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
+	\label{occ-ex}
+\end{figure}
+
+VHash never actually calculates the polytopes that describe a node's Voronoi region.
+This is unnecessary and prohibitively expensive \cite{raynet}.
+Rather, VHash assigns given points to their Voronoi regions.
+It does this by calculating the distance from a given point to all candidate nodes.
+The point falls into a node's Voronoi region if it is the node to which it has the shortest distance.
+Thus a node defines its Voronoi region by keeping a list of the peers that bound it.
+
+
+\section{Applications}
+
+
+\section{Related Work}
+
+
+\section{Conclusion}
 
 \section{Introduction}
 A Distributed Hash Table (DHT) protocol is used to provide an overlay network for many P2P applications. 
@@ -186,71 +284,7 @@ As a heuristic, there exist edge cases where it is incorrect.
 We show in the experimental section that this loss in accuracy has no practical impact.
 
 \subsection{Distributed Greedy Voronoi Heuristic}
-The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
-The rationale for this heuristic is that, in the majority of cases, the midpoint between to nodes falls on the common boundary of their Voronoi regions.
-
-\begin{algorithm} % make smaller
-\caption{Distributed Greedy Voronoi Heuristic}
-\label{DGVH}
-\begin{algorithmic}[1]  % the numberis how many lines
-	 \STATE Given node $n$ and its list of $candidates$.
-   	 \STATE Given the minimum $table\_size$
-    \STATE $short\_peers \leftarrow$ empty set of $n$'s one-hop peers
-	 \STATE $long\_peers \leftarrow$ empty set of $n$'s two-hop peers    
-    \STATE Sort $candidates$ in ascending order by each node's distance to $n$
-    \STATE Remove the first member of $candidates$ and add it to $short\_peers$
-    \FORALL{$c$ in $candidates$}
-    	\STATE $m$ is the midpoint between $n$ and $c$
-        \IF{Any node in $short\_peers$ is closer to $m$ than $n$}
-        	\STATE Reject $c$ as a peer
-        \ELSE
-        	\STATE Remove $c$ from $candidates$
-        	\STATE Add $c$ to $short\_peers$
-        \ENDIF
-    \ENDFOR
-    \WHILE{$|short\_peers| < table\_size$ \AND $|candidates| >0$}
-    	\STATE Remove the first entry $c$ from $candidates$
-    	\STATE Add $c$ to $short\_peers$
-    \ENDWHILE
-    	\STATE Add $candidates$ to the set of $long\_peers$	
-    	\IF{$|long\_peers| > table\_size^2$}
-        		\STATE $long\_peers \leftarrow$ random subset of $long\_peers$ of size $table\_size^2$
-      \ENDIF
-\end{algorithmic}
-\end{algorithm}
-
-
-Each cycle, nodes exchange their peer lists with a current neighbor and then recalculate their neighbors.  
-A node combines their neighbor's peer list with its own to create a list of candidate neighbors.
-This combined list is sorted from closest to furthest.
-A new peer list is then created starting with the closest candidate.
-The node then examines each of the remaining candidates in the sorted list and calculates the midpoint between the node and the candidate.
-If any of the nodes in the new peer list are closer to the midpoint than the candidate, the candidate is set aside.  
-Otherwise the candidate is added to the new peer list.
-
-This heuristic has the benefit of being fast and scalable into any geometric space where a distance function and midpoint can be defined.
-The distance metric used for this paper is the minimum distance in a multidimensional unit toroidal space.
-Where $\vec{a}$ and $\vec{b}$ are locations in a $d$-dimensional unit toroidal space:
-\[ distance = \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1-|\vec{a}_i-\vec{b}_i|))^2}\]
-
-
-If a node is located between two other nodes, such that their midpoint does not fall upon the shared face of their Voronoi regions, then this heuristic will not link the blocked peers  (Figure \ref{occ-ex}).
-Our algorithm handles these cases via our method of peer management.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=\linewidth]{occlusion}
-	\caption{The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
-	\label{occ-ex}
-\end{figure}
-
-VHash never actually calculates the polytopes that describe a node's Voronoi region.
-This is unnecessary and prohibitively expensive \cite{raynet}.
-Rather, VHash assigns given points to their Voronoi regions.
-It does this by calculating the distance from a given point to all candidate nodes.
-The point falls into a node's Voronoi region if it is the node to which it has the shortest distance.
-Thus a node defines its Voronoi region by keeping a list of the peers that bound it.
-
+%snip
 \subsection{Peer Management}
 VHash maintains two peer lists: \textit{Short Peers} and \textit{Long Peers}.
 This is motivated by mitigating the error induced by DGVH and providing robustness against churn\footnote{The disruption caused to the overlay by the continuous joining, leaving, and failing of nodes.}.
