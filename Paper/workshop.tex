@@ -42,9 +42,9 @@
 
 %%% The "real" document content comes below...
 
-\title{VHash: An Optimized Voronoi-Based Distributed Hash Table}
+\title{A Distributed Greedy Heuristic for Computing Voronoi Tessellations With Applications Towards Peer-to-Peer Networks}
 %\author{Double Blind}
-%\author{Brendan Benshoof \qquad Andrew Rosen  \\Department of Computer Science, Georgia State University\\  bbenshoof@cs.gsu.edu \qquad rosen@cs.gsu.edu }
+\author{Brendan Benshoof \qquad Andrew Rosen \qquad Anu G. Bourgeois \qquad Robert W. Harrison \\Department of Computer Science, Georgia State University\\  bbenshoof@cs.gsu.edu \qquad rosen@cs.gsu.edu \qquad anu@cs.gsu.edu \qquad rharrison@cs.gsu.edu}
 \date{} % Activate to display a given date or no date (if empty),
          % otherwise the current date is printed 
 
@@ -55,7 +55,7 @@
 %1. State the problem
 Distributed Hash Tables (DHT) provide a fast and robust decentralized means of key-value storage and retrieval and are typically used in Peer-to-Peer applications.
 DHTs assign nodes a single identifier derived from the hash of their IP address and port, which results in a random overlay network.   
-%2. Say why it’s an interesting problem
+%2. Say why it's an interesting problem
 A random overlay network is not explicitly optimized for certain metrics, such as latency, energy, or hops on an overlay network. 
 Being able to do so will allow for tighter control over the network behavior and enable higher performance DHT applications.
 %It is often desirable to generate an overlay network that is optimized for one or more specific metrics.
@@ -78,34 +78,47 @@ VHash provides a robust, scalable, and efficient distributed lookup service.
 \section{Introduction}
 
 
-Voronoi graphs \cite{voronoi} have been  a topic of interest for distributed and  peer-to-peer (P2P) applications for some time now.
-Voronoi graphs can be used as part of distributed hash tables\cite{virtvoro}
-Coverage detection \cite{carbunar2004distributed}
+Voronoi diagrams \cite{voronoi} have been used in distributed and  peer-to-peer (P2P) applications for some time. 
+They have a wide variety of applications.
+Voronoi diagrams can be used as part of distributed hash tables\cite{virtvoro}.
+They can be used in coverage detection for wireless networks \cite{carbunar2004distributed}.
+Massively Multiplayer Online games (MMOs) can use them to distribute game states and events between players at a large scale \cite{hu2004scalable} \cite{hu2008voronoi} \cite{Backhaus:2007:VAS:1326257.1326266}.
 
-MMOs \cite{hu2008voronoi} \cite{Backhaus:2007:VAS:1326257.1326266}
+Computing the Voronoi tessellation along with its coprime problem, Delaunay Triangulation, is a well analyzed problem.\footnote{More citations}
+There are many algorithms to efficiently compute a Voronoi tessellation given all the points on a plane, such as Fortune's sweep line algorithm\cite{fortune1987sweepline}.
+However, many network applications are distributed and many of the algorithms to compute Voronoi tessellations are unsuited to a distributed environment.
 
+In addition, trouble occurs when points are located in spaces with more than two dimensions.
+Computing the Voronoi tessellation of $n$ points in a space with $d$ dimensions takes $O(n^{\frac{2d-1}{d}})$ time \cite{watson1981computing}.
+Distributed computations often have to resort to costly Monte-Carlo calculations \cite{raynet} in order to handle more than two dimensions.
 
-Computing the Voronoi graph is a well known problem and has many algorithms to compute the Voronoi regions with complete, global knowledge.
-
-Network applications are distributed and need to have a distributed means of doing this computation
-
-Finally, we run into trouble when we get to >2 dimensions.
-$O(n^{\frac{2d-1}{d}}) $ \cite{watson1981computing}
-
-Distributed networks are designed to be fault0-tolerant and can accept a margin of error.  
-It makes sense to use heuristics instead
-
-
-We have a quick new heuristic.
+ % we take advantage of the fact that distributed applications are fault-tolerant to accommodate changes in network topology.
+%This is especially true for P2P environments.
+Rather than exactly solving the Voronoi tessellation, we instead a fast and highly accurate heuristic to approximate each of the regions of a Voronoi tessellation.
+Our paper presents the following contributions:
+\begin{itemize}
+	\item We present our Distributed Greedy Voronoi Heuristic (DGVH). 
+	The DGVH is a fast, distributed, and highly accurate method whereby nodes calculate their individual regions described by a Voronoi tessellation using the positions of nearby nodes.
+	DGVH can work in an arbitrary number of dimensions and can handle non-euclidean distance metrics.
+	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while maintaining a high degree of accuracy (Section \ref{sec:DGVH}).
+	\item We discuss what P2P and distributed applications can use DGVH and how.
+	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
+	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
+	Our simulations show that DGVH accuracy reaches 90\% within 20 cycles and converges near 100\% accuracy by cycle 30.
+	\item We present the previous work we have built upon to create our heuristic and what improvements we made with DGVH.
+	
+\end{itemize}
 
 
 \section{Distributed Greedy Voronoi Heuristic}
-The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
+%The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
+The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to define their individual Voronoi region (Algorithm \ref{alg:dgvh}). 
+This is done by selecting the nearby nodes that would correspond to the points connected to it by a Delaunay triangulation.
 The rationale for this heuristic is that, in the majority of cases, the midpoint between to nodes falls on the common boundary of their Voronoi regions.
 
 \begin{algorithm} % make smaller
 \caption{Distributed Greedy Voronoi Heuristic}
-\label{DGVH}
+\label{alg:dgvh}
 \begin{algorithmic}[1]  % the numberis how many lines
 	 \STATE Given node $n$ and its list of $candidates$.
    	 \STATE Given the minimum $table\_size$
