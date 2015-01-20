@@ -92,18 +92,23 @@ In addition, trouble occurs when points are located in spaces with more than two
 Computing the Voronoi tessellation of $n$ points in a space with $d$ dimensions takes $O(n^{\frac{2d-1}{d}})$ time \cite{watson1981computing}.
 Distributed computations often have to resort to costly Monte-Carlo calculations \cite{raynet} in order to handle more than two dimensions.
 
- % we take advantage of the fact that distributed applications are fault-tolerant to accommodate changes in network topology.
+%We take advantage of the fact that distributed applications are fault-tolerant to accommodate changes in network topology.
 %This is especially true for P2P environments.
-Rather than exactly solving the Voronoi tessellation, we instead a fast and highly accurate heuristic to approximate each of the regions of a Voronoi tessellation.
+Rather than exactly solving the Voronoi tessellation, we instead a fast and accurate heuristic to approximate each of the regions of a Voronoi tessellation
+This enables fast and efficient formation of P2P networks.
+A P2P network built using this heuristic would be able to take advantage of it's available fault-tolerant architecture to route along any inaccuracies that arise.
 Our paper presents the following contributions:
 \begin{itemize}
 	\item We present our Distributed Greedy Voronoi Heuristic (DGVH). 
 	The DGVH is a fast, distributed, and highly accurate method whereby nodes calculate their individual regions described by a Voronoi tessellation using the positions of nearby nodes.
 	DGVH can work in an arbitrary number of dimensions and can handle non-euclidean distance metrics.
+    Our heuristic can also handle toroidal spaces.
 	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while maintaining a high degree of accuracy (Section \ref{sec:DGVH}).
+    Even where small inaccuracies exist, DVGH will create a fully connected graph.
 	\item We discuss what P2P and distributed applications can use DGVH and how.
 	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
 	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
+    We simulated our heuristic in networks ranging between size 500 to 10000.
 	Our simulations show that DGVH accuracy reaches 90\% within 20 cycles and converges near 100\% accuracy by cycle 30.
 	\item We present the previous work we have built upon to create our heuristic and what improvements we made with DGVH.
 	
@@ -122,8 +127,8 @@ The rationale for this heuristic is that, in the majority of cases, the midpoint
 \begin{algorithmic}[1]  % the numberis how many lines
 	 \STATE Given node $n$ and its list of $candidates$.
    	 \STATE Given the minimum $table\_size$
-    \STATE $short\_peers \leftarrow$ empty set of $n$'s one-hop peers
-	 \STATE $long\_peers \leftarrow$ empty set of $n$'s two-hop peers    
+    \STATE $short\_peers \leftarrow$ empty set that will contain $n$'s one-hop peers
+	 \STATE $long\_peers \leftarrow$ empty set that will contain $n$'s two-hop peers    
     \STATE Sort $candidates$ in ascending order by each node's distance to $n$
     \STATE Remove the first member of $candidates$ and add it to $short\_peers$
     \FORALL{$c$ in $candidates$}
@@ -179,13 +184,33 @@ The point falls into a node's Voronoi region if it is the node to which it has t
 Thus a node defines its Voronoi region by keeping a list of the peers that bound it.
 
 
+Overaggressive pruning by a single nodes is handled by neighboring nodes. 
+So long as a single node determines that an edge exists, it will advertise that edge's existence.
+
+
+
+In two-dimensional spaces, there is quick hack to achieve 100\% accuracy distributed.
+
 \section{Applications}
 
 
 \section{Related Work}
+Unlike ACE, we handle unbounded simultaneous join and leave operations.
+
 
 
 \section{Conclusion}
+
+
+
+
+
+
+
+
+
+
+
 
 \section{Introduction}
 A Distributed Hash Table (DHT) protocol is used to provide an overlay network for many P2P applications. 
