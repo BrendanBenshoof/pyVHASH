@@ -205,7 +205,7 @@ This is demonstrated in Figure \ref{occ-ex}.
 \begin{figure}
 	\centering
 	\includegraphics[width=\linewidth]{occlusion}
-	\caption{The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by VHash's peer management polices.}  %Add labels a b c and reference the node labels in text
+	\caption{The edge between $A$ and $B$ is not detected by DGVH, as node $C$ is closer to the midpoint than $B$ is.  This is mitigated by peer management polices.}  %Add labels a b c and reference the node labels in text
 	\label{occ-ex}
 \end{figure}
 Our algorithm handles these cases via our method of peer management (Section \ref{sec:manage}).
@@ -247,7 +247,7 @@ Thus, the maximum expected size of \textit{Short Peers} is bounded by $\Theta(\f
 When a node learns about potential neighbors, but are not included in the short peer list, they may be included in the long peer list.  
 The long peer list has a maximum size of $(3d+1)^2$.  
 For example, if the short peer list has a minimum size of 8, the long peer list has a maximum size of 64 entries.  
-We recommend that members of \textit{Long Peers} are not actively probed during maintenance to minimize the cost of maintanence.
+We recommend that members of \textit{Long Peers} are not actively probed during maintenance to minimize the cost of maintenance.
 
 %We next discuss how nodes learn about short and long peers.
 How nodes learn about peers is up to the application.
