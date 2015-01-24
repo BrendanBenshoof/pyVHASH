@@ -295,7 +295,7 @@ Node $n$ must then compute the midpoint between itself and each of the $k$ candi
 Node $n$ then compares distances to the midpoints between itself and all the candidates.  
 This results in a cost of 
 
-\[ k\cdot\lg(k) + k \text{ midpoint computations}  + k^{2} \text{ distance computations} \]
+\[ k\cdot\lg(k) + k \text{ midpoints}  + k^{2} \text{ distances} \]
 
 
 Since $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected} (the expected maximum degree of a node?), we can translate the above to
@@ -337,8 +337,7 @@ This routing algorithm is extremely similar to the lookup algorithm used in CAN 
 
 
 \subsection{Wireless Coverage}
-
-
+C\u{a}bunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to tell
 \section{Experiments}
 \label{sec:experiments}
 
@@ -487,7 +486,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
 
 
-Unlike ACE, we handle unbounded simultaneous join and leave operations.
+%Unlike ACE, we handle unbounded simultaneous join and leave operations.
 
 
 
