@@ -310,7 +310,7 @@ Since $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991exp
 \[O(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
 In the vast majority of cases, the number of peers is equal to the constant minimum table size. 
-This yields $k=(3d+1)^2+3d+1$ in the expected case, where the lower bound and expected complexities are $\Omega(1)$.
+This yields $k=(3d+1)^{2}+3d+1$ in the expected case, where the lower bound and expected complexities are $\Omega(1)$.
 
 Previous work \cite{raynet} claims constant time approximation. 
 The reality is that Raynet's leading constant is in the order of thousands. % as Monte-Carlo samples.  
@@ -566,16 +566,28 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
 
 
-\section{Conclusion}
+\section{Conclusion and Future Work}
 \label{sec:conclusion}
 
 
-We ran two 
-Our first experiments demonstrate that our heuristic is ``mostly correct'' and our second set demonsrates that ``mostly correct'' is sufficient to build a P2P network which can route accurately.
+Voronoi tessellations have a wide potential for applications in ad-hoc networks, massively multiplayer games, P2P, and distributed networks. 
+However, centralized algorithms for Voronoi tessellation and Delaunay triangulation are not applicable to decentralized systems.
+In addition, solving Voronoi tessellation in more than 2 dimensions computationally expensive.
+
+We created a distributed heuristic for Voronoi tessellations in an arbitrary number of dimensions.
+Our heuristic is fast and scalable, with a expected memory cost of $(3d+1)^{2}+3d+1$ and expected maximum runtime of O$(\frac{\log^{2} N}{\log^{2} \log N} )$.
+
+We ran two sets of experiments to demonstrate DGVH's effectiveness.
+Our first set of experiments demonstrated that our heuristic is reasonably accurate  and our second set demonstrates that reasonably accurate is sufficient to build a P2P network which can route accurately.
 
 
+Our next step is to create a formal protocol and implementation for a Voronoi tessellation-based distributed hash table using DGVH.  
+We can use this DHT to choose certain metrics we want to measure, such as latency, or trust, and embed that information as part of a node's identify.
+By creating an appropriate distance measurement, we can route along some path that minimizes or maximizes the desired metric.
+Rather than create an overlay that minimizes hops, we can have our overlay minimize latency, which is the actual goal of most routing algorithms.
 
-Another venue for exploration is application of caching and replication strategies to a functional distributed file system running on top of VHash.  Such extensions seek to improve upon existing work done on file replication and caching schemes \cite{shen2010irm}.
+
+%Another venue for exploration is application of caching and replication strategies to a functional distributed file system running on top of VHash.  Such extensions seek to improve upon existing work done on file replication and caching schemes \cite{shen2010irm}.
 
 
 
