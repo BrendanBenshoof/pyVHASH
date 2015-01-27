@@ -93,8 +93,8 @@ Our paper presents the following contributions:
     Our heuristic can also handle toroidal spaces.
 	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while maintaining a high degree of accuracy (Section \ref{sec:dgvh}).
     Even where small inaccuracies exist, DVGH will create a fully connected graph.
-	\item We discuss what P2P and distributed applications can use DGVH and how  (Section \ref{sec:applications}).
-	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
+	\item We discuss what P2P and distributed applications can use DGVH (Section \ref{sec:applications}).
+	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency (Section).
 	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
     We simulated our heuristic in networks ranging between size 500 to 10000.
 	Our simulations show that a distributed network built DGVH accurately determines the region a randomly chosen point falls in 90\% of the time within 20 cycles and converges near 100\% accuracy by cycle 30.
@@ -305,7 +305,7 @@ This results in a cost of
 \[ k\cdot\lg(k) + k \text{ midpoints}  + k^{2} \text{ distances} \]
 
 
-Since $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected} (the expected maximum degree of a node?), we can translate the above to
+Since $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991expected} (the expected maximum degree of a node), we can translate the above to
 
 \[O(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
@@ -323,7 +323,7 @@ Our algorithm has a greater asymptotic worst case cost, but for all current real
 \section{Applications}
 \label{sec:applications}
 
-As we previeously discussed in Section \ref{sec:intro} Voronoi tessellation has many applications for distributed systems.
+As we previously discussed in Section \ref{sec:intro} Voronoi tessellation has many applications for distributed systems.
 
 We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which need to take literal physical constraints into account.
 
@@ -343,16 +343,16 @@ Using a Voronoi tessellation in a DHT generalizes this design.
 Nodes are Voronoi generators at a position based on their hashed keys.
 These nodes are responsible for any key that falls within its generated Voronoi region.
 
-Messages get routed along links to neigboring nodes. 
-This would take $O(n)$ in one dimension.
-In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is extremely similar to the one used in CAN, which is bounded by a runtime of $O(n^{\frac{1}{d}})$.
+Messages get routed along links to neighboring nodes. 
+This would take $O(n)$ hops in one dimension.
+In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is extremely similar to the one used in CAN, which would be $O(n^{\frac{1}{d}})$ hops.
 \begin{algorithm}
 	\caption{Lookup in a Voronoi-based DHT}
 	\label{alg:lookup}
 	\begin{algorithmic}[1] 
 		\STATE Given node $n$
 		\STATE Given $m$ is a message addressed for $loc$
-		\STATE $potential\_dests \leftarrow n \cup n.short\_peers \cup n.long\_peers$ ????
+		\STATE $potential\_dests \leftarrow n \cup n.short\_peers \cup n.long\_peers$
 		\STATE $c \leftarrow $ node in $ potential\_dests$ with shortest distance to $loc$
 		\IF{$c$ == $n$}
 		\RETURN $n$
@@ -362,38 +362,24 @@ In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is ex
 	\end{algorithmic}
 \end{algorithm}
 
-DGVH can be used in a DHT to quickly and scabaly construct both the Voronoi tessilation and links to peers.
+DGVH can be used in a DHT to quickly and scabaly construct both the Voronoi tessellation and links to peers.
 %TODO Numbers to back up needed?
 In addition, gossip-based peer management policies are extremely efficient in proactively handling node joins and failures.
-A join operation should inform nearby nodes immediately.
+The act of joining informs other nodes of the joiner's existence.
 This can be done by the joiner contacting each peer in the peer lists of the node previously responsible for the joiner's location, 
 
 Node failures can be handled extremely lazily
-When a node attampts to route to or gossip with a node and discovers it no longer exists, it should remove the node from its peer lists and inform all of the nodes it knows to do the same.
+When a node attempts to route to or gossip with a node and discovers it no longer exists, it should remove the node from its peer lists and inform all of the nodes it knows to do the same.
 Since routing is how a node would make a decision on whether a point belongs to a particular Voronoi region, failed nodes don't have any impact on the network's accuracy.
 
 
+Because the algorithm is defined in terms of midpoint and distance functions, it is not bound by and particular topology or metric space.
+Our heuristic can be used to create a DHT which uses any arbitrary coordinate system that provides a midpoint and distance definition.
 
-Multiple metric spaces
+For example, we could use latency as one of these metrics by using it to approximate node locations in the network.
+This would allow messages to be routed along minimum latency paths, rather than along minimal hop paths.
+We intend to model this using a distributed spring model.
 
-
-
-\subsection{Embedding Routing Information in Metric Spaces}
-
-
-During previous research in applications of DHTs \cite{andrew-poster} to parallel processing, we tested DHT network behavior under churn. 
-We came to the conclusion that high levels of churn improved the performance of the system under certain circumstances.
-The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
-In this work we found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
-
-
-Voronoi tesselation can be used to design DHTs which leverage this discover.
-A nodes' location in the network can be used to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
-In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
-Each node is given a random initial location and, over time, migrates to a location which optimizes latency.
-
-A good example of this is embedding latency as a dimension.
-Every DHT uses the number of hops as a metric of routing speed, but in reality, the number of hops is an estimation of what is really wanted: a measure of latency.
 
 \subsection{Wireless Coverage}
 C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to solve the \textit{coverage-boundary} problem in wireless ad-hoc networks.
@@ -425,7 +411,15 @@ We implemented two sets of experiments for DGVH.
 The first compares the Voronoi tessellations created by DGVH to actual Voronoi tessellation.
 Our second set of experiments demonstrate that DGVH's errors are of little consequence when building a distributed and fault-tolerant systems.
 
-\subsection{Experiment 1:  Voronoi Accuracy}
+\subsection{Experiment 1: Voronoi Accuracy}
+
+
+
+
+
+
+
+
 
 \subsection{Experiment 2: P2P Convergence and Routing}
 Our second set of experiments examines how DGVH could be used to create a DHT and how well it would perform in this task.
@@ -439,7 +433,7 @@ We then calculate the hit rate of successful lookups by simulating 2000 lookups 
 A lookup is successful when the network correctly determines which Voronoi region contains a randomly selected point.
 
 
-Our experimental variables for this simulation were the number of nodes in VHash overlay and the number of dimensions.  
+Our experimental variables for this simulation were the number of nodes in DGVH generated overlay and the number of dimensions.  
 We tested network sizes of 500, 1000, 2000, 5000, and 10000 nodes each in 2, 3, 4, and 5 dimensions.
 The hit rate at each cycle is $\frac{hits}{2000}$, where $hits$ are the number of successful lookups.
 
@@ -475,32 +469,32 @@ As the network size and number of dimensions each increase, convergence slows, b
 		
 		\begin{subfigure}{\columnwidth}
 			\includegraphics[width=\columnwidth]{conv_d2}
-			\caption{This plot shows the accuracy rate of lookups on a 2-dimensional VHash network as it self-organizes.}
+			\caption{This plot shows the accuracy rate of lookups on a 2-dimensional network as it self-organizes.}
 			\label{conv2}
 		\end{subfigure} &
 		
 		\begin{subfigure}{\columnwidth}
 			\includegraphics[width=\columnwidth]{conv_d3}
-			\caption{This plot shows the accuracy rate of lookups on a 3-dimensional VHash network as it self-organizes.}
+			\caption{This plot shows the accuracy rate of lookups on a 3-dimensional network as it self-organizes.}
 			\label{conv3}
 		\end{subfigure} \\
 		
 		\begin{subfigure}{\columnwidth}
 			\includegraphics[width=\linewidth]{conv_d4}
-			\caption{This plot shows the accuracy rate of lookups on a 4-dimensional VHash network as it self-organizes.}
+			\caption{This plot shows the accuracy rate of lookups on a 4-dimensional network as it self-organizes.}
 			\label{conv4}
 		\end{subfigure} &
 		
 		
 		\begin{subfigure}{\columnwidth}
 			\includegraphics[width=\linewidth]{conv_d5}
-			\caption{This plot shows the accuracy rate of lookups on a 5-dimensional VHash network as it self-organizes.}
+			\caption{This plot shows the accuracy rate of lookups on a 5-dimensional network as it self-organizes.}
 			\label{conv5}
 		\end{subfigure}
 		
 	\end{tabular}
 	
-	\caption{These figures show that, starting from a randomized network, VHash forms a stable and consistent network topology.
+	\caption{These figures show that, starting from a randomized network, DGVH forms a stable and consistent network topology.
 		The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
 		Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
 	
@@ -544,10 +538,8 @@ While there has been previous work on applying Voronoi regions to DHTs and peer-
 Backhaus et al.'s  VAST \cite{Backhaus:2007:VAS:1326257.1326266} is a Voronoi-based P2P protocol designed for handling event messages in a massively multiplayer online video game.  
 Each node finds its neighbors by constructing a Voronoi diagram using Fortune's sweepline algorithm \cite{fortune1987sweepline}.  
 VAST demonstrated that Voronoi diagrams could be used as the backbone to large-scale applications, although their work focused specifically on using 2-dimensional Voronoi diagrams.
-VAST could use   
-VHash approximates the Voronoi region rather than solving it, as higher dimension Voronoi regions are computationally expensive to solve.
 
-The two DHT protocols developed by Beumont et al., VoroNet \cite{voronet} and RayNet \cite{raynet} are the closest comparisons to VHash.
+The two DHT protocols developed by Beumont et al., VoroNet \cite{voronet} and RayNet \cite{raynet} are two-dimension DHTs that we intend to extend using our technique.
 VoroNet is based off Kleinberg's small world model \cite{kleinberg2000navigation} and achieves polylogarithmic lookup time.  
 Each node in Voronet solves its Voronoi region to determine its neighbors and also maintains a link to a randomly chosen distant node.
 Voronet focused specifically on the two-dimensional Voronoi computations and the techniques used would be too expensive in higher dimensions and were not resilient to churn  \cite{raynet}.
