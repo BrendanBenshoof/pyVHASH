@@ -64,7 +64,7 @@ Our heuristic is fast, scalable, works in any geometric space with a distance an
 
 
 \section{Introduction}
-
+\label{sec:intro}
 
 Voronoi diagrams \cite{voronoi} have been used in distributed and  peer-to-peer (P2P) applications for some time. 
 They have a wide variety of applications.
@@ -93,7 +93,7 @@ Our paper presents the following contributions:
     Our heuristic can also handle toroidal spaces.
 	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while maintaining a high degree of accuracy (Section \ref{sec:dgvh}).
     Even where small inaccuracies exist, DVGH will create a fully connected graph.
-	\item We discuss what P2P and distributed applications can use DGVH and how  (Section \r).
+	\item We discuss what P2P and distributed applications can use DGVH and how  (Section \ref{sec:applications}).
 	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
 	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
     We simulated our heuristic in networks ranging between size 500 to 10000.
@@ -187,7 +187,7 @@ Otherwise the candidate is added to the new peer list.
 
 
 
-\subsubsection*{The following paragraphs may need reordering}
+% \subsubsection*{The following paragraphs may need reordering}
 
 
 DGVH never actually solves for the actual polytopes that describe a node's Voronoi region.
@@ -312,9 +312,9 @@ Our algorithm has a greater asymptotic worst case cost, but for all current real
 \section{Applications}
 \label{sec:applications}
 
-Voronoi tessellation has many applications for distributed systems.
+As we previeously discussed in Section \ref{sec:intro} Voronoi tessellation has many applications for distributed systems.
 
-We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which are focused 
+We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which need to take literal physical constraints into account.
 
 \subsection{Distributed Hash Tables}
 Arguably all Distributed Hash Tables (DHTs) are built on the concept of Voronoi tessellation.
@@ -349,27 +349,14 @@ In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is ex
 \end{algorithm}
 
 DGVH can be used in a DHT to quickly and scabaly construct both the Voronoi tessilation and links to peers.
-%Numbers
-In addition, gossip-based peer management policies are extremely efficient in actively 
+%TODO Numbers to back up needed?
+In addition, gossip-based peer management policies are extremely efficient in proactively handling node joins and failures.
+A join operation should inform nearby nodes immediately.
+This can be done by the joiner contacting each peer in the peer lists of the node previously responsible for the joiner's location, 
 
-
-%Using a different measure of distance in Voronoi tessellation is not a radical idea; a common variation is to draw the regions using Manhattan distance \cite{aurenhammer1991voronoi}.
-%Neither 
-
-
-The gossip mechanism is well suited to handling churn, the disruption caused by nodes constantly joining and leaving the network.
-
-
-
-
-
-
-A prospective node must be able to communicate with at least one patron member of the DHT.  
-The prospective node is assigned a location in the metric space by taking the hash of some parameter  and uses the patron to find the node responsible for its assigned location, which we call the parent.
-The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
-Subsequent gossips will refine the peer lists of the nodes affected by the join.
-
-
+Node failures can be handled extremely lazily.When a node.
+When a node attampts to route to or gossip with a node and discovers it no longer exists, it should remove the node from its peer lists and inform all of the nodes it knows to do the same.
+Since routing is how a node would make a decision on whether a point belongs to a particular Voronoi region, failed nodes don't have any impact on the network's accuracy.
 
 
 
@@ -377,14 +364,22 @@ Multiple metric spaces
 
 
 
-
-Embedding 
+\subsection{Embedding Routing Information in Metric Spaces}
 
 
 During previous research in applications of DHTs \cite{andrew-poster} to parallel processing, we tested DHT network behavior under churn. 
 We came to the conclusion that high levels of churn improved the performance of the system under certain circumstances.
 The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
 In this work we found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
+
+
+Voronoi tesselation can be used to design DHTs which leverage this discover.
+A nodes' location in the network can be used to provide meaningful information about the node and to allow nodes to change location in the network to suit the networks needs.
+In this paper we propose a method that enables peers to periodically change their location in the network such that routes taken on the resulting overlay network have lower latency than would otherwise possible in a DHT.
+Each node is given a random initial location and, over time, migrates to a location which optimizes latency.
+
+A good example of this is embedding latency as a dimension.
+Every DHT uses the number of hops as a metric of routing speed, but in reality, the number of hops is an estimation of what is really wanted: a measure of latency.
 
 \subsection{Wireless Coverage}
 C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to tell
@@ -509,8 +504,6 @@ As the network size and number of dimensions each increase, convergence slows, b
 %\label{tab:convtable}
 %\end{table}
 
-
-Routing Speed: CAN
 
 \section{Related Work}
 \label{sec:related}
