@@ -390,16 +390,14 @@ For example, ad-hoc networks operating in with no infrastructure or have been se
 The authors showed how Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
 They proved that the node's Voronoi region was not completely covered by the node's sensing radius if and only if the node was on the network's boundary \cite{carbunar2004distributed}.
 
+Chen et al.\ \cite{chen2008voronoi} extended this property for sleep scheduling in wireless sensor networks.
+A node in the network is a candidate to go to sleep if and only if its on the boundary of the network and it Voronoi vertices are covered by other nodes.
+
 C\u{a}rbunar et al.'s algorithm relies on a centralized computation for Voronoi tessilation, as the distributed computation they examined only relied on forming the Delaunay triangulation between nodes within a certain radius, nor could it handle moving nodes.
 DGVH is not limited to handling nodes within a specified radius, since the peer management spreads information about nodes by gossiping. %like old yiddish women.
 In addition, so long as a node moving to a new location is treated as an entirely new node by the rest of the network, DGVH can handle moving nodes.\footnote{A specific node and a specific location must be bound together into a single identity.
 This means when a node tries to route to a node that has moved using the node's previous location, it should fail, as though that specific node no longer exists.  
 Failure to do this would ensure that the node incorrectly determines what falls within its Voronoi region.}
-
-
-
-Sleeping Chen et al.\ \cite{chen2008voronoi}
-Extends this previous insight to schedule sleeping
 
 
 \section{Experiments}
@@ -409,9 +407,6 @@ Extends this previous insight to schedule sleeping
 We implemented two sets of experiments for DGVH.
 The first compares the Voronoi tessellations created by DGVH to actual Voronoi tessellation.
 Our second set of experiments demonstrate that DGVH's errors are of little consequence when building a distributed and fault-tolerant systems.
-
-
-Distance
 
 \subsection{Experiment 1:  Voronoi Accuracy}
 
