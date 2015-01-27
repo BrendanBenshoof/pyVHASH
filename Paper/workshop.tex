@@ -354,7 +354,7 @@ In addition, gossip-based peer management policies are extremely efficient in pr
 A join operation should inform nearby nodes immediately.
 This can be done by the joiner contacting each peer in the peer lists of the node previously responsible for the joiner's location, 
 
-Node failures can be handled extremely lazily.When a node.
+Node failures can be handled extremely lazily
 When a node attampts to route to or gossip with a node and discovers it no longer exists, it should remove the node from its peer lists and inform all of the nodes it knows to do the same.
 Since routing is how a node would make a decision on whether a point belongs to a particular Voronoi region, failed nodes don't have any impact on the network's accuracy.
 
@@ -386,6 +386,20 @@ C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tes
 The coverage-boundary problem asks which nodes are on the physical edge of the network.
 This knowledge provides useful information to networks.
 For example, ad-hoc networks operating in with no infrastructure or have been set up temporarily can use this knowledge to define the reach of the network's coverage.
+
+The authors showed how Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
+They proved that the node's Voronoi region was not completely covered by the node's sensing radius if and only if the node was on the network's boundary \cite{carbunar2004distributed}.
+
+C\u{a}rbunar et al.'s algorithm relies on a centralized computation for Voronoi tessilation, as the distributed computation they examined only relied on forming the Delaunay triangulation between nodes within a certain radius, nor could it handle moving nodes.
+DGVH is not limited to handling nodes within a specified radius, since the peer management spreads information about nodes by gossiping. %like old yiddish women.
+In addition, so long as a node moving to a new location is treated as an entirely new node by the rest of the network, DGVH can handle moving nodes.\footnote{A specific node and a specific location must be bound together into a single identity.
+This means when a node tries to route to a node that has moved using the node's previous location, it should fail, as though that specific node no longer exists.  
+Failure to do this would ensure that the node incorrectly determines what falls within its Voronoi region.}
+
+
+
+Sleeping Chen et al.\ \cite{chen2008voronoi}
+Extends this previous insight to schedule sleeping
 
 
 \section{Experiments}
