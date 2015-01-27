@@ -126,7 +126,7 @@ For additional information, Aurenhammer \cite{aurenhammer1991voronoi} provides a
 
 
 
-\subsection{The Heuristic}
+\subsection{Our Heuristic}
 
 
 
@@ -194,7 +194,7 @@ DGVH never actually solves for the actual polytopes that describe a node's Voron
 This is unnecessary and prohibitively expensive \cite{raynet}.
 Rather, once the heuristic has been run, nodes can determine whether a given point would fall in it's region.
 
-Nodes do this by calculating the distance of the given point to itself and othe nodes it knows about.
+Nodes do this by calculating the distance of the given point to itself and other nodes it knows about.
 The point falls into a particular node's Voronoi region if it is the node to which it has the shortest distance.
 This process continues recursively until a node determines that itself to be the closest node to the point.
 Thus, a node defines its Voronoi region by keeping a list of the peers that bound it.
@@ -206,9 +206,9 @@ This heuristic has the benefit of being fast and scalable into any geometric spa
 The distance metric used for this paper is the minimum distance in a multidimensional unit toroidal space.
 Where $\vec{a}$ and $\vec{b}$ are locations in a $d$-dimensional unit toroidal space:
 \[ distance = \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1-|\vec{a}_i-\vec{b}_i|))^2}\]
+As a result, whether distance and abstract term relating to an overlay or corresponds to physical distance depends on the application.
 
-
-In two-dimensional spaces, there is quick hack to achieve 100\% accuracy distributed.
+%In two-dimensional spaces, there is quick hack to achieve 100\% accuracy distributed.
 
 Our heuristic can be overaggressive in removing candidate nodes.
 For example, if a node is located between two other nodes, such that their midpoint does not fall upon the shared face of their Voronoi regions, then this heuristic will not link the blocked peers.
@@ -312,7 +312,32 @@ Our algorithm has a greater asymptotic worst case cost, but for all current real
 \section{Applications}
 \label{sec:applications}
 
+Voronoi tessellation has many applications for distributed systems.
+
+We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which are focused 
+
 \subsection{Distributed Hash Tables}
+Arguably all Distributed Hash Tables (DHTs) are built on the concept of Voronoi tessellation.
+In all DHTs, a node is responsible for all points in the overlay to which it is the ``closest'' node.
+These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
+For example, Chord and similar ring-based DHTs utilize a unidirectional, one-dimensional ring as their metric space, such that the region for which a node is responsible is the region between itself and its predecessor.
+
+Using a Voronoi tessellation is not radical idea.
+Nodes are assigned a key in some keyspace, based on the hash of some attributes.
+Normally, this is just the hash of the IP address and port of the node \cite{kademlia} \cite{chord} \cite{can} \cite{pastry}, but other metrics such as geographic location can be used as well \cite{ratnasamy2002ght}.
+%Using a different measure of distance in Voronoi tessellation is not a radical idea; a common variation is to draw the regions using Manhattan distance \cite{aurenhammer1991voronoi}.
+%Neither 
+
+
+The gossip mechanism is well suited to handling churn, the disruption caused by nodes constantly joining and leaving the network.
+A prospective node must be able to communicate with at least one patron member of the DHT.  
+The prospective node is assigned a location in the metric space by taking the hash of some parameter  and uses the patron to find the node responsible for its assigned location, which we call the parent.
+The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
+Subsequent gossips will refine the peer lists of the nodes affected by the join.
+
+Multiple metric spaces
+
+
 
 
 \begin{algorithm}
@@ -331,13 +356,19 @@ Our algorithm has a greater asymptotic worst case cost, but for all current real
 	\end{algorithmic}
 \end{algorithm}
 
-This routing algorithm is extremely similar to the lookup algorithm used in CAN \cite{can}, which is bounded by a runtime of $O(n^{\frac{1}{d}})$ .
+This routing algorithm is extremely similar to the lookup algorithm used in CAN \cite{can}, which is bounded by a runtime of $O(n^{\frac{1}{d}})$.
 
 
+Embedding 
 
+
+During previous research in applications of DHTs \cite{andrew-poster} to parallel processing, we tested DHT network behavior under churn. 
+We came to the conclusion that high levels of churn improved the performance of the system under certain circumstances.
+The built-in mechanisms for managing responsibility in a DHT are very effective and efficient at handling nodes changing locations in the network.
+In this work we found that it was more effective to move the node to a location in the DHT where work or data was stored rather than attempt to remap data efficiently over the nodes.
 
 \subsection{Wireless Coverage}
-C\u{a}bunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to tell
+C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to tell
 \section{Experiments}
 \label{sec:experiments}
 
@@ -346,6 +377,8 @@ We implemented two sets of experiments for DGVH.
 The first compares the Voronoi tessellations created by DGVH to actual Voronoi tessellation.
 Our second set of experiments demonstrate that DGVH's errors are of little consequence when building a distributed and fault-tolerant systems.
 
+
+Distance
 
 \subsection{Experiment 1:  Voronoi Accuracy}
 
