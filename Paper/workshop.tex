@@ -319,34 +319,26 @@ We focus our discussion on the two extremes of applications: DHTs, which deal wi
 \subsection{Distributed Hash Tables}
 Arguably all Distributed Hash Tables (DHTs) are built on the concept of Voronoi tessellation.
 In all DHTs, a node is responsible for all points in the overlay to which it is the ``closest'' node.
+Nodes are assigned a key as their location in some keyspace, based on the hash of some attributes.
+Normally, this is just the hash of the IP address and port of the node  \cite{chord} \cite{kademlia} \cite{can} \cite{pastry}, but other metrics such as geographic location can be used as well \cite{ratnasamy2002ght}.
+
 These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
 For example, Chord and similar ring-based DHTs utilize a unidirectional, one-dimensional ring as their metric space, such that the region for which a node is responsible is the region between itself and its predecessor.
 
-Using a Voronoi tessellation is not radical idea.
-Nodes are assigned a key in some keyspace, based on the hash of some attributes.
-Normally, this is just the hash of the IP address and port of the node \cite{kademlia} \cite{chord} \cite{can} \cite{pastry}, but other metrics such as geographic location can be used as well \cite{ratnasamy2002ght}.
-%Using a different measure of distance in Voronoi tessellation is not a radical idea; a common variation is to draw the regions using Manhattan distance \cite{aurenhammer1991voronoi}.
-%Neither 
+Using a Voronoi tessellation in a DHT generalizes this design. 
+Nodes are Voronoi generators at a position based on their hashed keys.
+These nodes are responsible for any key that falls within its generated Voronoi region.
 
-
-The gossip mechanism is well suited to handling churn, the disruption caused by nodes constantly joining and leaving the network.
-A prospective node must be able to communicate with at least one patron member of the DHT.  
-The prospective node is assigned a location in the metric space by taking the hash of some parameter  and uses the patron to find the node responsible for its assigned location, which we call the parent.
-The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
-Subsequent gossips will refine the peer lists of the nodes affected by the join.
-
-Multiple metric spaces
-
-
-
-
+Messages get routed along links to neigboring nodes. 
+This would take $O(n)$ in one dimension.
+In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is extremely similar to the one used in CAN, which is bounded by a runtime of $O(n^{\frac{1}{d}})$.
 \begin{algorithm}
 	\caption{Lookup in a Voronoi-based DHT}
-	\label{lookup}
+	\label{alg:lookup}
 	\begin{algorithmic}[1] 
 		\STATE Given node $n$
 		\STATE Given $m$ is a message addressed for $loc$
-		\STATE $potential\_dests \leftarrow n \cup n.short\_peers$
+		\STATE $potential\_dests \leftarrow n \cup n.short\_peers \cup n.long\_peers$ ????
 		\STATE $c \leftarrow $ node in $ potential\_dests$ with shortest distance to $loc$
 		\IF{$c$ == $n$}
 		\RETURN $n$
@@ -356,7 +348,34 @@ Multiple metric spaces
 	\end{algorithmic}
 \end{algorithm}
 
-This routing algorithm is extremely similar to the lookup algorithm used in CAN \cite{can}, which is bounded by a runtime of $O(n^{\frac{1}{d}})$.
+DGVH can be used in a DHT to quickly and scabaly construct both the Voronoi tessilation and links to peers.
+%Numbers
+In addition, gossip-based peer management policies are extremely efficient in actively 
+
+
+%Using a different measure of distance in Voronoi tessellation is not a radical idea; a common variation is to draw the regions using Manhattan distance \cite{aurenhammer1991voronoi}.
+%Neither 
+
+
+The gossip mechanism is well suited to handling churn, the disruption caused by nodes constantly joining and leaving the network.
+
+
+
+
+
+
+A prospective node must be able to communicate with at least one patron member of the DHT.  
+The prospective node is assigned a location in the metric space by taking the hash of some parameter  and uses the patron to find the node responsible for its assigned location, which we call the parent.
+The prospective node sets the parent node as the lone member of \textit{Short Peers} and immediately gossips with the parent.
+Subsequent gossips will refine the peer lists of the nodes affected by the join.
+
+
+
+
+
+Multiple metric spaces
+
+
 
 
 Embedding 
