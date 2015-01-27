@@ -228,9 +228,6 @@ Our algorithm handles these cases via our method of peer management (Section \re
 
 
 
-
-
-
 \subsection{Peer Management}
 \label{sec:manage}
 Nodes running the heuristic maintain two peer lists: \textit{Short Peers} and \textit{Long Peers}.
@@ -286,6 +283,16 @@ This maintenance through gossip process is very similar to the gossip protocol u
 \end{algorithm}
 
 
+
+
+
+
+
+
+
+
+
+
 \subsection{Algorithm Analysis}
 
 DVGH is very efficient in both terms of space and time.
@@ -309,12 +316,19 @@ Previous work \cite{raynet} claims constant time approximation.
 The reality is that Raynet's leading constant is in the order of thousands. % as Monte-Carlo samples.  
 Our algorithm has a greater asymptotic worst case cost, but for all current realistic network sizes it will be more time efficient then RayNet's approximation.
 
+
+
+
+
 \section{Applications}
 \label{sec:applications}
 
 As we previeously discussed in Section \ref{sec:intro} Voronoi tessellation has many applications for distributed systems.
 
 We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which need to take literal physical constraints into account.
+
+
+
 
 \subsection{Distributed Hash Tables}
 Arguably all Distributed Hash Tables (DHTs) are built on the concept of Voronoi tessellation.
@@ -390,10 +404,13 @@ For example, ad-hoc networks operating in with no infrastructure or have been se
 The authors showed how Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
 They proved that the node's Voronoi region was not completely covered by the node's sensing radius if and only if the node was on the network's boundary \cite{carbunar2004distributed}.
 
+%Move lower?
 Chen et al.\ \cite{chen2008voronoi} extended this property for sleep scheduling in wireless sensor networks.
-A node in the network is a candidate to go to sleep if and only if its on the boundary of the network and it Voronoi vertices are covered by other nodes.
+A node is allowed to go to sleep and conserve power so long as the area it's detecting can be covered by other nodes.
+Using Voronoi tessilation, a node knows it can conserve power and not affect the network if and only if its not on the boundary of the network and its Voronoi vertices\footnote{Voronoi vertices are the points at which the edges of 3 or more Voronoi cells converge.} are covered by other nodes.
 
-C\u{a}rbunar et al.'s algorithm relies on a centralized computation for Voronoi tessilation, as the distributed computation they examined only relied on forming the Delaunay triangulation between nodes within a certain radius, nor could it handle moving nodes.
+
+C\u{a}rbunar et al.'s algorithm relies on a centralized computation for Voronoi tessellation, as the distributed computation they examined only relied on forming the Delaunay triangulation between nodes within a certain radius, nor could it handle moving nodes.
 DGVH is not limited to handling nodes within a specified radius, since the peer management spreads information about nodes by gossiping. %like old yiddish women.
 In addition, so long as a node moving to a new location is treated as an entirely new node by the rest of the network, DGVH can handle moving nodes.\footnote{A specific node and a specific location must be bound together into a single identity.
 This means when a node tries to route to a node that has moved using the node's previous location, it should fail, as though that specific node no longer exists.  
