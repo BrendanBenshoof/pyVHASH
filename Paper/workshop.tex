@@ -68,38 +68,36 @@ Our heuristic is fast, scalable, works in any geometric space with a distance an
 
 Voronoi diagrams \cite{voronoi} have been used in distributed and  peer-to-peer (P2P) applications for some time. 
 They have a wide variety of applications.
-Voronoi diagrams can be used as part of distributed hash tables\cite{virtvoro}.
-They can be used in coverage detection for wireless networks \cite{carbunar2004distributed}.
-Massively Multiplayer Online games (MMOs) can use them to distribute game states and events between players at a large scale \cite{hu2004scalable} \cite{hu2008voronoi} \cite{Backhaus:2007:VAS:1326257.1326266}.
+Voronoi diagrams can be used as to manage distributed hash tables \cite{virtvoro}, or for in coverage detection for wireless networks \cite{carbunar2004distributed}.
+Additionally, Massively Multiplayer Online games (MMOs) can use them to distribute game states and events between players at a large scale \cite{hu2004scalable} \cite{hu2008voronoi} \cite{Backhaus:2007:VAS:1326257.1326266}.
 
 Computing the Voronoi tessellation along with its coprime problem, Delaunay Triangulation, is a well analyzed problem.
 There are many algorithms to efficiently compute a Voronoi tessellation given all the points on a plane, such as Fortune's sweep line algorithm \cite{fortune1987sweepline}.
 However, many network applications are distributed and many of the algorithms to compute Voronoi tessellations are unsuited to a distributed environment.
 
-In addition, trouble occurs when points are located in spaces with more than two dimensions.
+In addition, complications occurs when points are located in spaces with more than two dimensions.
 Computing the Voronoi tessellation of $n$ points in a space with $d$ dimensions takes $O(n^{\frac{2d-1}{d}})$ time \cite{watson1981computing}.
 Distributed computations often have to resort to costly Monte-Carlo calculations \cite{raynet} in order to handle more than two dimensions.
 
 %We take advantage of the fact that distributed applications are fault-tolerant to accommodate changes in network topology.
 %This is especially true for P2P environments.
-Rather than exactly solving the Voronoi tessellation, we instead a fast and accurate heuristic to approximate each of the regions of a Voronoi tessellation
+Rather than exactly solving the Voronoi tessellation, we instead present a fast and accurate heuristic to approximate each of the regions of a Voronoi tessellation
 This enables fast and efficient formation of P2P networks.
 A P2P network built using this heuristic would be able to take advantage of it's available fault-tolerant architecture to route along any inaccuracies that arise.
 Our paper presents the following contributions:
 \begin{itemize}
 	\item We present our Distributed Greedy Voronoi Heuristic (DGVH). 
-	The DGVH is a fast, distributed, and highly accurate method whereby nodes calculate their individual regions described by a Voronoi tessellation using the positions of nearby nodes.
+	The DGVH is a fast, distributed, and highly accurate method, whereby nodes calculate their individual regions described by a Voronoi tessellation using the positions of nearby nodes.
 	DGVH can work in an arbitrary number of dimensions and can handle non-euclidean distance metrics.
     Our heuristic can also handle toroidal spaces.
-	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while maintaining a high degree of accuracy (Section \ref{sec:dgvh}).
+	In addition, DGVH can accommodate the calculation of nodes moving their positions and adjust their region accordingly, while still maintaining a high degree of accuracy (Section \ref{sec:dgvh}).
     Even where small inaccuracies exist, DVGH will create a fully connected graph.
-	\item We discuss what P2P and distributed applications can use DGVH (Section \ref{sec:applications}).
-	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency (Section).
+	\item We discuss how P2P networks and distributed applications can use DGVH (Section \ref{sec:applications}).
+	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
 	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
-    We simulated our heuristic in networks ranging between size 500 to 10000.
-	Our simulations show that a distributed network built DGVH accurately determines the region a randomly chosen point falls in 90\% of the time within 20 cycles and converges near 100\% accuracy by cycle 30.
-	\item We present the previous work we have built upon to create our heuristic and what improvements we made with DGVH.
-	
+    We simulated our heuristic in networks ranging from size 500 nodes to 10000 nodes.
+	Our simulations show that a distributed network running DGVH accurately determines the region a randomly chosen point falls in 90\% of the time within 20 cycles and converges near 100\% accuracy by cycle 30.
+	\item We present the related work we have built upon to create our heuristic and what improvements we made with DGVH (Section \ref{sec:related}).
 \end{itemize}
 
 
@@ -107,14 +105,15 @@ Our paper presents the following contributions:
 \label{sec:dgvh}
 
 
-A Voronoi diagram is the partition of a space into cells or regions along a set of objects $O$ such that all the points in a particular region are closer to one object than any other object.  
+A Voronoi tessellation is the partition of a space into cells or regions along a set of objects $O$, such that all the points in a particular region are closer to one object than any other object.  
 We refer to the region owned by an object as that object's Voronoi region.
-%This cleanly maps to the concept of ownership in DHTs, where nodes are responsible for n
-%The Delaunay Triangulation of this same space along the same set of objects is defined by the edges such that no object is inside the circumcircle of any triangle formed by the edges \cite{geoalg}.  
-The Voronoi diagram and Delaunay Triangulation are dual problems, as an edge between two objects in a Delaunay Triangulation exists if and only if those object's Voronoi regions border each other.  
+Objects which are used to create the regions are called Voronoi generators.
+In network applications that use Voronoi tessellation, nodes in the network act as the Voronoi generators.
+
+The Voronoi tessellation and Delaunay triangulation are dual problems, as an edge between two objects in a Delaunay triangulation exists if and only if those object's Voronoi regions border each other.  
 This means that solving either problem will yield the solution to both.   
 An example Voronoi diagram is shown in Figure \ref{voro-ex}.
-For additional information, Aurenhammer \cite{aurenhammer1991voronoi} provides a formal and extremely thorough description of Voronoi tessellation, as well as their applications.
+For additional information, Aurenhammer \cite{aurenhammer1991voronoi} provides a formal and extremely thorough description of Voronoi tessellations, as well as their applications.
 
 
 \begin{figure}
@@ -135,7 +134,7 @@ For additional information, Aurenhammer \cite{aurenhammer1991voronoi} provides a
 %The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to select peers from their Deluanay Triangulation (Algorithm \ref{DGVH}).
 The Distributed Greedy Voronoi Heuristic (DGVH) is a fast method for nodes to define their individual Voronoi region (Algorithm \ref{alg:dgvh}). 
 This is done by selecting the nearby nodes that would correspond to the points connected to it by a Delaunay triangulation.
-The rationale for this heuristic is that, in the majority of cases, the midpoint between to nodes falls on the common boundary of their Voronoi regions.
+The rationale for this heuristic is that, in the majority of cases, the midpoint between two nodes falls on the common boundary of their Voronoi regions.
 
 %In addition, nodes should only have to compute their own Voronoi region, and possibly estimate those of its neighbors. 
 %Anything else is a waste of processing power.
@@ -173,7 +172,7 @@ The rationale for this heuristic is that, in the majority of cases, the midpoint
 \end{algorithm}
 
 
-Each cycle, nodes exchange their peer lists with a current neighbor and then recalculate their neighbors.  
+During each cycle, nodes exchange their peer lists with a current neighbor and then recalculate their neighbors.  
 A node combines their neighbor's peer list with its own to create a list of candidate neighbors.
 This combined list is sorted from closest to furthest.
 A new peer list is then created starting with the closest candidate.
@@ -206,7 +205,7 @@ This heuristic has the benefit of being fast and scalable into any geometric spa
 The distance metric used for this paper is the minimum distance in a multidimensional unit toroidal space.
 Where $\vec{a}$ and $\vec{b}$ are locations in a $d$-dimensional unit toroidal space:
 \[ distance = \sqrt{\sum\limits_{i\in d} (\min(|\vec{a}_i-\vec{b}_i|, 1-|\vec{a}_i-\vec{b}_i|))^2}\]
-As a result, whether distance and abstract term relating to an overlay or corresponds to physical distance depends on the application.
+Whether or not distance corresponds to actual physical distance or some virtual distance on an overlay depends on the application.
 
 %In two-dimensional spaces, there is quick hack to achieve 100\% accuracy distributed.
 
@@ -231,10 +230,10 @@ Our algorithm handles these cases via our method of peer management (Section \re
 \subsection{Peer Management}
 \label{sec:manage}
 Nodes running the heuristic maintain two peer lists: \textit{Short Peers} and \textit{Long Peers}.
-This is done to  mitigate the error induced by DGVH and providing robustness against churn\footnote{The disruption caused to an overlay network by the continuous joining, leaving, and failing of nodes.} in a distributed system.
+This is done to  mitigate the error induced by DGVH and provide robustness against churn\footnote{The disruption caused to an overlay network by the continuous joining, leaving, and failing of nodes.} in a distributed system.
 
 \textit{Short Peers} are the set of peers DGVH judged to have Voronoi regions adjacent to the node's own. 
-Using a lower bound on the length of \textit{Short Peers} corrects for errors in the approximation as it force nodes to include peers in that would otherwise be omitted. 
+Using a lower bound on the length of \textit{Short Peers} corrects for errors in the approximation as it forces nodes to include peers that would otherwise be omitted. 
 Previous work by Beaumont \textit{et al}.\ \cite{raynet} has found a useful lower bound on short peers to be $3d + 1$.
 Should the number of short peers generated by DGVH be less than the lower bound, the nearest peers not already included in \textit{Short Peers} are added to it, until \textit{Short Peers} is of sufficient size.
 %Members of \textit{Short Peers} are analogous to the predecessors/successors in other DHTs.
@@ -253,18 +252,18 @@ Thus, the maximum expected size of \textit{Short Peers} is bounded by $\Theta(\f
 
 \textit{Long Peers} is the list of two-hop neighbors of the node.
 When a node learns about potential neighbors, but are not included in the short peer list, they may be included in the long peer list.  
-\textit{Long Peers}has a maximum size of $(3d+1)^2$, although this size can be tweaked to the user's needs.  
+\textit{Long Peers} has a maximum size of $(3d+1)^2$, although this size can be tweaked to the user's needs.  
 For example, if \textit{Short Peers} has a minimum size of 8, then \textit{Long Peers} has a maximum of 64 entries.  
 We recommend that members of \textit{Long Peers} are not actively probed during maintenance to minimize the cost of maintenance.
-A maximum size is necessary, as leaving it unbounded would result in a node eventually keeping track of all the nodes in the network, which would be counter to the design of a distributed and scalable system
+A maximum size is necessary, as leaving it unbounded would result in a node eventually keeping track of all the nodes in the network, which would be counter to the design of a distributed and scalable system.
 
 %We next discuss how nodes learn about short and long peers.
 How nodes learn about peers is up to the application.
-We experimented using a gossip protocol, whereby a node selects peer from \textit{Short Peers} at random to ``gossip'' with.
+We experimented using a gossip protocol, whereby a node selects peers from \textit{Short Peers} at random to ``gossip'' with.
 When two nodes gossip with each other, they exchange their \textit{Short Peers} with each other.
 The node combines the lists of short peers\footnote{Nodes remove themselves and repetitions from the candidates they receive.} and uses DGVH to determine which of these candidates correspond to its neighbors along the Delaunay Triangulation.
 The candidates determined not to be short peers become long peers.  
-If resulting number of long peers exceeds the maximum size of \textit{Long Peers}, a random subset of the maximum size is kept.
+If the resulting number of long peers exceeds the maximum size of \textit{Long Peers}, a random subset of the maximum size is kept.
 
 The formal algorithm for this process is described in Algorithm~\ref{alg:gossip}.
 This maintenance through gossip process is very similar to the gossip protocol used in Beaumont et al.'s RayNet \cite{raynet}.
@@ -309,7 +308,7 @@ Since $k$ is  bounded by $\Theta(\frac{\log N}{\log \log N} )$ \cite{bern1991exp
 
 \[O(\frac{\log^{2} N}{\log^{2} \log N} )\]
 
-In the vast majority of cases, the number of peers is equal to the constant minimum table size. 
+In the vast majority of cases, the number of peers is equal to the minimum size of \textit{Short Peers}. 
 This yields $k=(3d+1)^{2}+3d+1$ in the expected case, where the lower bound and expected complexities are $\Omega(1)$.
 
 Previous work \cite{raynet} claims constant time approximation. 
@@ -323,9 +322,8 @@ Our algorithm has a greater asymptotic worst case cost, but for all current real
 \section{Applications}
 \label{sec:applications}
 
-As we previously discussed in Section \ref{sec:intro} Voronoi tessellation has many applications for distributed systems.
-
-We focus our discussion on the two extremes of applications: DHTs, which deal with overlays, and wireless networks, which need to take literal physical constraints into account.
+As we previously discussed in Section \ref{sec:intro}, Voronoi tessellation have many applications for distributed systems \cite{carbunar2004distributed} \cite{hu2004scalable} \cite{hu2008voronoi} \cite{Backhaus:2007:VAS:1326257.1326266}.
+We focus our discussion on the two extremes of applications: DHTs, which work with overlay networks, and wireless networks, which need to take literal physical constraints into account.
 
 
 
@@ -333,11 +331,11 @@ We focus our discussion on the two extremes of applications: DHTs, which deal wi
 \subsection{Distributed Hash Tables}
 Arguably all Distributed Hash Tables (DHTs) are built on the concept of Voronoi tessellation.
 In all DHTs, a node is responsible for all points in the overlay to which it is the ``closest'' node.
-Nodes are assigned a key as their location in some keyspace, based on the hash of some attributes.
-Normally, this is just the hash of the IP address and port of the node  \cite{chord} \cite{kademlia} \cite{can} \cite{pastry}, but other metrics such as geographic location can be used as well \cite{ratnasamy2002ght}.
+Nodes are assigned a key as their location in some keyspace, based on the hash of certain attributes.
+Normally, this is just the hash of the IP address (and possibly the port) of the node \cite{chord} \cite{kademlia} \cite{can} \cite{pastry}, but other metrics such as geographic location can be used as well \cite{ratnasamy2002ght}.
 
 These DHTs have carefully chosen metric spaces such that these regions are very simple to calculate.
-For example, Chord and similar ring-based DHTs utilize a unidirectional, one-dimensional ring as their metric space, such that the region for which a node is responsible is the region between itself and its predecessor.
+For example, Chord \cite{chord} and similar ring-based DHTs \cite{manku2003symphony} utilize a unidirectional, one-dimensional ring as their metric space, such that the region for which a node is responsible is the region between itself and its predecessor.
 
 Using a Voronoi tessellation in a DHT generalizes this design. 
 Nodes are Voronoi generators at a position based on their hashed keys.
@@ -345,7 +343,7 @@ These nodes are responsible for any key that falls within its generated Voronoi 
 
 Messages get routed along links to neighboring nodes. 
 This would take $O(n)$ hops in one dimension.
-In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is extremely similar to the one used in CAN, which would be $O(n^{\frac{1}{d}})$ hops.
+In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is extremely similar to the one used in Ratnasamy et al.'s Content Addressable Network (CAN) \cite{can}, which would be $O(n^{\frac{1}{d}})$ hops.
 \begin{algorithm}
 	\caption{Lookup in a Voronoi-based DHT}
 	\label{alg:lookup}
@@ -362,19 +360,19 @@ In multiple dimensions, our routing algorithm (Algorithm \ref{alg:lookup}) is ex
 	\end{algorithmic}
 \end{algorithm}
 
-DGVH can be used in a DHT to quickly and scabaly construct both the Voronoi tessellation and links to peers.
+DGVH can be used in a DHT to quickly and scalably construct both the Voronoi tessellation and links to peers.
 %TODO Numbers to back up needed?
 In addition, gossip-based peer management policies are extremely efficient in proactively handling node joins and failures.
 The act of joining informs other nodes of the joiner's existence.
-This can be done by the joiner contacting each peer in the peer lists of the node previously responsible for the joiner's location, 
+This can be done by the joiner contacting each peer in the peer lists of the node previously responsible for the joiner's location.
 
-Node failures can be handled extremely lazily
+Node failures can be handled without much effort.
 When a node attempts to route to or gossip with a node and discovers it no longer exists, it should remove the node from its peer lists and inform all of the nodes it knows to do the same.
 Since routing is how a node would make a decision on whether a point belongs to a particular Voronoi region, failed nodes don't have any impact on the network's accuracy.
 
 
-Because the algorithm is defined in terms of midpoint and distance functions, it is not bound by and particular topology or metric space.
-Our heuristic can be used to create a DHT which uses any arbitrary coordinate system that provides a midpoint and distance definition.
+Because the algorithm is defined in terms of midpoint and distance functions, it is not bound to any particular topology or metric space.
+Our heuristic can be used to create a DHT that uses any arbitrary coordinate system which defines a midpoint and distance definition.
 
 For example, we could use latency as one of these metrics by using it to approximate node locations in the network.
 This would allow messages to be routed along minimum latency paths, rather than along minimal hop paths.
@@ -382,25 +380,25 @@ We intend to model this using a distributed spring model.
 
 
 \subsection{Wireless Coverage}
-C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellation could be used to solve the \textit{coverage-boundary} problem in wireless ad-hoc networks.
+C\u{a}rbunar et al.\ \cite{carbunar2004distributed} demonstrated how Voronoi tessellations could be used to solve the \textit{coverage-boundary} problem in wireless ad-hoc networks.
 The coverage-boundary problem asks which nodes are on the physical edge of the network.
 This knowledge provides useful information to networks.
-For example, ad-hoc networks operating in with no infrastructure or have been set up temporarily can use this knowledge to define the reach of the network's coverage.
+For example, ad-hoc networks operating in no infrastructure or have been set up temporarily can use this knowledge to define the reach of the network's coverage.
 
-The authors showed how Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
+The authors showed how a Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
 They proved that the node's Voronoi region was not completely covered by the node's sensing radius if and only if the node was on the network's boundary \cite{carbunar2004distributed}.
 
 %Move lower?
 Chen et al.\ \cite{chen2008voronoi} extended this property for sleep scheduling in wireless sensor networks.
-A node is allowed to go to sleep and conserve power so long as the area it's detecting can be covered by other nodes.
-Using Voronoi tessilation, a node knows it can conserve power and not affect the network if and only if its not on the boundary of the network and its Voronoi vertices\footnote{Voronoi vertices are the points at which the edges of 3 or more Voronoi cells converge.} are covered by other nodes.
+A node is allowed to go to sleep and conserve power so long as the area it is detecting can be covered by other nodes.
+Using Voronoi tessellations, a node knows it can conserve power and not affect the network if and only if it is not on the boundary of the network and its Voronoi vertices\footnote{Voronoi vertices are the points at which the edges of 3 or more Voronoi cells converge.} are covered by other nodes.
 
 
 C\u{a}rbunar et al.'s algorithm relies on a centralized computation for Voronoi tessellation, as the distributed computation they examined only relied on forming the Delaunay triangulation between nodes within a certain radius, nor could it handle moving nodes.
 DGVH is not limited to handling nodes within a specified radius, since the peer management spreads information about nodes by gossiping. %like old yiddish women.
 In addition, so long as a node moving to a new location is treated as an entirely new node by the rest of the network, DGVH can handle moving nodes.\footnote{A specific node and a specific location must be bound together into a single identity.
 This means when a node tries to route to a node that has moved using the node's previous location, it should fail, as though that specific node no longer exists.  
-Failure to do this would ensure that the node incorrectly determines what falls within its Voronoi region.}
+Failure to do this would cause a node to incorrectly determines what falls within its Voronoi region.}
 
 
 \section{Experiments}
@@ -408,8 +406,8 @@ Failure to do this would ensure that the node incorrectly determines what falls 
 
 
 We implemented two sets of experiments for DGVH.
-The first compares the Voronoi tessellations created by DGVH to actual Voronoi tessellation.
-Our second set of experiments demonstrate that DGVH's errors are of little consequence when building a distributed and fault-tolerant systems.
+The first compares the Voronoi tessellations created by DGVH to actual am Voronoi tessellation.
+Our second set of experiments demonstrates that any errors computer by DGVH are negligible when building a distributed and fault-tolerant systems.
 
 \subsection{Experiment 1: Voronoi Accuracy}
 
@@ -433,7 +431,7 @@ We then calculate the hit rate of successful lookups by simulating 2000 lookups 
 A lookup is successful when the network correctly determines which Voronoi region contains a randomly selected point.
 
 
-Our experimental variables for this simulation were the number of nodes in DGVH generated overlay and the number of dimensions.  
+Our experimental variables for this simulation were the number of nodes in the DGVH generated overlay and the number of dimensions.  
 We tested network sizes of 500, 1000, 2000, 5000, and 10000 nodes each in 2, 3, 4, and 5 dimensions.
 The hit rate at each cycle is $\frac{hits}{2000}$, where $hits$ are the number of successful lookups.
 
@@ -457,10 +455,10 @@ The hit rate at each cycle is $\frac{hits}{2000}$, where $hits$ are the number o
 %In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
 %\subsection{Convergence Simulation Results}
-Our results are shown in Figures \ref{conv2}, \ref{conv3}, \ref{conv4}, and \ref{conv5}.
+Our results are shown in Figure \ref{fig:conv} for each dimension.
 Our graphs show that the created overlay quickly constructs itself from a random configuration and that our hit rate reached 90\% by cycle 20, regardless of dimension.
 Lookups consistently approached a hit rate of 100\% by cycle 30. 
-In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet} 
+In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet}.
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
 
 \begin{figure*}
@@ -493,7 +491,7 @@ As the network size and number of dimensions each increase, convergence slows, b
 		\end{subfigure}
 		
 	\end{tabular}
-	
+	\label{fig:conv}
 	\caption{These figures show that, starting from a randomized network, DGVH forms a stable and consistent network topology.
 		The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
 		Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
@@ -541,10 +539,10 @@ VAST demonstrated that Voronoi diagrams could be used as the backbone to large-s
 
 The two DHT protocols developed by Beumont et al., VoroNet \cite{voronet} and RayNet \cite{raynet} are two-dimension DHTs that we intend to extend using our technique.
 VoroNet is based off Kleinberg's small world model \cite{kleinberg2000navigation} and achieves polylogarithmic lookup time.  
-Each node in Voronet solves its Voronoi region to determine its neighbors and also maintains a link to a randomly chosen distant node.
-Voronet focused specifically on the two-dimensional Voronoi computations and the techniques used would be too expensive in higher dimensions and were not resilient to churn  \cite{raynet}.
+Each node in VoroNet solves its Voronoi region to determine its neighbors and also maintains a link to a randomly chosen distant node.
+VoroNet focused specifically on the two-dimensional Voronoi computations and the techniques used would be too expensive in higher dimensions and were not resilient to churn  \cite{raynet}.
 
-RayNet \cite{raynet} was based on the work done on Voronet and used a heuristic to calculate Voronoi tessilations.  
+RayNet \cite{raynet} was based on the work done on VoroNet and used a heuristic to calculate Voronoi tessilations.  
 Like our DGVH, RayNet's heuristic does not solve for Voronoi regions, as that is prohibitively expensive.  
 RayNet uses a Monte-Carlo method to approximate the volume of a node's Voronoi region in constant time.  
 While effective at estimating the Voronoi region,  the volume-based Monte-Carlo approximation is expensive and requires multiple samples. 
@@ -564,7 +562,7 @@ RayNet does mention the idea of mapping attributes to each axis, but how this ca
 
 Voronoi tessellations have a wide potential for applications in ad-hoc networks, massively multiplayer games, P2P, and distributed networks. 
 However, centralized algorithms for Voronoi tessellation and Delaunay triangulation are not applicable to decentralized systems.
-In addition, solving Voronoi tessellation in more than 2 dimensions computationally expensive.
+In addition, solving Voronoi tessellations in more than 2 dimensions is computationally expensive.
 
 We created a distributed heuristic for Voronoi tessellations in an arbitrary number of dimensions.
 Our heuristic is fast and scalable, with a expected memory cost of $(3d+1)^{2}+3d+1$ and expected maximum runtime of O$(\frac{\log^{2} N}{\log^{2} \log N} )$.
@@ -574,7 +572,7 @@ Our first set of experiments demonstrated that our heuristic is reasonably accur
 
 
 Our next step is to create a formal protocol and implementation for a Voronoi tessellation-based distributed hash table using DGVH.  
-We can use this DHT to choose certain metrics we want to measure, such as latency, or trust, and embed that information as part of a node's identify.
+We can use this DHT to choose certain metrics we want to measure, such as latency, or trust, and embed that information as part of a node's identity.
 By creating an appropriate distance measurement, we can route along some path that minimizes or maximizes the desired metric.
 Rather than create an overlay that minimizes hops, we can have our overlay minimize latency, which is the actual goal of most routing algorithms.
 
