@@ -81,9 +81,9 @@ Distributed computations often have to resort to costly Monte-Carlo calculations
 
 %We take advantage of the fact that distributed applications are fault-tolerant to accommodate changes in network topology.
 %This is especially true for P2P environments.
-Rather than exactly solving the Voronoi tessellation, we instead present a fast and accurate heuristic to approximate each of the regions of a Voronoi tessellation
-This enables fast and efficient formation of P2P networks.
-A P2P network built using this heuristic would be able to take advantage of it's available fault-tolerant architecture to route along any inaccuracies that arise.
+Rather than exactly solving the Voronoi tessellation, we instead present a fast and accurate heuristic to approximate each of the regions of a Voronoi tessellation.
+This enables fast and efficient formation of P2P networks, where nodes are the Voronoi generators of those region.
+A P2P network built using this heuristic would be able to take advantage of its available fault-tolerant architecture to route along any inaccuracies that arise.
 Our paper presents the following contributions:
 \begin{itemize}
 	\item We present our Distributed Greedy Voronoi Heuristic (DGVH). 
@@ -96,7 +96,7 @@ Our paper presents the following contributions:
 	In particular, we show how we can use DGVH to build a distributed hash table with embedded minimal latency.
 	\item We present simulations demonstrating DGVH's efficacy in quickly converging to the correct Voronoi tessellation.
     We simulated our heuristic in networks ranging from size 500 nodes to 10000 nodes.
-	Our simulations show that a distributed network running DGVH accurately determines the region a randomly chosen point falls in 90\% of the time within 20 cycles and converges near 100\% accuracy by cycle 30.
+	Our simulations show that a distributed network running DGVH accurately determines the region a randomly chosen point falls in 90\% of the time within 20 cycles and converges near 100\% accuracy by cycle 30 (Section \ref{sec:experiments}).
 	\item We present the related work we have built upon to create our heuristic and what improvements we made with DGVH (Section \ref{sec:related}).
 \end{itemize}
 
@@ -108,7 +108,7 @@ Our paper presents the following contributions:
 A Voronoi tessellation is the partition of a space into cells or regions along a set of objects $O$, such that all the points in a particular region are closer to one object than any other object.  
 We refer to the region owned by an object as that object's Voronoi region.
 Objects which are used to create the regions are called Voronoi generators.
-In network applications that use Voronoi tessellation, nodes in the network act as the Voronoi generators.
+In network applications that use Voronoi tessellations, nodes in the network act as the Voronoi generators.
 
 The Voronoi tessellation and Delaunay triangulation are dual problems, as an edge between two objects in a Delaunay triangulation exists if and only if those object's Voronoi regions border each other.  
 This means that solving either problem will yield the solution to both.   
@@ -191,7 +191,7 @@ Otherwise the candidate is added to the new peer list.
 
 DGVH never actually solves for the actual polytopes that describe a node's Voronoi region.
 This is unnecessary and prohibitively expensive \cite{raynet}.
-Rather, once the heuristic has been run, nodes can determine whether a given point would fall in it's region.
+Rather, once the heuristic has been run, nodes can determine whether a given point would fall in its region.
 
 Nodes do this by calculating the distance of the given point to itself and other nodes it knows about.
 The point falls into a particular node's Voronoi region if it is the node to which it has the shortest distance.
@@ -230,7 +230,7 @@ Our algorithm handles these cases via our method of peer management (Section \re
 \subsection{Peer Management}
 \label{sec:manage}
 Nodes running the heuristic maintain two peer lists: \textit{Short Peers} and \textit{Long Peers}.
-This is done to  mitigate the error induced by DGVH and provide robustness against churn\footnote{The disruption caused to an overlay network by the continuous joining, leaving, and failing of nodes.} in a distributed system.
+This is done to mitigate the error induced by DGVH and provide robustness against churn\footnote{The disruption caused to an overlay network by the continuous joining, leaving, and failing of nodes.} in a distributed system.
 
 \textit{Short Peers} are the set of peers DGVH judged to have Voronoi regions adjacent to the node's own. 
 Using a lower bound on the length of \textit{Short Peers} corrects for errors in the approximation as it forces nodes to include peers that would otherwise be omitted. 
@@ -286,15 +286,9 @@ This maintenance through gossip process is very similar to the gossip protocol u
 
 
 
-
-
-
-
-
-
 \subsection{Algorithm Analysis}
 
-DVGH is very efficient in both terms of space and time.
+DVGH is very efficient in terms of both space and time.
 Suppose a node $n$ is creating its short peer list from $k$ candidates in an overlay network of $N$ nodes. 
 The candidates must be sorted, which takes $O(k\cdot\lg(k))$ operations.  
 Node $n$ must then compute the midpoint between itself and each of the $k$ candidates.  
@@ -385,7 +379,7 @@ The coverage-boundary problem asks which nodes are on the physical edge of the n
 This knowledge provides useful information to networks.
 For example, ad-hoc networks operating in no infrastructure or have been set up temporarily can use this knowledge to define the reach of the network's coverage.
 
-The authors showed how a Voronoi tessilation using the nodes as Voronoi generators could solve the coverage-boundary problem.
+The authors showed how a Voronoi tessellation using the nodes as Voronoi generators could solve the coverage-boundary problem.
 They proved that the node's Voronoi region was not completely covered by the node's sensing radius if and only if the node was on the network's boundary \cite{carbunar2004distributed}.
 
 %Move lower?
@@ -406,8 +400,8 @@ Failure to do this would cause a node to incorrectly determines what falls withi
 
 
 We implemented two sets of experiments for DGVH.
-The first compares the Voronoi tessellations created by DGVH to actual am Voronoi tessellation.
-Our second set of experiments demonstrates that any errors computer by DGVH are negligible when building a distributed and fault-tolerant systems.
+The first compares the Voronoi tessellations created by DGVH to an actual Voronoi tessellation.
+Our second set of experiments demonstrates that any errors computed by DGVH are negligible when building distributed and fault-tolerant systems.
 
 \subsection{Experiment 1: Voronoi Accuracy}
 
@@ -455,13 +449,14 @@ The hit rate at each cycle is $\frac{hits}{2000}$, where $hits$ are the number o
 %In order to show that leaving the size of the short peer list unbounded is not detrimental to the memory costs of nodes, we also kept track of the size of the short peer list at each cycle. 
 
 %\subsection{Convergence Simulation Results}
-Our results are shown in Figure \ref{fig:conv} for each dimension.
+Our results are shown in Figures \ref{conv2}, \ref{conv3}, \ref{conv4}, and \ref{conv5} for each dimension.
 Our graphs show that the created overlay quickly constructs itself from a random configuration and that our hit rate reached 90\% by cycle 20, regardless of dimension.
 Lookups consistently approached a hit rate of 100\% by cycle 30. 
 In comparison, RayNet's routing converged to a perfect hit rate at around cycle 30 to 35 \cite{raynet}.
 As the network size and number of dimensions each increase, convergence slows, but not to a significant degree.
 
 \begin{figure*}
+	\label{fig:conv}
 	\centering 
 	\begin{tabular}{cc}
 		
@@ -491,7 +486,6 @@ As the network size and number of dimensions each increase, convergence slows, b
 		\end{subfigure}
 		
 	\end{tabular}
-	\label{fig:conv}
 	\caption{These figures show that, starting from a randomized network, DGVH forms a stable and consistent network topology.
 		The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
 		Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
