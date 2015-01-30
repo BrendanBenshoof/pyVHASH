@@ -91,9 +91,7 @@ def graph_diff(g0,g1):
 	return delta
 
 ys = []
-xs = [100, 500, 1000, 2000, 5000]*5 #range(10,100,10)
-
-
+xs = [500,1000,2000,5000,100000]
 for size in xs:
 
 	locs = generate_random_points(size)
@@ -104,15 +102,8 @@ for size in xs:
 	G_approx=fast_delunay_prune(G_approx)
 
 	errors = graph_diff(G_truth,G_approx)
-	with open("exp_log.txt","a") as fp:
-		fp.write("%d\t%d" % (size,errors))
 	print size, errors
+	ys.append(errors)
 
-	#ys.append(errors)
-
-
-
-"""
 plt.plot(xs,ys)
 plt.show()
-"""
