@@ -62,12 +62,6 @@ Our heuristic is fast, scalable, works in any geometric space with a distance an
 % networks are only hpped
 % we can do non-euclidean metrics if we have a non-euclidean distance and midpoint definition
 
-\begin{IEEEkeywords}
-	Peer-to-Peer Networks;  Wireless Sensor Networks; Ad-Hoc Networks; Computational Geometry
-	
-\end{IEEEkeywords}
-
-
 
 \section{Introduction}
 \label{sec:intro}
@@ -405,13 +399,11 @@ Failure to do this would cause a node to incorrectly determines what falls withi
 \label{sec:experiments}
 
 
-%We implemented two sets of experiments for DGVH.
-%The first compares the Voronoi tessellations created by DGVH to an actual Voronoi tessellation.
-%Our second set of experiments demonstrates that any errors computed by DGVH are negligible when building distributed and fault-tolerant systems.
+We implemented two sets of experiments for DGVH.
+The first compares the Voronoi tessellations created by DGVH to an actual Voronoi tessellation.
+Our second set of experiments demonstrates that any errors computed by DGVH are negligible when building distributed and fault-tolerant systems.
 
-%\subsection{Experiment 1: Voronoi Accuracy}
-
-
+\subsection{Experiment 1: Voronoi Accuracy}
 
 
 
@@ -419,9 +411,10 @@ Failure to do this would cause a node to incorrectly determines what falls withi
 
 
 
-%\subsection{Experiment 2: P2P Convergence and Routing}
-%Our second set of experiments examines how DGVH could be used to create a DHT and how well it would perform in this task.
-Our experiments examine how DGVH could be used to create a DHT and how well it would perform in this task
+
+
+\subsection{Experiment 2: P2P Convergence and Routing}
+Our second set of experiments examines how DGVH could be used to create a DHT and how well it would perform in this task.
 Our simulation demonstrates how DGVH  can be used to create a stable overlay from a chaotic starting topology after a sufficient number of gossip cycles.  
 We do this by showing that the rate of successful lookups approaches 1.0.
 We compare these results to RayNet \cite{raynet}, which proposed that a random $k$-connected graph would be a good, challenging starting configuration for demonstrating convergence of a DHT to a stable network topology.
@@ -567,12 +560,9 @@ In addition, solving Voronoi tessellations in more than 2 dimensions is computat
 
 We created a distributed heuristic for Voronoi tessellations in an arbitrary number of dimensions.
 Our heuristic is fast and scalable, with a expected memory cost of $(3d+1)^{2}+3d+1$ and expected maximum runtime of O$(\frac{\log^{2} N}{\log^{2} \log N} )$.
-Experiments demonstrated that DGVH is sufficiently accurate to build a P2P network which can route accurately.%TODO: Delete this
 
-%We ran two sets of experiments to demonstrate DGVH's effectiveness.
-%Our first set of experiments demonstrated that our heuristic is reasonably accurate  and our second set demonstrates that reasonably accurate is sufficient to build a P2P network which can route accurately.
-
-
+We ran two sets of experiments to demonstrate DGVH's effectiveness.
+Our first set of experiments demonstrated that our heuristic is reasonably accurate  and our second set demonstrates that reasonably accurate is sufficient to build a P2P network which can route accurately.
 
 
 Our next step is to create a formal protocol and implementation for a Voronoi tessellation-based distributed hash table using DGVH.  
