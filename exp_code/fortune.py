@@ -91,7 +91,7 @@ def graph_diff(g0,g1):
 	return delta
 
 ys = []
-xs = range(2,10,1)
+xs = [500,1000,2000,5000,100000]
 for size in xs:
 
 	locs = generate_random_points(size)
