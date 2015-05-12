@@ -8,8 +8,8 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 
-\author{People}
-\title{Blah}
+\title{A Distributed Greedy Heuristic for Computing Voronoi Tessellations With Applications Towards Peer-to-Peer Networks}
+\author{Brendan Benshoof \qquad Andrew Rosen \qquad \\Anu G. Bourgeois \qquad Robert W. Harrison \\Department of Computer Science, Georgia State University}
 %\subtitle{}
 %\logo{}
 %\institute{}
@@ -21,7 +21,104 @@
 \begin{document}
 	\maketitle
 	
+	
+	
+	\begin{frame}{Outline}
+		\tableofcontents
+	\end{frame}
+	
+	
+	\section{Background}
+	
+	\begin{frame}{Distributed Hash Tables}
+		\begin{itemize}
+			\item Abstractly, a DHT is a mechanism for maintaining a large state in a decentralized network.
+			\item In practice, the state is a large number of key,value records.
+			\item A Distributed hash table assigns those records to servers and routes request for those records to those servers.
+			\item Current incarnations of Distributed hash tables assign servers and records locations in an arbitrary metric space.
+			\item Servers are assigned responsibility for records that are ``close'' to them, and to peer with ``nearby'' servers.
+			\item DHTs currently use a variety metric spaces.
+		\end{itemize}
+
+
+	\end{frame}
+
+	\begin{frame}{Applications}
+		\begin{itemize}
+			\item \textit{P2P file sharing} is by far the most prominent use of DHTs.  
+			The most well-known application is BitTorrent \cite{bittorrent}.
+			\item \textit{Distributed Domain Name Systems} (DNS) have been built upon DHTs \cite{cox2002serving} \cite{pappas2006comparative}.
+			Distributed DNSs are much more robust that DNS to orchestrated attacks, but otherwise require more overhead.
+			%\item Distributed search (faroo)
+			\item Distributed \textit{machine learning} \cite{liparameter}.
+			\item Many \textit{botnets} are now P2P based and built using well established DHTs \cite{saad2011detecting}. 
+			This is because the decentralized nature of P2P systems means there's no single vulnerable location in the botnet.
+		\end{itemize}
+	\end{frame}
+
+\begin{frame}{Extant Varieties of DHT}
+	\begin{itemize}
+		\item Ring Based DHTs
+		\begin{itemize}
+			\item Chord
+			\item Pastry
+			\item Tapestry
+		\end{itemize}
+		\item Tree Based DHTs
+		\begin{itemize}
+			\item CAN
+			\item Kademlia
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{How are DHTs and Vonroi Tesselation/Delunay Trianguation related?}
+	A Server is responsible for records ''close`` to it (Voronoi Triangulation)
+	A Server peers with other servers that bound it's Voronoi Region (Delunay Triangulation)
+	DHTs often have peers in excess of the Delaunay triangulation to shorten lookups, however the peers that are the Delunay neighbors
+	\begin{itemize}
+		\item Ring Based DHT
+		\begin{itemize}
+			\item Provide a unidirectional modulus ring 
+		\end{itemize}
+		\item Tree Based DHTs
+		\begin{itemize}
+			\item CAN
+			\item Kademlia
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+	\subsection{Motivation}
+\begin{frame}{Why do we need DGVH?}
+	The different topologies DHTs utilize present optimization tradeoffs (lookup latency, number of lookup hops, network robustness, availability, processing overhead)
+	The primary effort in implementing a new metric space in a DHT is implementing Voronoi Regions/Delunay Triangulation algorithm in that metric
+\end{frame}
+
+	
+	
+	\subsection{Related Work}
+	
+	\section{DGVH}
+	
+	\subsection{Our Heuristic}
+	
+	\subsection{Peer Management}
+	
+	
+	\subsection{Algorithm Analysis}
+	
+	
+	\section{Experiments}
+	
+	
+	
+	\section{Conclusion}
+	
+	
+	
 	\begin{frame}
 		\frametitle{}
 	\end{frame}
+	
 \end{document}
