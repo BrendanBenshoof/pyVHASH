@@ -8,6 +8,9 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 
+\usepackage{algorithm} 
+\usepackage{algorithmic}
+
 \title{A Distributed Greedy Heuristic for Computing Voronoi Tessellations With Applications Towards Peer-to-Peer Networks}
 \author{Brendan Benshoof \qquad Andrew Rosen \qquad \\Anu G. Bourgeois \qquad Robert W. Harrison \\Department of Computer Science, Georgia State University}
 %\subtitle{}
@@ -77,34 +80,85 @@
 	A Server peers with other servers that bound it's Voronoi Region (Delunay Triangulation)
 	DHTs often have peers in excess of the Delaunay triangulation to shorten lookups, however the peers that are the Delunay neighbors
 	\begin{itemize}
-		\item Ring Based DHT
+		\item Ring Based DHTs
 		\begin{itemize}
-			\item Provide a unidirectional modulus ring 
+			\item Chord: a unidirectional modulus ring metric
+			\item Pastry, Symphony: bidirectional modulus ring
 		\end{itemize}
 		\item Tree Based DHTs
 		\begin{itemize}
-			\item CAN
-			\item Kademlia
+			\item CAN: Euclidean distance
+			\item Kademlia: XOR distance
 		\end{itemize}
 	\end{itemize}
 \end{frame}
 
 	\subsection{Motivation}
 \begin{frame}{Why do we need DGVH?}
-	The different topologies DHTs utilize present optimization tradeoffs (lookup latency, number of lookup hops, network robustness, availability, processing overhead)
-	The primary effort in implementing a new metric space in a DHT is implementing Voronoi Regions/Delunay Triangulation algorithm in that metric
+	\begin{itemize}
+		\item The different topologies DHTs utilize present optimization trade-offs (lookup latency, number of lookup hops, network robustness, availability, processing overhead)
+		\item The primary effort in implementing a new metric space in a DHT is implementing Voronoi Regions/Delunay Triangulation algorithm in that metric.
+		\item DGVH allows many metrics to be tested without requiring the design and development effort of generating an exact Voronoi Regions/Delunay Triangulation algorithm.
+		
+	\end{itemize}
+
 \end{frame}
 
 	
 	
-	\subsection{Related Work}
+
 	
 	\section{DGVH}
+	\begin{frame}{Distributed Greedy Voronoi Heuristic}
+		\begin{itemize}
+			\item Geometrically intuitive method of approximating the one-hop delaunay peers of a Node
+			\item Is guaranteed to form a connected mesh (unlike k-nearest heuristic)
+			\item Can be utilized in any continuous metric space
+		\end{itemize}
+		
+	\end{frame}
 	
 	\subsection{Our Heuristic}
-	
+	\begin{frame}{DGVH Algorithim}
+
+		
+
+			\begin{algorithmic}[1]  % the numberis how many lines
+				\STATE Given node $n$ and its list of $candidates$.
+				\STATE $peers \leftarrow$ empty set that will contain $n$'s one-hop peers
+				\STATE Sort $candidates$ in ascending order by each node's distance to $n$
+				\STATE Remove the first member of $candidates$ and add it to $peers$
+				\FORALL{$c$ in $candidates$}
+				\STATE $m$ is the midpoint between $n$ and $c$
+				\IF{Any node in $peers$ is closer to $m$ than $n$}
+				\STATE Reject $c$ as a peer
+				\ELSE
+				\STATE Remove $c$ from $candidates$
+				\STATE Add $c$ to $peers$
+				\ENDIF
+				\ENDFOR
+			\end{algorithmic}
+
+	\end{frame}
+	\begin{frame}{Visual Intutution}
+		PUT PICTURES HERE!!!!
+	\end{frame}
 	\subsection{Peer Management}
-	
+	\begin{frame}{Realistic Canidate set Size}
+		\begin{itemize}
+			\item In application, a single node will not need to calculate the triangulation for every peer in the network, rather it will only calculate it's own peers.
+			\item A smart ''join`` process will prevent the Candidate Set from reaching $O(n)$
+			\item Expected size of the candidate set is $O(degree^2)$ which compromises current peers and 2-hop peers
+			\item The average degree of many metric spaces is $O(1)$, then therefore DGVH will practically run in $O(1)$ time in those metric spaces.
+		\end{itemize}
+	\end{frame}
+	\begin{frame}{Error Mitigation}
+		\begin{itemize}
+			\item As DGVH is a heuristic, it will likely have errors when compared to a global Delaunay triangulation.
+			\item This error rate is difficult to find analytically and will vary between metric spaces and distributions of locations
+			\item A simple method of mitigating this error is to keep both one and two hop peers.
+		\end{itemize}
+	\end{frame}
 	
 	\subsection{Algorithm Analysis}
 	
