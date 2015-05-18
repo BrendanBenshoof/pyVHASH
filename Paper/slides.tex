@@ -213,45 +213,48 @@
 \end{frame}
 
 \subsection{Routing Accuracy}
+
+
+\begin{frame}
+content
+\end{frame}
+
+
+
 \begin{frame}{Results}
- \begin{figure}
+ 
+
+\begin{figure}
  	\label{fig:conv}
- 	\centering 
- 	\begin{tabular}{cc}
- 		
- 		\begin{subfigure}{\columnwidth}
- 			\includegraphics[width=\columnwidth]{conv_d2}
- 			\caption{This plot shows the accuracy rate of lookups on a 2-dimensional network as it self-organizes.}
+ 		\begin{subfigure}[b]{.45\linewidth}
+ 			\centering
+ 			\includegraphics[height=3cm]{conv_d2}
+ 			%\caption{This plot shows the accuracy rate of lookups on a 2-dimensional network as it self-organizes.}
  			\label{conv2}
- 		\end{subfigure} &
- 		
- 		\begin{subfigure}{\columnwidth}
- 			\includegraphics[width=\columnwidth]{conv_d3}
- 			\caption{This plot shows the accuracy rate of lookups on a 3-dimensional network as it self-organizes.}
+ 		\end{subfigure} 
+ 		\begin{subfigure}[b]{.45\linewidth}
+ 			\centering
+ 			\includegraphics[height=3cm]{conv_d3}
+ 			%\caption{This plot shows the accuracy rate of lookups on a 3-dimensional network as it self-organizes.}
  			\label{conv3}
- 		\end{subfigure} \\
- 		
- 		\begin{subfigure}{\columnwidth}
- 			\includegraphics[width=\linewidth]{conv_d4}
- 			\caption{This plot shows the accuracy rate of lookups on a 4-dimensional network as it self-organizes.}
+ 		\end{subfigure}\\
+ 		\begin{subfigure}[b]{.45\linewidth}
+ 		\centering
+ 			\includegraphics[height=3cm]{conv_d4}
+ 			%\caption{This plot shows the accuracy rate of lookups on a 4-dimensional network as it self-organizes.}
  			\label{conv4}
- 		\end{subfigure} &
- 		
- 		
- 		\begin{subfigure}{\columnwidth}
- 			\includegraphics[width=\linewidth]{conv_d5}
- 			\caption{This plot shows the accuracy rate of lookups on a 5-dimensional network as it self-organizes.}
+ 		\end{subfigure}
+ 		\begin{subfigure}[b]{.45\linewidth}
+ 			\centering
+ 			\includegraphics[height=3cm]{conv_d5}
+ 			%\caption{This plot shows the accuracy rate of lookups on a 5-dimensional network as it self-organizes.}
  			\label{conv5}
  		\end{subfigure}
  		
- 	\end{tabular}
- 	\caption{These figures show that, starting from a randomized network, DGVH forms a stable and consistent network topology.
- 		The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
- 		Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
+ 	\caption{These figures show, starting from a randomized network, DGVH forms a stable and consistent network topology.
+ 		The Y axis is the percentage of successful lookups out of 2000 queries and the X axis is the number of gossips cycles.}
  	
  \end{figure}
-
-	
 	
 
 
