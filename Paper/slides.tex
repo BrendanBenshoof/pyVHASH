@@ -7,7 +7,8 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
-
+\usepackage{subcaption}
+%\usepackage{subfig} 
 \usepackage{algorithm} 
 \usepackage{algorithmic}
 
@@ -26,17 +27,44 @@
 	
 	
 	
-	\begin{frame}{Outline}
-		\tableofcontents
-	\end{frame}
+\begin{frame}{Outline}
+	\tableofcontents
+\end{frame}
 	
 	
-	\section{Background}
+\section{Background}
+\subsection{Motivation}
 	
+	\begin{frame}{Motivation}
+		We were creating a distributed network based off of Delaunay Triangulation and needed a fast distributed algorithm for calculating Delaunay peers.
+		We ran into a couple of issues.
+		\begin{itemize}
+			\item Distributed algorithms for solving Delaunay triangulation don't really exist (every node does a global solution).
+			\item Not any fast solutions if we start moving out of 2D Euclidean space.
+		\end{itemize}
+		This leaves approximation.  However:
+		\begin{itemize}
+			\item Simple approximation doesn't guarantee a fully-reachable network ($k$-nearest neighbor, nodes in radius $r$).
+			\item Other solutions \cite{voronet} required prohibitively high sampling or other hidden time costs.
+		\end{itemize}
+		And nothing can handle moving nodes.
+	\end{frame}		
+	
+	
+	
+	
+
+		
+		
+		
+		
+		
+	
+	\subsection{Distributed Hash Tables}
 	\begin{frame}{Distributed Hash Tables}
 		\begin{itemize}
 			\item Abstractly, a DHT is a mechanism for maintaining a large state in a decentralized network.
-			\item In practice, the state is a large number of key,value records.
+			\item In practice, the state is a large number of $ (key, value) $ records.
 			\item A Distributed hash table assigns those records to servers and routes request for those records to those servers.
 			\item Current incarnations of Distributed hash tables assign servers and records locations in an arbitrary metric space.
 			\item Servers are assigned responsibility for records that are ``close'' to them, and to peer with ``nearby'' servers.
@@ -46,7 +74,7 @@
 
 	\end{frame}
 
-	\begin{frame}{Applications}
+	\begin{frame}{Applications of DHTs}
 		\begin{itemize}
 			\item \textit{P2P file sharing} is by far the most prominent use of DHTs.  
 			The most well-known application is BitTorrent \cite{bittorrent}.
@@ -93,7 +121,7 @@
 	\end{itemize}
 \end{frame}
 
-	\subsection{Motivation}
+
 \begin{frame}{Why do we need DGVH?}
 	\begin{itemize}
 		\item The different topologies DHTs utilize present optimization trade-offs (lookup latency, number of lookup hops, network robustness, availability, processing overhead)
@@ -101,14 +129,14 @@
 		\item DGVH allows many metrics to be tested without requiring the design and development effort of generating an exact Voronoi Regions/Delunay Triangulation algorithm.
 		
 	\end{itemize}
-
 \end{frame}
 
-	
+
+
 	
 
 	
-	\section{DGVH}
+\section{DGVH}
 	\begin{frame}{Distributed Greedy Voronoi Heuristic}
 		\begin{itemize}
 			\item Geometrically intuitive method of approximating the one-hop delaunay peers of a Node
@@ -119,9 +147,9 @@
 	\end{frame}
 	
 	\subsection{Our Heuristic}
+	
+	
 	\begin{frame}{DGVH Algorithim}
-
-		
 
 			\begin{algorithmic}[1]  % the numberis how many lines
 				\STATE Given node $n$ and its list of $candidates$.
@@ -140,11 +168,18 @@
 			\end{algorithmic}
 
 	\end{frame}
-	\begin{frame}{Visual Intutution}
-		PUT PICTURES HERE!!!!
-	\end{frame}
-	\subsection{Peer Management}
-	\begin{frame}{Realistic Canidate set Size}
+	
+	
+	
+\begin{frame}{Visual Intutution}
+	PUT PICTURES HERE!!!!
+\end{frame}
+	
+	
+	
+	
+\subsection{Peer Management}
+	\begin{frame}{Realistic Candidate set Size}
 		\begin{itemize}
 			\item In application, a single node will not need to calculate the triangulation for every peer in the network, rather it will only calculate it's own peers.
 			\item A smart ''join`` process will prevent the Candidate Set from reaching $O(n)$
@@ -160,19 +195,79 @@
 		\end{itemize}
 	\end{frame}
 	
-	\subsection{Algorithm Analysis}
+\subsection{Algorithm Analysis}
 	
 	
-	\section{Experiments}
+\section{Experiments}
+	
+\subsection{Heuristic Accuracy}
+
+
+\begin{frame}{Results}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{error_rate}
+	\caption{As the size of the graph increases, we see approximately 1 error per node.}
+	\label{exp_0}
+\end{figure}
+\end{frame}
+
+\subsection{Routing Accuracy}
+\begin{frame}{Results}
+ \begin{figure}
+ 	\label{fig:conv}
+ 	\centering 
+ 	\begin{tabular}{cc}
+ 		
+ 		\begin{subfigure}{\columnwidth}
+ 			\includegraphics[width=\columnwidth]{conv_d2}
+ 			\caption{This plot shows the accuracy rate of lookups on a 2-dimensional network as it self-organizes.}
+ 			\label{conv2}
+ 		\end{subfigure} &
+ 		
+ 		\begin{subfigure}{\columnwidth}
+ 			\includegraphics[width=\columnwidth]{conv_d3}
+ 			\caption{This plot shows the accuracy rate of lookups on a 3-dimensional network as it self-organizes.}
+ 			\label{conv3}
+ 		\end{subfigure} \\
+ 		
+ 		\begin{subfigure}{\columnwidth}
+ 			\includegraphics[width=\linewidth]{conv_d4}
+ 			\caption{This plot shows the accuracy rate of lookups on a 4-dimensional network as it self-organizes.}
+ 			\label{conv4}
+ 		\end{subfigure} &
+ 		
+ 		
+ 		\begin{subfigure}{\columnwidth}
+ 			\includegraphics[width=\linewidth]{conv_d5}
+ 			\caption{This plot shows the accuracy rate of lookups on a 5-dimensional network as it self-organizes.}
+ 			\label{conv5}
+ 		\end{subfigure}
+ 		
+ 	\end{tabular}
+ 	\caption{These figures show that, starting from a randomized network, DGVH forms a stable and consistent network topology.
+ 		The Y axis shows the success rate of lookups and the X axis show the number of gossips that have occurred.
+ 		Each point shows the fraction of 2000 lookups that successfully found the correct destination.}
+ 	
+ \end{figure}
+
 	
 	
+
+
+\end{frame}	
+
+\section{Conclusion}
+	\begin{frame}{Other Applications}
+		One type of distributed system that can use Voronoi tessellations are \textit{wireless ad-hoc networks}.
+		\begin{itemize}
+			\item Solves the coverage-boundary problem \cite{carbunar2004distributed}.
+			\item Can be used for sleep scheduling \cite{chen2008voronoi}
+		\end{itemize}
+	\end{frame}	
 	
-	\section{Conclusion}
-	
-	
-	
-	\begin{frame}
-		\frametitle{}
-	\end{frame}
+
+\bibliography{P3DNS}
+\bibliographystyle{plain}
 	
 \end{document}
