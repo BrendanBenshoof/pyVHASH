@@ -98,40 +98,12 @@
 
 
 	\end{frame}
-
-	\begin{frame}{Applications of DHTs}
-		\begin{itemize}
-			\item \textit{P2P file sharing} is by far the most prominent use of DHTs.  
-			The most well-known application is BitTorrent \cite{bittorrent}.
-			\item \textit{Distributed Domain Name Systems} (DNS) have been built upon DHTs \cite{cox2002serving} \cite{pappas2006comparative}.
-			Distributed DNSs are much more robust that DNS to orchestrated attacks, but otherwise require more overhead.
-			%\item Distributed search (faroo)
-			\item Distributed \textit{machine learning} \cite{liparameter}.
-			\item Many \textit{botnets} are now P2P based and built using well established DHTs \cite{saad2011detecting}. 
-			This is because the decentralized nature of P2P systems means there's no single vulnerable location in the botnet.
-		\end{itemize}
-	\end{frame}
-
-\begin{frame}{Extant Varieties of DHT}
-	\begin{itemize}
-		\item Ring Based DHTs
-		\begin{itemize}
-			\item Chord
-			\item Pastry
-			\item Tapestry
-		\end{itemize}
-		\item Tree Based DHTs
-		\begin{itemize}
-			\item CAN
-			\item Kademlia
-		\end{itemize}
-	\end{itemize}
-\end{frame}
-
-\begin{frame}{How are DHTs and Vonroi Tesselation/Delunay Trianguation related?}
-	A Server is responsible for records ''close`` to it (Voronoi Triangulation)
-	A Server peers with other servers that bound it's Voronoi Region (Delunay Triangulation)
-	DHTs often have peers in excess of the Delaunay triangulation to shorten lookups, however the peers that are the Delunay neighbors
+	
+\begin{frame}{How are DHTs and Vonroi Tesselation/Delaunay Trianguation related?}
+	A Server is responsible for records ''close`` to it (Voronoi Triangulation).
+	A Server peers with other servers that bound it's Voronoi Region (Delaunay Triangulation).
+	DHTs often have peers in excess of the Delaunay triangulation to shorten lookups.
+	
 	\begin{itemize}
 		\item Ring Based DHTs
 		\begin{itemize}
@@ -146,12 +118,26 @@
 	\end{itemize}
 \end{frame}
 
+	\begin{frame}{Applications of DHTs}
+		\begin{itemize}
+			\item \textit{P2P file sharing} is by far the most prominent use of DHTs.  
+			The most well-known application is BitTorrent \cite{bittorrent}.
+			\item \textit{Distributed Domain Name Systems} (DNS) have been built upon DHTs \cite{cox2002serving} \cite{pappas2006comparative}.
+			Distributed DNSs are much more robust that DNS to orchestrated attacks, but otherwise require more overhead.
+			%\item Distributed search (faroo)
+			\item Distributed \textit{machine learning} \cite{liparameter}.
+			\item Many \textit{botnets} are now P2P based and built using well established DHTs \cite{saad2011detecting}. 
+			This is because the decentralized nature of P2P systems means there's no single vulnerable location in the botnet.
+		\end{itemize}
+	\end{frame}
+
+
 
 \begin{frame}{Why do we need a distributed Voronoi heuristic?}
 	\begin{itemize}
 		\item The different topologies DHTs utilize present optimization trade-offs (lookup latency, number of lookup hops, network robustness, availability, processing overhead)
-		\item The primary effort in implementing a new metric space in a DHT is implementing Voronoi Regions/Delunay Triangulation algorithm in that metric.
-		\item DGVH allows many metrics to be tested without requiring the design and development effort of generating an exact Voronoi Regions/Delunay Triangulation algorithm.
+		\item The primary effort in implementing a new metric space in a DHT is implementing Voronoi Regions/Delaunay Triangulation algorithm in that metric.
+		\item DGVH allows many metrics to be tested without requiring the design and development effort of generating an exact Voronoi Regions/Delaunay Triangulation algorithm.
 	\end{itemize}
 	
 	So we created a Distributed Greedy Voronoi Heuristic, or DGVH for short.
@@ -165,7 +151,7 @@
 \section{DGVH}
 	\begin{frame}{Distributed Greedy Voronoi Heuristic}
 		\begin{itemize}
-			\item Geometrically intuitive method of approximating the one-hop delaunay peers of a Node
+			\item Geometrically intuitive method of approximating the one-hop Delaunay peers of a Node
 			\item Is guaranteed to form a connected mesh (unlike k-nearest heuristic)
 			\item Can be utilized in any continuous metric space
 		\end{itemize}
@@ -177,7 +163,7 @@
 	\begin{frame}{DGVH Intuition}
 
 		\begin{itemize}
-			\item The majority of Delunay links cross the corresponding Voronoi edges.
+			\item The majority of Delaunay links cross the corresponding Voronoi edges.
 			\item We can test if the midpoint between two potentially connecting nodes is on the edge of the voronoi region.
 			\item This intuition fails if the midpoint between two nodes does not fall on their voronoi edge.
 		\end{itemize}

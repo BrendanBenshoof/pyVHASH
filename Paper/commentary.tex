@@ -1,0 +1,269 @@
+\documentclass[8pt]{beamer}
+\usetheme{Dresden}
+
+\usepackage[latin5]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subcaption}
+%\usepackage{subfig} 
+\usepackage{algorithm} 
+\usepackage{algorithmic}
+
+\title{A Distributed Greedy Heuristic for Computing Voronoi Tessellations With Applications Towards Peer-to-Peer Networks}
+\author{Brendan Benshoof \qquad Andrew Rosen \qquad \\Anu G. Bourgeois \qquad Robert W. Harrison \\Department of Computer Science, Georgia State University}
+%\subtitle{}
+%\logo{}
+%\institute{}
+%\date{}
+%\subject{}
+%\setbeamercovered{transparent}
+%\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+	\maketitle
+	
+	
+	
+\begin{frame}{Outline}
+	\tableofcontents
+\end{frame}
+	
+	
+\section{Background}
+\subsection{Motivation}
+	
+	\begin{frame}{Motivation}
+
+		\begin{itemize}
+			\item By ''distributed system`` we mean DHT
+			\item 
+		\end{itemize}
+
+	\end{frame}		
+	
+	\begin{frame}{Voronoi Tessellation and Delaunay Triangulation}
+		\begin{itemize}
+			\item Hopefully this slide is unnecessary.
+			\item Pictures are coming if they are needed
+		\end{itemize}
+	\end{frame}
+			
+			
+	\begin{frame}{Voronoi Example}
+		\begin{itemize}
+			\item flipping back and forth for these two slides is recommended.
+			\item the points are in the same locations
+			\item this is intended to visualize the primal-dual nature of these two problems.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}{Delaunay Example}
+		\begin{itemize}
+			\item Each circle has 3 points on it
+			\item Each circle only contains the three points that define it
+			\item Waving your hand at the images seems to help people understand them
+			\item or at least it prompts them to smile and nod.
+		\end{itemize}
+	\end{frame}
+				
+
+	
+\subsection{Distributed Hash Tables}
+	\begin{frame}{Distributed Hash Tables}
+		\begin{itemize}
+			\item DHTs are strongly related to P2P-overlay network.
+			\item (some people use the terms interchangeably)
+			\item Fault Tolerance/Robustness is a core goal of a DHT
+		\end{itemize}
+	\end{frame}
+	
+\begin{frame}{How are DHTs and Vonroi Tesselation/Delunay Trianguation related?}
+	\begin{itemize}
+		\item This is one of those generalizations that people generally never consider, but consider trivial in retrospect.
+		\item This makes it both important to write papers on and then difficult to get those papers published.
+	\end{itemize}
+\end{frame}
+
+	\begin{frame}{Applications of DHTs}
+		\begin{itemize}
+			\item DHTs are commonly used as a place to ''meet in the middle`` and find other peers for a specific task
+			\item Bittorent and MainlineDHT (bittorent's DHT) are the largets DHT network in use (aprox 20,000,000 nodes)
+			\item The DHT stores a list of peers serving a given file at the hash of that file.
+			\item In general P2P file sharing is the BIGGEST use case for DHTs
+		\end{itemize}
+	\end{frame}
+
+
+
+\begin{frame}{Why do we need a distributed Voronoi heuristic?}
+	\begin{itemize}
+		\item designing algorithms to solve voronoi/delaunay in weird metric spaces and higher dimensions is hard. I want to test if it is useful before I invest that effort.
+		\item This approximation (and the gossip protocol), when you come up with a creative metric space, approximates the behavior of many DHTs
+	\end{itemize}
+	
+
+\end{frame}
+
+
+
+	
+
+	
+\section{DGVH}
+	\begin{frame}{Distributed Greedy Voronoi Heuristic}
+		\begin{itemize}
+			\item This is meant to be on par of sophistication with ''just pick the 6 closest nodes`` and ''all the nodes within 100ft``
+			\item But it ensures the result is fully connected/reachable.
+			\item It is a subset of the Delaunay Triangulation
+		\end{itemize}
+		
+	\end{frame}
+	
+	\subsection{Our Heuristic}
+
+	\begin{frame}{DGVH Intuition}
+
+		\begin{itemize}
+			\item This slide is boring. Move on quickly.
+		\end{itemize}
+
+	\end{frame}
+	
+	
+	\begin{frame}{DGVH Algorithim}
+
+This algorithm is "egocentric". It is meant to be run by a single node in a distributed network and is actively seeking to find it's deluany peers.
+\begin{enumerate}
+\item 'n' is the "myself" node, and the location we are seeking to find the peers of.
+
+\item  peers is a set that will build the peerlist in
+
+\item We sort the candidates from closest to farthest.
+
+\item The closest candidate is always guaranteed to be a peer.
+
+\item Iterate through the sorted list of candidates and either add them to the peers set or discard them.
+
+\item We calculate the midpoint between the candidate and the center 'n'. 
+
+\item If this midpoint is closer to a peer than 'n', then it does not fall on the interface between the location's voronoi regions.
+
+\item in this case discard it
+
+\item otherwise add it the the current peerlist
+\end{enumerate}
+Theoretically, this is worst case $O(n^2)$
+
+However in practice, this is $O(nlog(n) (sorting) + kn)$
+where k is the number of delunay peers.
+
+We are well aware that 2d-euclidean algorithms exist in O(nlog(n)) time. While we use that use case to communicate the algorithim, it is intended to be used in more exotic spaces. 
+
+realistically k is the function of the metric space and is O(1) for euclidean spaces.
+
+	\end{frame}
+	
+	
+	
+\begin{frame}{DGVH Example}
+		\begin{itemize}
+			\item Note the two edges missing compared to the correct delaunay triangulation.
+			\item This configuration was specifically chosen to demonstrate this failure.
+		\end{itemize}	
+	\end{frame}
+	
+	
+	
+	
+\subsection{Peer Management}
+	\begin{frame}{Realistic Candidate set Size}
+		\begin{itemize}
+			\item practically we only need to keep radius 2 hops worth of peers as candidates
+			\item since the number of peers is O(1) in most cases, in the distributed use case this is not the time $O(n^2)$ it could be.
+			\item it is possible for nodes to have a peer count as high as n-1 in contrived cases. Solution: don't do that.
+			\item Realistically worst case is $\Theta(\frac{\log(n)}{\log(\log(n))})$ which is expected maximum degree in a triangulation of random points (regardless of metric or dimensions) 
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Error Mitigation}
+		\begin{itemize}
+			\item The error rate is essentially the rate at which node occlusions happen.
+			\item It is important to note, that even if nodes are occluded, there is always a multi-hop path between them. (thus fully connected)
+		\end{itemize}
+	\end{frame}
+	
+\subsection{Algorithm Analysis}
+	
+	
+\section{Experiments}
+	
+\subsection{Heuristic Accuracy}
+
+	\begin{frame}{Experiment 1}
+
+		\begin{itemize}
+			\item we compare our heuristic with ground truth in 2D euclidean with random points on a 1.0x1.0 square.
+			\item we calculate both the ground truth delaunay triangulation and results of DGVH.
+			\item We only did in 2D because of time and money. (3D is practically possible but more complex.)
+			\item Higher dimensions and other metric spaces do not have efficient algorithms we could implement with our feeble minds.
+		\end{itemize}
+		
+	\end{frame}
+
+
+\begin{frame}{Results}
+	This slide is a lot of fanfare for the fact: \\
+	very clearly a relation of 1 error per node 
+\end{frame}
+
+\subsection{Routing Accuracy}
+
+
+\begin{frame}{Experiment 2}
+
+
+\begin{itemize}
+	\item Essentially, through a combination of DGVH and peer-gossiping (effectively I know 2-hop peers) we build a routable network
+	\item To Gossip: each cycle I exchange 1-hop peers with one of my peers selected at random. Then I recalculate my peer-list using the new information.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Results}
+\begin{figure}
+		\begin{itemize}
+			\item All the networks converge to 100%
+			\item Nice sigmoid curves
+			\item Higher dimensionality slows convergence
+			\item we could do higher dimensions here becuase we avoid calculating a ground truth graph
+			\item rather we sample the graph and determine the ground truth for each sample.
+			\item Despite our 1-error per node, routing is still succeeding. it is "Good Enough".
+		\end{itemize}
+ 	
+ \end{figure}
+	
+
+
+\end{frame}	
+
+\section{Conclusion}
+	\begin{frame}{Other Applications}
+		Essentially Wireless Sensor Networks are another field that uses the fast and greedy method of voronoi/delaunay approximation (pick 5 closest nodes or all nodes in 100ft). So our solution should work for them too.
+	\end{frame}	
+	
+	\begin{frame}{Conclusions}
+		\begin{itemize}
+			\item It is an improvement over bad approximations
+			\item It caps out at $O(n^2)$ complexity, no matter how many dimensions or complexities of the metric space (unless calculating distance or midpoint is worse than $O(1)$)
+			\item for example This means you can use in it an 100-dimensional euclidean space in $O(n^2)$ time rather than $O(n^{50})$ time (maybe we should have opened with this...)
+		\end{itemize}
+	\end{frame}		
+
+\bibliography{P3DNS}
+\bibliographystyle{plain}
+	
+\end{document}
