@@ -54,18 +54,32 @@
 		\begin{itemize}
 			\item Voronoi Tessellation
 				\begin{itemize}
-					\item Assign each point in a space to a 'voronoi generator' to which they are closest.
+					\item Partition space such that each point is mapped the 'voronoi generator' to which it is closest.
 				\end{itemize}
 			\item Delaunay Triangulation
-			\begin{itemize}
-				\item Given a set of points connect them such that the circumcircle of each triangle does not contain any other points.
-			\end{itemize}
+				\begin{itemize}
+					\item generate a triangulation, such that, for every triangle the circumcircle does not contain any other points 
+				\end{itemize}
 		\end{itemize}
 	\end{frame}
 			
 			
-	\begin{frame}{Example}
-		content
+	\begin{frame}{Voronoi Example}
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{new_voronoi}
+	\caption{The space is partitioned, such that each point in a partition is closest to that partitions 'Voronoi generator'}
+	\label{voronoi}
+\end{figure}
+	\end{frame}
+
+	\begin{frame}{Delaunay Example}
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{delaunay}
+	\caption{The space is partitioned, such that each point in a partition is closest to that partitions 'Voronoi generator'}
+	\label{delaunay}
+\end{figure}
 	\end{frame}
 				
 		
@@ -159,6 +173,16 @@
 	\end{frame}
 	
 	\subsection{Our Heuristic}
+
+	\begin{frame}{DGVH Intuition}
+
+		\begin{itemize}
+			\item The majority of Delunay links cross the corresponding Voronoi edges.
+			\item We can test if the midpoint between two potentially connecting nodes is on the edge of the voronoi region.
+			\item This intuition fails if the midpoint between two nodes does not fall on their voronoi edge.
+		\end{itemize}
+
+	\end{frame}
 	
 	
 	\begin{frame}{DGVH Algorithim}
@@ -183,9 +207,14 @@
 	
 	
 	
-\begin{frame}{Visual Intutution}
-	PUT PICTURES HERE!!!!
-\end{frame}
+\begin{frame}{DGVH Example}
+	\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{DGVH}
+	\caption{'DGVH connects all nodes where the midpoint falls on the border of the voronoi regions'}
+	\label{delaunay}
+\end{figure}
+	\end{frame}
 	
 	
 	
@@ -301,6 +330,13 @@ Our second experiment were designed to test how well nodes could form a routing 
 		\end{itemize}
 	\end{frame}	
 	
+	\begin{frame}{Conclusions}
+		\begin{itemize}
+			\item DGVH provides a simple approximation Voronoi Triangulation / Delaunay Triangulation, of similar complexity to picking k-nearest node or nodes in distance k.
+			\item Unlike other simple approximation methods, DGVH guarantees a fully connected graph.
+			\item In practice, DGVH supplemented with K-nearest peers approximation provides an accurate, fast and distributable computation, with a fully connected graph as result.
+		\end{itemize}
+	\end{frame}		
 
 \bibliography{P3DNS}
 \bibliographystyle{plain}
