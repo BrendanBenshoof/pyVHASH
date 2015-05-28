@@ -129,19 +129,25 @@
 \end{frame}
 
 \begin{frame}{How are DHTs and Vonroi Tesselation/Delunay Trianguation related?}
-	A Server is responsible for records ''close`` to it (Voronoi Triangulation)
-	A Server peers with other servers that bound it's Voronoi Region (Delunay Triangulation)
-	DHTs often have peers in excess of the Delaunay triangulation to shorten lookups, however the peers that are the Delunay neighbors
+	\begin{itemize}
+		\item A Server is responsible for records ``closest'' to it (Voronoi Tessellation).
+		\item A Server's peers define the topology and act as the links connecting the network (Delunay Triangulation).
+		\item All DHTs can be mapped to a Voronoi Tessilation/Delaunay Triangulation approximation in a given space.
+	\end{itemize}
+	
+	%DHTs often have peers in excess of the Delaunay triangulation to shorten lookups, however the peers that are the Delunay neighbors.
+	
+	
 	\begin{itemize}
 		\item Ring Based DHTs
 		\begin{itemize}
-			\item Chord: a unidirectional modulus ring metric
-			\item Pastry, Symphony: bidirectional modulus ring
+			\item Chord: a unidirectional modulus ring metric space
+			\item Pastry, Symphony: bidirectional modulus ring metric space
 		\end{itemize}
 		\item Tree Based DHTs
 		\begin{itemize}
-			\item CAN: Euclidean distance
-			\item Kademlia: XOR distance
+			\item CAN: Euclidean metric space
+			\item Kademlia: XOR distance metric space 
 		\end{itemize}
 	\end{itemize}
 \end{frame}
